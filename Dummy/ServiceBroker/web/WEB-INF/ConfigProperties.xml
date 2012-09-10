@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>Dummy ServiceBroker</comment>
+    <entry key="ServiceBrokerGuid">196495303F294B13856D7E48872E51CC</entry>
+    <entry key="DBHost">localhost</entry>
+    <entry key="DBDatabase">Dummy_ServiceBroker</entry>
+    <entry key="DBUser">ServiceBroker</entry>
+    <entry key="DBPassword">ilab</entry>
+    <entry key="Authenticating">false</entry>
+    <entry key="LogAuthentication">true</entry>
+    <entry key="CouponId">12345</entry>
+    <entry key="CouponPasskey">qwerty</entry>
+    <entry key="LabServer0">8C0BA543419E4d4ab340d449acd3e057, http://localhost:8083/LabServerWebService.asmx, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
+    <entry key="LabServer1">2CD01113C51C4ca997B059531CD9469D, http://localhost:8080/TemplateLabServer/LabServerWebService, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
+</properties>
