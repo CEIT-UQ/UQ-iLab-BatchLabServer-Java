@@ -41,8 +41,14 @@ public class Validation {
     public Validation() {
     }
 
-    public Validation(boolean accepted, String errorMessage) {
+    public Validation(boolean accepted, int executionTime) {
         this.accepted = accepted;
+        this.executionTime = executionTime;
+    }
+
+    public Validation(String errorMessage) {
+        this.accepted = false;
         this.errorMessage = errorMessage;
+        this.executionTime = -1;
     }
 }

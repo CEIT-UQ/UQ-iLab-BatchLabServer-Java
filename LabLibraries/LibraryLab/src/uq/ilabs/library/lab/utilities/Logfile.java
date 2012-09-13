@@ -94,17 +94,19 @@ public class Logfile {
     }
 
     public static String Write(String message) {
+        return Write(Level.INFO, message);
+    }
+
+    public static String Write(Level level, String message) {
         String logMessage = message;
-        log(Level.INFO, "", null, logMessage);
+        log(level, "", null, logMessage);
 
         return logMessage;
     }
 
     public static String WriteError(String message) {
-        String logMessage = message;
-        log(Level.SEVERE, "", null, logMessage);
-
-        return logMessage;
+        log(Level.SEVERE, "", null, message);
+        return message;
     }
 
     public static void WriteException(String sourceClass, String sourceMethod, Throwable thrown) {
@@ -112,10 +114,18 @@ public class Logfile {
     }
 
     public static String WriteCalled(String sourceClass, String sourceMethod) {
-        return WriteCalled(sourceClass, sourceMethod, "");
+        return WriteCalled(Level.INFO, sourceClass, sourceMethod);
     }
 
     public static String WriteCalled(String sourceClass, String sourceMethod, String message) {
+        return WriteCalled(Level.INFO, sourceClass, sourceMethod, message);
+    }
+
+    public static String WriteCalled(Level level, String sourceClass, String sourceMethod) {
+        return WriteCalled(level, sourceClass, sourceMethod, "");
+    }
+
+    public static String WriteCalled(Level level, String sourceClass, String sourceMethod, String message) {
         String logMessage = null;
 
         /*
@@ -142,17 +152,25 @@ public class Logfile {
             if (message != null && message.length() > 0) {
                 logMessage += STRLOG_Newline + STRLOG_CalledMarker + message;
             }
-            log(Level.INFO, "", null, logMessage);
+            log(level, "", null, logMessage);
         }
 
         return logMessage;
     }
 
     public static String WriteCompleted(String sourceClass, String sourceMethod) {
-        return WriteCompleted(sourceClass, sourceMethod, "");
+        return WriteCompleted(Level.INFO, sourceClass, sourceMethod, "");
     }
 
     public static String WriteCompleted(String sourceClass, String sourceMethod, String message) {
+        return WriteCompleted(Level.INFO, sourceClass, sourceMethod, message);
+    }
+
+    public static String WriteCompleted(Level level, String sourceClass, String sourceMethod) {
+        return WriteCompleted(level, sourceClass, sourceMethod, "");
+    }
+
+    public static String WriteCompleted(Level level, String sourceClass, String sourceMethod, String message) {
         String logMessage = null;
 
         /*
@@ -179,18 +197,18 @@ public class Logfile {
             if (message != null && message.length() > 0) {
                 logMessage += STRLOG_Newline + STRLOG_CompletedMarker + message;
             }
-            log(Level.INFO, "", null, logMessage);
+            log(level, "", null, logMessage);
         }
 
         return logMessage;
     }
 
     /**
-     * 
+     *
      * @param level
      * @param sourceClass
      * @param sourceMethod
-     * @param msg 
+     * @param msg
      */
     private static synchronized void log(Level level, String sourceClass, String sourceMethod, String msg) {
         logger.logp(level, sourceClass, sourceMethod, msg);

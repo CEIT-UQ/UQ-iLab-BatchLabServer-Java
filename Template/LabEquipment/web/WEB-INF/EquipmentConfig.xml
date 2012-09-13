@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<equipmentConfig title="Template" version="4.0">
+    <powerupDelay>3</powerupDelay>
+    <powerdownTimeout>15</powerdownTimeout>
+    <devices>
+        <device name="DeviceEquipment">
+            <initialiseDelay>3</initialiseDelay>
+        </device>
+    </devices>
+    <drivers>
+        <driver name="DriverEquipment">
+            <executionTimes>
+                <initialise>2</initialise>
+                <start>4</start>
+                <run>6</run>
+                <stop>3</stop>
+                <finalise>1</finalise>
+            </executionTimes>
+            <validation>
+                <someParameter>
+                    <min>1</min>
+                    <max>1000</max>
+                </someParameter>
+            </validation>
+            <experimentResults>
+                <someParameter />
+                <someResult />
+            </experimentResults>
+        </driver>
+    </drivers>
+    <setups>
+        <setup id="Equipment">
+            <driver>DriverEquipment</driver>
+        </setup>
+    </setups>
+</equipmentConfig>

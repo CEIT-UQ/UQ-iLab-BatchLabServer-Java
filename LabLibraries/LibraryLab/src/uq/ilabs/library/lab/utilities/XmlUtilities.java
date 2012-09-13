@@ -38,8 +38,6 @@ public class XmlUtilities {
     private static final String STRERR_NodeValueDoesNotExist_Arg = "Node value does not exist: ";
     private static final String STRERR_NodeValueIsNotBoolean_Arg = "Node value is not a boolean: ";
     private static final String STRERR_NodeValueIsNotCharacter_Arg = "Node value is not a character: ";
-    private static final String STRERR_NodeValueIsNotInteger_Arg = "Node value is not an integer: ";
-    private static final String STRERR_NodeValueIsNotDouble_Arg = "Node value is not a double: ";
     private static final String STRERR_AttributeNameIsNotSpecified = "Attribute name is not specified!";
     private static final String STRERR_AttributeDoesNotExistOrNoValue_Arg = "Attribute does not exist or has no value: ";
     //</editor-fold>
@@ -376,7 +374,7 @@ public class XmlUtilities {
      * @return The value of the child node as a string.
      * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
      * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a value      * and <code>allowEmpty</code> is false</li> </ul>
+     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a value *      * and <code>allowEmpty</code> is false</li> </ul>
      */
     public static String GetChildValue(Node parentNode, String childName, boolean allowEmpty) throws XmlUtilitiesException {
         /*
@@ -498,8 +496,8 @@ public class XmlUtilities {
      * @return The value of the child node as an integer.
      * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
      * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> <li>The child node does not contain an integer value</li>
-     * </ul>
+     * string</li> <li>The child node does not exist</li> </ul>
+     * @throws NumberFormatException <ul> <li>The child node does not contain an integer value</li> </ul>
      */
     public static int GetChildValueAsInt(Node parentNode, String childName) throws XmlUtilitiesException {
         /*
@@ -510,14 +508,7 @@ public class XmlUtilities {
         /*
          * Convert the string to an integer value
          */
-        int retValue;
-        try {
-            retValue = Integer.parseInt(value);
-        } catch (NumberFormatException ex) {
-            throw new XmlUtilitiesException(STRERR_NodeValueIsNotInteger_Arg + value);
-        }
-
-        return retValue;
+        return Integer.parseInt(value);
     }
 
     /**
@@ -528,7 +519,8 @@ public class XmlUtilities {
      * @return The value of the child node as a double.
      * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
      * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a double value</li> </ul>
+     * string</li> <li>The child node does not exist</li> </ul>
+     * @throws NumberFormatException <ul> <li>The child node does not contain a double value</li> </ul>
      */
     public static double GetChildValueAsDouble(Node parentNode, String childName) throws XmlUtilitiesException {
         /*
@@ -539,14 +531,7 @@ public class XmlUtilities {
         /*
          * Convert the string to a double value
          */
-        double retValue;
-        try {
-            retValue = Double.parseDouble(value);
-        } catch (NumberFormatException ex) {
-            throw new XmlUtilitiesException(STRERR_NodeValueIsNotDouble_Arg + value);
-        }
-
-        return retValue;
+        return Double.parseDouble(value);
     }
 
     /**
