@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8' ?> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link href="./resources/css/default.css" rel="stylesheet" type="text/css" />
+        <link href="./resources/css/labclient.css" rel="stylesheet" type="text/css" />
+        <ui:insert name="stylesheet"></ui:insert>
+        <title><ui:insert name="webpageTitle">Facelets Template</ui:insert></title>
+    </h:head>
+
+    <h:body>
+
+        <table id="master" border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td colspan="2">
+                    <table id="banner" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td class="logo">
+                                <a href="http://www.uq.edu.au/" target="_blank">
+                                    <img class="image" src="resources/img/uq-logo.gif" width="200" height="72" alt="uq-logo" />
+                                </a>
+                            </td>
+                            <td class="title">
+                                #{labClientBean.title}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table id="statusbar" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td>
+                                &nbsp;
+                            </td>
+                            <td class="version">
+                                Version #{labClientBean.version}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="navigation">
+                    <table id="navmenu" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td>
+                                <img src="resources/img/generic_content32.jpg" width="200" height="200" alt="generic_content32"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="header">
+                                ON THIS SITE
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <ul>
+                                    <li><a href="Home.xhtml">&#187;&nbsp;Home</a></li>
+                                    <li><a href="Setup.xhtml">&#187;&nbsp;Setup</a></li>
+                                    <li><a href="Status.xhtml">&#187;&nbsp;Status</a></li>
+                                    <li><a href="Results.xhtml">&#187;&nbsp;Results</a></li>
+                                    <h:outputLabel id="lblLabCameraUrl" rendered="#{labClientBean.labCameraUrl != null}">
+                                        <li><a href="#{labClientBean.labCameraUrl}" target="_blank">&#187;&nbsp;Camera</a></li>
+                                    </h:outputLabel>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="pagecontent">
+                    <table id="content" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td colspan="2">
+                                <table border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <td>
+                                            <img src="resources/img/level2-arrow.gif" width="28" height="28" alt="level2-arrow"/>
+                                        </td>
+                                        <td class="title">
+                                            <ui:insert name="contentTitle">Content Title</ui:insert>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="resources/img/level2-underline.gif" width="395" height="1" alt="level2-underline"/>
+                            </td>
+                            <td class="filler">
+                                &nbsp;
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <ui:insert name="content">Content of webpage.</ui:insert>
+                                <p>
+                                    &nbsp;
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table id="feedback" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td>
+                                &nbsp;
+                            </td>
+                            <td>
+                                <a href="mailto:#{labClientBean.feedbackEmailUrl}">Feedback</a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table id="footer" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td class="left">
+                                <a href="http://www.ceit.uq.edu.au/" target="_blank">
+                                    <img class="image" src="resources/img/ceit_logo.gif" width="176" height="64" alt="ceit-logo"/>
+                                </a>
+                            </td>
+                            <td class="filler">
+                                &nbsp;
+                            </td>
+                            <td class="right">
+                                <a href="http://www.mit.edu/" target="_blank">
+                                    <img class="image" src="resources/img/mit-blackred-footer1.gif" width="334" height="36" alt="mit-logo"/>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+    </h:body>
+
+</html>

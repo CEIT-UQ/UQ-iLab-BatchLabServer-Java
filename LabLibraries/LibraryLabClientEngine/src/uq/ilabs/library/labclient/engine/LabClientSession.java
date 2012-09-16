@@ -1,0 +1,329 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package uq.ilabs.library.labclient.engine;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Level;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Node;
+import uq.ilabs.library.lab.utilities.Logfile;
+import uq.ilabs.library.lab.utilities.XmlUtilities;
+import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
+import uq.ilabs.library.labclient.engine.types.SetupInfo;
+import uq.ilabs.library.labclient.servicebroker.ServiceBrokerAPI;
+
+/**
+ *
+ * @author uqlpayne
+ */
+public class LabClientSession implements Serializable {
+
+    //<editor-fold defaultstate="collapsed" desc="Constants">
+    private static final String STR_ClassName = LabExperimentResult.class.getName();
+    private static final Level logLevel = Level.INFO;
+    /*
+     * String constants for logfile messages
+     */
+    private static final String STRLOG_TitleVersion_arg2 = "Title: %s  Version: %s";
+    private static final String STRLOG_PhotoUrl_arg = "Photo Url: %s";
+    private static final String STRLOG_LabCameraUrl_arg = "LabCamera Url: %s";
+    private static final String STRLOG_LabInfoUrl_arg = "LabInfo Url: %s";
+    private static final String STRLOG_SetupIDName_arg = "Setup Id: %s Name: %s";
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Properties">
+    private String labCameraUrl;
+    private String labInfoText;
+    private String labInfoUrl;
+    private String feedbackEmailUrl;
+    private boolean multiSubmit;
+    private String navmenuPhotoUrl;
+    private String title;
+    private String version;
+    private ServiceBrokerAPI serviceBrokerAPI;
+    private String xmlConfiguration;
+    private String xmlSpecification;
+    private String xmlValidation;
+    private SetupInfo[] setupInfos;
+    private int[] submittedIds;
+    private int[] completedIds;
+
+    public String getLabCameraUrl() {
+        return labCameraUrl;
+    }
+
+    public String getLabInfoText() {
+        return labInfoText;
+    }
+
+    public String getLabInfoUrl() {
+        return labInfoUrl;
+    }
+
+    public String getFeedbackEmailUrl() {
+        return feedbackEmailUrl;
+    }
+
+    public void setFeedbackEmailUrl(String feedbackEmailUrl) {
+        this.feedbackEmailUrl = feedbackEmailUrl;
+    }
+
+    public boolean isMultiSubmit() {
+        return multiSubmit;
+    }
+
+    public void setMultiSubmit(boolean multiSubmit) {
+        this.multiSubmit = multiSubmit;
+    }
+
+    public String getNavmenuPhotoUrl() {
+        return navmenuPhotoUrl;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public ServiceBrokerAPI getServiceBrokerAPI() {
+        return serviceBrokerAPI;
+    }
+
+    public void setServiceBrokerAPI(ServiceBrokerAPI serviceBrokerAPI) {
+        this.serviceBrokerAPI = serviceBrokerAPI;
+    }
+
+    public String getXmlConfiguration() {
+        return xmlConfiguration;
+    }
+
+    public String getXmlSpecification() {
+        return xmlSpecification;
+    }
+
+    public String getXmlValidation() {
+        return xmlValidation;
+    }
+
+    public SetupInfo[] getSetupInfos() {
+        return setupInfos;
+    }
+
+    public int[] getSubmittedIds() {
+        return submittedIds;
+    }
+
+    public int[] getCompletedIds() {
+        return completedIds;
+    }
+    //</editor-fold>
+
+    /**
+     *
+     * @param labClientSession
+     * @param xmlLabConfiguration
+     */
+    public void ParseLabConfiguration(String xmlLabConfiguration) {
+        final String methodName = "ParseLabConfiguration";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+
+        try {
+            String logMessage = Logfile.STRLOG_Newline;
+
+            /*
+             * Load the lab configuration XML document from the string
+             */
+            Document document = XmlUtilities.GetDocumentFromString(xmlLabConfiguration);
+            Node nodeLabConfiguration = XmlUtilities.GetRootNode(document, LabConsts.STRXML_LabConfiguration);
+
+            /*
+             * Get information from the lab configuration node
+             */
+            this.title = XmlUtilities.GetAttribute(nodeLabConfiguration, LabConsts.STRXML_ATTR_Title, false);
+            this.version = XmlUtilities.GetAttribute(nodeLabConfiguration, LabConsts.STRXML_ATTR_Version, false);
+            logMessage += String.format(STRLOG_TitleVersion_arg2, this.title, this.version) + Logfile.STRLOG_Newline;
+
+            Node nodeNavmenuPhoto = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_NavmenuPhoto, false);
+            this.navmenuPhotoUrl = XmlUtilities.GetChildValue(nodeNavmenuPhoto, LabConsts.STRXML_Image, true);
+            logMessage += String.format(STRLOG_PhotoUrl_arg, this.navmenuPhotoUrl) + Logfile.STRLOG_Newline;
+
+            Node nodeLabCamera = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_LabCamera, false);
+            try {
+                this.labCameraUrl = XmlUtilities.GetChildValue(nodeLabCamera, LabConsts.STRXML_Url, false);
+            } catch (XmlUtilitiesException ex) {
+                /* No url specified */
+            }
+            logMessage += String.format(STRLOG_LabCameraUrl_arg, this.labCameraUrl) + Logfile.STRLOG_Newline;
+
+            Node nodeLabInfo = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_LabInfo, false);
+            this.labInfoUrl = XmlUtilities.GetChildValue(nodeLabInfo, LabConsts.STRXML_Url, true);
+            logMessage += String.format(STRLOG_LabInfoUrl_arg, this.labInfoUrl) + Logfile.STRLOG_Newline;
+
+            /*
+             * Get the configuration node and save as an XML string
+             */
+            Node nodeConfiguration = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_Configuration, false);
+            DocumentFragment documentFragment = document.createDocumentFragment();
+            documentFragment.appendChild(nodeConfiguration.cloneNode(true));
+            this.xmlConfiguration = XmlUtilities.ToXmlString(documentFragment);
+
+            /*
+             * Get a list of all setups, must have at least one
+             */
+            ArrayList nodeList = XmlUtilities.GetChildNodeList(nodeConfiguration, LabConsts.STRXML_Setup);
+            this.setupInfos = new SetupInfo[nodeList.size()];
+            for (int i = 0; i < nodeList.size(); i++) {
+                Node nodeSetup = (Node) nodeList.get(i);
+
+                /*
+                 * Get the setup Id and name
+                 */
+                String setupId = XmlUtilities.GetAttribute(nodeSetup, LabConsts.STRXML_ATTR_Id, false);
+                String setupName = XmlUtilities.GetChildValue(nodeSetup, LabConsts.STRXML_Name, false);
+
+                /*
+                 * Get the setup description
+                 */
+                Node nodeDescription = XmlUtilities.GetChildNode(nodeSetup, LabConsts.STRXML_Description, false);
+                documentFragment = document.createDocumentFragment();
+                documentFragment.appendChild(nodeDescription.cloneNode(true));
+                String setupDescription = XmlUtilities.ToXmlString(documentFragment);
+
+                /*
+                 * Add setup information to the list
+                 */
+                this.setupInfos[i] = new SetupInfo(setupId);
+                this.setupInfos[i].setName(setupName);
+                this.setupInfos[i].setDescription(setupDescription);
+                this.setupInfos[i].setXmlSetup(XmlUtilities.ToXmlString(nodeSetup));
+                logMessage += String.format(STRLOG_SetupIDName_arg, setupId, setupName) + Logfile.STRLOG_Newline;
+            }
+
+            Logfile.Write(logLevel, logMessage);
+
+            /*
+             * Get the experiment specification node and save as an XML string
+             */
+            Node nodeSpecification = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_ExperimentSpecification);
+            documentFragment = document.createDocumentFragment();
+            documentFragment.appendChild(nodeSpecification.cloneNode(true));
+            this.xmlSpecification = XmlUtilities.ToXmlString(documentFragment);
+
+            /*
+             * Get the validation node, if it exists, and save as an XML string
+             */
+            Node nodeValidation = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_Validation, false);
+            if (nodeValidation != null) {
+                documentFragment = document.createDocumentFragment();
+                documentFragment.appendChild(nodeValidation.cloneNode(true));
+                this.xmlValidation = XmlUtilities.ToXmlString(documentFragment);
+            }
+
+        } catch (XmlUtilitiesException | DOMException ex) {
+            Logfile.WriteError(ex.toString());
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+    }
+
+    /**
+     *
+     * @param id
+     */
+    public void AddSubmittedId(int id) {
+        /*
+         * Check if multisubmit is enabled or submitted ids exists
+         */
+        if (multiSubmit == false || submittedIds == null) {
+            /*
+             * Create a new array of submitted ids and add the id
+             */
+            submittedIds = new int[]{id};
+        } else {
+            /*
+             * Create a bigger array of submitted ids and add the id
+             */
+            int[] newSubmittedIds = Arrays.copyOf(submittedIds, submittedIds.length + 1);
+            newSubmittedIds[submittedIds.length] = id;
+            submittedIds = newSubmittedIds;
+        }
+    }
+
+    /**
+     *
+     * @param id
+     */
+    public void DeleteSubmittedId(int id) {
+        /*
+         * Check if submitted id exists
+         */
+        if (submittedIds != null) {
+            /*
+             * Check if multisubmit is enabled or one submitted id exists
+             */
+            if (multiSubmit == false || (submittedIds.length == 1 && submittedIds[0] == id)) {
+                submittedIds = null;
+            } else {
+                /*
+                 * Find submitted id
+                 */
+                for (int i = 0; i < submittedIds.length; i++) {
+                    if (submittedIds[i] == id) {
+                        /*
+                         * Create a smaller array of completed iIds
+                         */
+                        int[] newSubmittedIds = new int[submittedIds.length - 1];
+
+                        /*
+                         * Copy the ids to the new array excluding the id
+                         */
+                        System.arraycopy(submittedIds, 0, newSubmittedIds, 0, i);
+                        System.arraycopy(submittedIds, i + 1, newSubmittedIds, i, newSubmittedIds.length - i);
+                        submittedIds = newSubmittedIds;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public void AddCompletedId(int id) {
+        /*
+         * Check if multisubmit is enabled or completed ids exists
+         */
+        if (multiSubmit == false || completedIds == null) {
+            /*
+             * Create a new array of completed ids and add the id
+             */
+            completedIds = new int[]{id};
+        } else {
+            /*
+             * Create a bigger array of completed ids and add the id
+             */
+            int[] newCompletedIds = Arrays.copyOf(completedIds, completedIds.length + 1);
+            newCompletedIds[completedIds.length] = id;
+            completedIds = newCompletedIds;
+        }
+    }
+
+    public String[] GetSubmittedIds() {
+        String[] ids = null;
+
+        if (submittedIds != null) {
+            ids = new String[submittedIds.length];
+            for (int i = 0; i < submittedIds.length; i++) {
+                ids[i] = Integer.toString(submittedIds[i]);
+            }
+        }
+
+        return ids;
+    }
+}

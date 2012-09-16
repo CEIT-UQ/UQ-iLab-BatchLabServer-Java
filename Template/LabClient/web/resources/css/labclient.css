@@ -1,0 +1,239 @@
+.text {
+    font-size: 10pt;
+    font-family: Verdana, "Verdana CE",  Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+}
+
+th
+{
+    text-align: left;
+    padding: 10px 0px 10px 0px;
+}
+td.label
+{
+    width: 60px;
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: middle;
+    padding: 5px 5px 5px 0px;
+}
+td.information
+{
+    width: 100%;
+    text-align: left;
+    vertical-align: middle;
+    padding: 5px 0px 5px 0px;
+}
+td.data
+{
+    text-align: left;
+    vertical-align: middle;
+    padding: 5px 0px 5px 0px;
+}
+td.dataright
+{
+    width: 100%;
+}
+td.message
+{
+    width: 100%;
+    text-align: left;
+    vertical-align: middle;
+}
+td.button
+{
+    text-align: left;
+    padding-top: 10px;
+    padding-bottom: 15px;
+}
+
+.button
+{
+    font-size: 10pt;
+    width: 72px;
+    height: 24px;
+}
+.dropdown
+{
+    font-size: 10pt;
+}
+.image
+{
+    border: 0px;
+    padding: 0px;
+}
+textbox
+{
+    font-size: 10pt;
+    height: 16px;
+}
+.hinputtext
+{
+    font-size: 10pt;
+    height: 16px;
+}
+
+/*
+ * Response messages
+*/
+.infomessage, .warningmessage, .errormessage
+{
+    color: Black;
+    border: solid 1px Black;
+    padding: 10px;
+}
+.infomessage
+{
+    background-color: #e8ffe8;
+}
+.warningmessage
+{
+    background-color: #e8e8ff;
+}
+.errormessage
+{
+    background-color: #ffe8e8;
+}
+
+#master td.navigation
+{
+    background-color: #E7ECEF;
+    vertical-align: top;
+    height: 100%;
+}
+#master td.pagecontent
+{
+    margin: 0px;
+    padding: 5px;
+    vertical-align: top;
+    width: 100%;
+}
+
+#banner td
+{
+    background-color: #003099; /* dark blue */ /* background-color: #500098; dark purple */
+    padding: 0px;
+    margin: 0px;
+}
+/*#banner td.logo
+{
+    background-image: url("../img/uq-logo.gif");  path is relative to where the CSS is located
+    height: 72px;
+    width: 200px;
+}*/
+#banner td.title
+{
+    color: white;
+    font-size: 20pt;
+    text-align: center;
+    width: 100%;
+}
+
+#statusbar td
+{
+    background-color: silver;
+    background-image: url("../img/gradient.gif"); /* path is relative to where the CSS is located */
+    height: 21px;
+}
+#statusbar td.version
+{
+    color: gray;
+    padding-right: 10px;
+    vertical-align: middle;
+    text-align: right;
+    width: 100%;
+}
+
+#navmenu td.header
+{
+    background-color: #A1BD41; /* Green */ /* background-color: #8141BD; Purple */
+    color: #FFF;
+    padding: 5px;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #8A8B8B;
+}
+#navmenu ul
+{
+    list-style-type: none;
+    margin: 3px;
+    padding: 0px;
+}
+#navmenu li
+{
+    display: block;
+    border: 1px solid #DFDFDF;
+    margin: 1px;
+}
+#navmenu a:link, #navmenu a:visited
+{
+    display: block;
+    background-color: #FFFFFF;
+    color: #000000;
+    padding: 4px;
+    text-decoration: none;
+}
+#navmenu a:hover, #navmenu a:active
+{
+    background-color: #EEF8E4; /* Light green */ /* background-color: #EEE4F8; Light purple */
+}
+
+#content td.title
+{
+    font-size: 18pt;
+    font-weight: bold;
+    color: #333;
+    text-align: left;
+    vertical-align: top;
+    padding: 2px;
+}
+#content td.filler
+{
+    width: 100%;
+}
+
+#feedback td
+{
+    background-color: silver;
+    background-image: url("../img/feedback-gradient.gif"); /* path is relative to where the CSS is located */
+    padding: 0px 10px 0px 10px;
+    border-top: solid 1px Silver;
+    text-align: right;
+    vertical-align: middle;
+    height: 19px;
+    width: 100%;
+}
+
+#footer td
+{
+    padding-bottom: 2px;
+    border-bottom: solid 1px Silver;
+}
+#footer td.left
+{
+    text-align: left;
+}
+#footer td.filler
+{
+    width: 100%;
+}
+#footer td.right
+{
+    text-align: right;
+}
+
+#results td
+{
+	text-align: left;
+	vertical-align: middle;
+	padding: 5px 5px 5px 0px;
+}
+#results td.label
+{
+	padding-right: 5px;
+	padding-bottom: 0px;
+}
+#results td.dataright
+{
+	padding-bottom: 0px;
+	width: 100%;
+}
