@@ -8,12 +8,12 @@ import java.util.Calendar;
 import java.util.Random;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.types.ExecutionStatus;
+import uq.ilabs.library.lab.types.LabEquipmentStatus;
 import uq.ilabs.library.lab.types.Validation;
 import uq.ilabs.library.lab.utilities.Delay;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labequipment.engine.devices.DeviceGeneric;
 import uq.ilabs.library.labequipment.engine.drivers.DriverGeneric;
-import uq.ilabs.library.labequipment.engine.types.LabEquipmentStatus;
 
 /**
  *

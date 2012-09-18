@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="file:/D:/NetBeans/BatchLabServer/Wsdl/IServiceBrokerService.asmx.wsdl" uri="xml-resources/web-service-references/IServiceBrokerService.asmx/wsdl/IServiceBrokerService.asmx.wsdl"/>
+    <system systemId="file:/D:/NetBeans/BatchLabServer/Wsdl/ILabEquipmentService.asmx.wsdl" uri="xml-resources/web-service-references/ILabEquipmentService.asmx/wsdl/ILabEquipmentService.asmx.wsdl"/>
+</catalog>

@@ -120,7 +120,7 @@ public class ServiceBrokerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName,
+        Logfile.WriteCompleted(STR_ClassName, STR_MethodName,
                 String.format(STRLOG_Success_arg, success));
 
         return success;
@@ -155,7 +155,7 @@ public class ServiceBrokerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
         return proxyWaitEstimate;
     }
@@ -206,7 +206,7 @@ public class ServiceBrokerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
         return proxyLabExperimentStatus;
     }
@@ -232,7 +232,7 @@ public class ServiceBrokerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
         return xmlLabConfiguration;
     }

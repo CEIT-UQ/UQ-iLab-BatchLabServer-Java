@@ -9,11 +9,11 @@ import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import uq.ilabs.library.lab.types.ExecutionStatus;
+import uq.ilabs.library.lab.types.LabEquipmentStatus;
 import uq.ilabs.library.lab.types.Validation;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labequipment.EquipmentManager;
 import uq.ilabs.library.labequipment.engine.ConfigProperties;
-import uq.ilabs.library.labequipment.engine.types.LabEquipmentStatus;
 
 /**
  *

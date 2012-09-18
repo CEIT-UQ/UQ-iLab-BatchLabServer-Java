@@ -7,8 +7,8 @@
     <entry key="DBDatabase">Dummy_ServiceBroker</entry>
     <entry key="DBUser">ServiceBroker</entry>
     <entry key="DBPassword">ilab</entry>
-    <entry key="Authenticating">false</entry>
-    <entry key="LogAuthentication">true</entry>
+    <entry key="Authenticating">true</entry>
+    <entry key="LogAuthentication">false</entry>
     <entry key="CouponId">12345</entry>
     <entry key="CouponPasskey">qwerty</entry>
     <entry key="LabServer0">8C0BA543419E4d4ab340d449acd3e057, http://localhost:8083/LabServerWebService.asmx, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>

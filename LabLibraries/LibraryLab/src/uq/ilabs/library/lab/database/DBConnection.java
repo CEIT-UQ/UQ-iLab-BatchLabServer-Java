@@ -26,8 +26,6 @@ public class DBConnection {
     public static final String STR_User = "user";
     public static final String STR_Password = "password";
     public static final String STR_DefaultHost = "localhost";
-//    public static final String STR_DefaultUser = "postgres";
-//    public static final String STR_DefaultPassword = "Ura6UldV8";
     public static final String STR_DefaultUser = "LabServer";
     public static final String STR_DefaultPassword = "ilab";
     /*

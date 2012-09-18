@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>Template LabServer</comment>
+    <entry key="LabServerGuid">2CD01113C51C4ca997B059531CD9469D</entry>
+    <entry key="DBHost">localhost</entry>
+    <entry key="DBDatabase">Template_LabServer</entry>
+    <entry key="DBUser">LabServer</entry>
+    <entry key="DBPassword">ilab</entry>
+    <entry key="Authenticating">true</entry>
+    <entry key="LogAuthentication">false</entry>
+	<!-- ContactEmail: Email address for LabServer and cannot be empty-->
+    <entry key="ContactEmail"></entry>
+	<!-- CompletedEmailList: Comma-seperated list of email addresses and can be empty-->
+    <entry key="CompletedEmailList"></entry>
+	<!-- FailedEmailList: Comma-seperated list of email addresses and can be empty-->
+    <entry key="FailedEmailList"></entry>
+    <entry key="LabEquipmentService0">http://localhost:8080/TemplateLabEquipment/LabEquipmentService, fd3cf16cc855484fb06801379f475837</entry>
+</properties>

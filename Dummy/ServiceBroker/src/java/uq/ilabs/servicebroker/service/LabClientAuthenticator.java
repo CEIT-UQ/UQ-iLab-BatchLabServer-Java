@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -20,6 +22,7 @@ import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.servicebroker.engine.ConfigProperties;
+import uq.ilabs.servicebroker.engine.LabConsts;
 
 /**
  *
@@ -30,15 +33,14 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabClientAuthenticator.class.getName();
     /*
-     * Initialisation parameters
-     */
-    private static final String STRPRM_LogfilesPath = "LogfilesPath";
-    private static final String STRPRM_XmlConfigPropertiesPath = "XmlConfigPropertiesPath";
-    /*
      * String constants
      */
-    public static final String STR_CouponId = "couponID";
-    public static final String STR_CouponPasskey = "couponPassKey";
+    private static final String STR_CouponId = "couponID";
+    private static final String STR_CouponPasskey = "couponPassKey";
+    /*
+     * String constants for logfile messages
+     */
+    private static final String STRLOG_LoggingLevel_arg = "LoggingLevel: %s";
     //</editor-fold>
 
     @Override
@@ -197,17 +199,30 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
 
         try {
             /*
-             * Get the path for the logfiles and create the logger
+             * Get the path for the logfiles and logging level
              */
-            String initParameter = servletContext.getInitParameter(STRPRM_LogfilesPath);
-            Logfile.CreateLogger(initParameter);
+            String logFilesPath = servletContext.getInitParameter(LabConsts.STRPRM_LogFilesPath);
+            String logLevel = servletContext.getInitParameter(LabConsts.STRPRM_LogLevel);
 
-            Logfile.WriteCalled(STR_ClassName, methodName);
+            /*
+             * Create an instance of the logger and set the logging level
+             */
+            Logger logger = Logfile.CreateLogger(logFilesPath);
+            Level level;
+            try {
+                level = Level.parse(logLevel);
+            } catch (Exception ex) {
+                level = Level.INFO;
+            }
+            logger.setLevel(level);
+
+            Logfile.WriteCalled(STR_ClassName, methodName,
+                    String.format(STRLOG_LoggingLevel_arg, logger.getLevel().toString()));
 
             /*
              * Get configuration properties from the file
              */
-            String xmlConfigPropertiesPath = servletContext.getInitParameter(STRPRM_XmlConfigPropertiesPath);
+            String xmlConfigPropertiesPath = servletContext.getInitParameter(LabConsts.STRPRM_XmlConfigPropertiesPath);
             ConfigProperties configProperties = new ConfigProperties(servletContext.getRealPath(xmlConfigPropertiesPath));
 
             /*

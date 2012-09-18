@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="./LabServer.xhtml">
+
+            <ui:define name="webpageTitle">
+                Home
+            </ui:define>
+
+            <ui:define name="contentTitle">
+                Home
+            </ui:define>
+
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!labServerBean.loggedIn}">
+                        <table border="0" cellspacing="0" cellpadding="0">
+                            <tbody>
+                                <tr>
+                                    <td class="label">
+                                        Username:
+                                    </td>
+                                    <td>
+                                        <h:inputText styleClass="hit" id="hitUsername" value="#{loginBean.username}" style="width: 120px"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        Password:
+                                    </td>
+                                    <td>
+                                        <h:inputSecret styleClass="hit" value="#{loginBean.password}" style="width: 120px"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        &nbsp;
+                                    </td>
+                                    <td class="button">
+                                        <h:commandButton styleClass="button" value="Login" action="#{loginBean.actionLogin()}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p />
+                        <h:outputLabel binding="#{loginBean.holMessage}" styleClass="infomessage" rendered="false" />
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

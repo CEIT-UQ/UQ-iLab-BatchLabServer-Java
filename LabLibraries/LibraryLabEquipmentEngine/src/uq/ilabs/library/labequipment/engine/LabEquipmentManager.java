@@ -6,9 +6,9 @@ package uq.ilabs.library.labequipment.engine;
 
 import java.util.logging.Level;
 import uq.ilabs.library.lab.types.ExecutionStatus;
+import uq.ilabs.library.lab.types.LabEquipmentStatus;
 import uq.ilabs.library.lab.types.Validation;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labequipment.engine.types.LabEquipmentStatus;
 
 /**
  *
@@ -164,9 +164,7 @@ public class LabEquipmentManager {
         if (this.labEquipmentEngine != null) {
             labEquipmentStatus = this.labEquipmentEngine.GetLabEquipmentStatus();
         } else {
-            labEquipmentStatus = new LabEquipmentStatus();
-            labEquipmentStatus.setOnline(false);
-            labEquipmentStatus.setStatusMessage(STR_NotInitialised);
+            labEquipmentStatus = new LabEquipmentStatus(false, STR_NotInitialised);
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
@@ -281,12 +279,12 @@ public class LabEquipmentManager {
      */
     public void Close() {
         final String methodName = "Close";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         if (this.labEquipmentEngine != null) {
             this.labEquipmentEngine.Close();
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 }

@@ -161,6 +161,6 @@ public class LabClientServlet extends HttpServlet {
          */
         response.sendRedirect(Consts.STRURL_Home);
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 }

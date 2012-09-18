@@ -28,4 +28,12 @@ public class LabEquipmentStatus {
     public void setStatusMessage(String statusMessage) {
         this.statusMessage = statusMessage;
     }
+
+    public LabEquipmentStatus() {
+    }
+
+    public LabEquipmentStatus(boolean online, String statusMessage) {
+        this.online = online;
+        this.statusMessage = statusMessage;
+    }
 }
