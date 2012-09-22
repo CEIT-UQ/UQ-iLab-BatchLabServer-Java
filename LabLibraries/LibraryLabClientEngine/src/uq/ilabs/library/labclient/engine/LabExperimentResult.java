@@ -54,14 +54,14 @@ public class LabExperimentResult {
     protected String csvResults;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private String timestamp;
-    private String title;
-    private String version;
-    private int experimentId;
-    private String sbName;
-    private int unitId;
-    private String setupId;
-    private String setupName;
+    protected String timestamp;
+    protected String title;
+    protected String version;
+    protected int experimentId;
+    protected String sbName;
+    protected int unitId;
+    protected String setupId;
+    protected String setupName;
 
     public String getTimestamp() {
         return timestamp;
@@ -138,9 +138,9 @@ public class LabExperimentResult {
          */
         StringWriter sw = new StringWriter();
         sw.write(String.format(STRTBL_Header_arg, STRTBL_ExperimentInformation));
-        sw.write(String.format(STRTBL_Row_arg2, STR_Timestamp, timestamp));
-        sw.write(String.format(STRTBL_Row_arg2, STR_ExperimentId, experimentId));
-        sw.write(String.format(STRTBL_Row_arg2, STR_UnitId, unitId));
+        sw.write(String.format(STRTBL_Row_arg2, STR_Timestamp, this.timestamp));
+        sw.write(String.format(STRTBL_Row_arg2, STR_ExperimentId, this.experimentId));
+        sw.write(String.format(STRTBL_Row_arg2, STR_UnitId, this.unitId));
         tblInformation = sw.toString();
 
         /*
@@ -148,7 +148,7 @@ public class LabExperimentResult {
          */
         sw = new StringWriter();
         sw.write(String.format(STRTBL_Header_arg, STRTBL_ExperimentSetup));
-        sw.write(String.format(STRTBL_Row_arg2, STR_setupName, setupName));
+        sw.write(String.format(STRTBL_Row_arg2, STR_setupName, this.setupName));
         tblSpecification = sw.toString();
 
         /*
@@ -178,9 +178,9 @@ public class LabExperimentResult {
         StringWriter sw = new StringWriter();
         sw.write(STRCSV_NewLine);
         sw.write(STRCSV_ExperimentInformation + STRCSV_NewLine);
-        sw.write(String.format(STRCSV_Format_arg2, STR_Timestamp, timestamp));
-        sw.write(String.format(STRCSV_Format_arg2, STR_ExperimentId, experimentId));
-        sw.write(String.format(STRCSV_Format_arg2, STR_UnitId, unitId));
+        sw.write(String.format(STRCSV_Format_arg2, STR_Timestamp, this.timestamp));
+        sw.write(String.format(STRCSV_Format_arg2, STR_ExperimentId, this.experimentId));
+        sw.write(String.format(STRCSV_Format_arg2, STR_UnitId, this.unitId));
         csvInformation = sw.toString();
 
         /*
@@ -189,7 +189,7 @@ public class LabExperimentResult {
         sw = new StringWriter();
         sw.write(STRCSV_NewLine);
         sw.write(STRCSV_ExperimentSetup + STRCSV_NewLine);
-        sw.write(String.format(STRCSV_Format_arg2, STR_setupName, setupName));
+        sw.write(String.format(STRCSV_Format_arg2, STR_setupName, this.setupName));
         csvSpecification = sw.toString();
 
         /*

@@ -29,7 +29,7 @@ public class LabExperimentSpecification {
     protected Node nodeSpecification;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private String setupId;
+    protected String setupId;
 
     public String getSetupId() {
         return setupId;

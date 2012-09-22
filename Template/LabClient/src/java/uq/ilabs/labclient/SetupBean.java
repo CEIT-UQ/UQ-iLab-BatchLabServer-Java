@@ -49,26 +49,28 @@ public class SetupBean implements Serializable {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabClientSession labClientSession;
+    private String setupId;
+    private String oldSetupName;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private String hsomSetupId;
+    private String[] setupNames;
+    private String hsomSetupName;
     private String hotSetupDescription;
     private boolean hcbSubmitDisabled;
     private String holMessage;
     private String holMessageClass;
     private String hitSomeParameter;
 
-    public SetupInfo[] getSetupInfos() {
-        return labClientSession.getSetupInfos();
+    public String[] getSetupNames() {
+        return setupNames;
     }
 
-    public String getHsomSetupId() {
-        return hsomSetupId;
+    public String getHsomSetupName() {
+        return hsomSetupName;
     }
 
-    public void setHsomSetupId(String hsomSetupId) {
-        this.hsomSetupId = hsomSetupId;
-        this.PageUpdate();
+    public void setHsomSetupName(String hsomSetupName) {
+        this.hsomSetupName = hsomSetupName;
     }
 
     public String getHotSetupDescription() {
@@ -104,6 +106,7 @@ public class SetupBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         this.labClientSession = (LabClientSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabClient);
+        this.setupNames = this.labClientSession.getSetupNames();
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -120,9 +123,7 @@ public class SetupBean implements Serializable {
              * Not a postback, initialise page controls
              */
             this.ShowMessageInfo(null);
-            if (this.labClientSession.getSetupInfos() != null) {
-                setHsomSetupId(this.labClientSession.getSetupInfos()[0].getId());
-            }
+            this.hsomSetupName = this.setupNames[0];
 
             /*
              * Check if an experiment has been submitted
@@ -150,6 +151,14 @@ public class SetupBean implements Serializable {
             } else {
                 this.hcbSubmitDisabled = false;
             }
+        }
+
+        /*
+         * Check if the setup has changed
+         */
+        if (this.hsomSetupName.equals(this.oldSetupName) == false) {
+            this.PopulatePage();
+            this.oldSetupName = this.hsomSetupName;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
@@ -259,17 +268,18 @@ public class SetupBean implements Serializable {
     /**
      *
      */
-    private void PageUpdate() {
+    private void PopulatePage() {
         /*
-         * Update the description for the selected setup
+         * Get the setup Id and update the description for the selected setup
          */
-        SetupInfo[] setupInfos = this.labClientSession.getSetupInfos();
-        for (int i = 0; i < setupInfos.length; i++) {
-            if (this.hsomSetupId.equals(setupInfos[i].getId()) == true) {
-                this.hotSetupDescription = setupInfos[i].getDescription();
-                break;
-            }
-        }
+        SetupInfo setupInfo = this.labClientSession.getSetupInfoMap().get(this.hsomSetupName);
+        this.setupId = setupInfo.getId();
+        this.hotSetupDescription = setupInfo.getDescription();
+
+        /*
+         * Hide the information message
+         */
+        this.ShowMessageInfo(null);
     }
 
     /**
@@ -289,7 +299,7 @@ public class SetupBean implements Serializable {
         /*
          * Add specification information
          */
-        experimentSpecification.setSetupId(this.hsomSetupId);
+        experimentSpecification.setSetupId(this.setupId);
         experimentSpecification.setSomeParameter(this.hitSomeParameter);
 
         /*

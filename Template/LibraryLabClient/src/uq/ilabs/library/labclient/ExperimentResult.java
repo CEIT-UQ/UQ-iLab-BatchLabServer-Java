@@ -27,33 +27,15 @@ public class ExperimentResult extends LabExperimentResult {
     private static final String STR_SomeParameter = "SomeParameter";
     private static final String STR_SomeResult = "SomeResult";
     //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Properties">
-    /*
-     * Specification
-     */
+    //<editor-fold defaultstate="collapsed" desc="Variables">
     private int someParameter;
-    /*
-     * Results
-     */
     private int someResult;
-
-    public int getSomeParameter() {
-        return someParameter;
-    }
-
-    public void setSomeParameter(int someParameter) {
-        this.someParameter = someParameter;
-    }
-
-    public int getSomeResult() {
-        return someResult;
-    }
-
-    public void setSomeResult(int someResult) {
-        this.someResult = someResult;
-    }
     //</editor-fold>
 
+    /**
+     *
+     * @param xmlExperimentResult
+     */
     public ExperimentResult(String xmlExperimentResult) {
         super(xmlExperimentResult);
 
@@ -83,19 +65,8 @@ public class ExperimentResult extends LabExperimentResult {
     public void CreateHtmlResultInfo() throws IOException {
         super.CreateHtmlResultInfo();
 
-        /*
-         * Experiment setup
-         */
-        StringWriter sw = new StringWriter();
-        sw.write(String.format(STRTBL_Row_arg2, STR_SomeParameter, this.someParameter));
-        this.tblSpecification += sw.toString();
-
-        /*
-         * Experiment results
-         */
-        sw = new StringWriter();
-        sw.write(String.format(STRTBL_Row_arg2, STR_SomeResult, this.someResult));
-        this.tblResults += sw.toString();
+        this.tblSpecification += this.CreateSpecificationInfo(STRTBL_Row_arg2);
+        this.tblResults += this.CreateResultsInfo(STRTBL_Row_arg2);
     }
 
     /**
@@ -106,18 +77,37 @@ public class ExperimentResult extends LabExperimentResult {
     public void CreateCsvResultInfo() throws IOException {
         super.CreateCsvResultInfo();
 
+        this.csvSpecification += this.CreateSpecificationInfo(STRCSV_Format_arg2);
+        this.csvResults += this.CreateResultsInfo(STRCSV_Format_arg2);
+    }
+
+    /**
+     *
+     * @param strFormat
+     * @return
+     */
+    private String CreateSpecificationInfo(String strFormat) {
         /*
          * Experiment setup
          */
         StringWriter sw = new StringWriter();
-        sw.write(String.format(STRCSV_Format_arg2, STR_SomeParameter, this.someParameter));
-        this.csvSpecification += sw.toString();
+        sw.write(String.format(strFormat, STR_SomeParameter, this.someParameter));
 
+        return sw.toString();
+    }
+
+    /**
+     *
+     * @param strFormat
+     * @return
+     */
+    private String CreateResultsInfo(String strFormat) {
         /*
          * Experiment results
          */
-        sw = new StringWriter();
-        sw.write(String.format(STRCSV_Format_arg2, STR_SomeResult, this.someResult));
-        this.csvResults += sw.toString();
+        StringWriter sw = new StringWriter();
+        sw.write(String.format(strFormat, STR_SomeResult, this.someResult));
+
+        return sw.toString();
     }
 }

@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="./LabClient.xhtml">
+
+            <ui:define name="stylesheet">
+                <!--stylesheet-->
+            </ui:define>
+
+            <ui:define name="title">
+                Results
+            </ui:define>
+
+            <ui:define name="contentTitle">
+                Results
+            </ui:define>
+
+            <ui:define name="content">
+                #{resultsBean.pageLoad()}
+                <h:form>
+                    <table border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <th colspan="2">Experiment Results</th>
+                        </tr>
+                        <tr>
+                            <td class="label">
+                                Experiment Id:
+                            </td>
+                            <td class="information">
+                                <h:inputText styleClass="hinputtext" value="#{resultsBean.hitExperimentId}" style="width: 60px;" />
+                                &nbsp;
+                                <h:selectOneMenu styleClass="dropdown" value="#{resultsBean.hsomSelectedExperimentId}" onchange="form.submit()"
+                                                 rendered="#{resultsBean.hsomExperimentIdsRendered}" style="width: 66px">
+                                    <f:selectItems value="#{resultsBean.experimentIds}" />
+                                </h:selectOneMenu>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">
+                                &nbsp;
+                            </td>
+                            <td class="button">
+                                <h:commandButton styleClass="button" value="Retrieve" action="#{resultsBean.actionRetrieve()}"/>
+                                &nbsp;
+                                <h:commandButton styleClass="button" value="Save" action="#{resultsBean.actionSave()}" disabled="#{resultsBean.hcbSaveDisabled}"/>
+                            </td>
+                        </tr>
+                    </table>
+                </h:form>
+                <p>
+                    <h:outputLabel styleClass="#{resultsBean.holMessageClass}" value="#{resultsBean.holMessage}" rendered="#{!empty(resultsBean.holMessage)}" />
+                </p>
+                <h:panelGroup rendered="#{resultsBean.hpgResultsRendered}">
+                    <h:outputText value="#{resultsBean.hotResultsTableValue}" escape="false" />
+                </h:panelGroup>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -84,4 +84,8 @@ public class LabConsts {
     public static final String STRSTL_InfoMessage = "infomessage";
     public static final String STRSTL_WarningMessage = "warningmessage";
     public static final String STRSTL_ErrorMessage = "errormessage";
+    /*
+     * String constants
+     */
+    public static final String STR_CsvSplitter = ",";
 }

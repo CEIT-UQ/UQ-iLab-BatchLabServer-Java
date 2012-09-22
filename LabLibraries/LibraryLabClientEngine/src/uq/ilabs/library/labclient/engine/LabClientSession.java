@@ -7,6 +7,7 @@ package uq.ilabs.library.labclient.engine;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.logging.Level;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -49,7 +50,8 @@ public class LabClientSession implements Serializable {
     private String xmlConfiguration;
     private String xmlSpecification;
     private String xmlValidation;
-    private SetupInfo[] setupInfos;
+    private HashMap<String, SetupInfo> setupInfoMap;
+    private String[] setupNames;
     private int[] submittedIds;
     private int[] completedIds;
 
@@ -113,8 +115,12 @@ public class LabClientSession implements Serializable {
         return xmlValidation;
     }
 
-    public SetupInfo[] getSetupInfos() {
-        return setupInfos;
+    public HashMap<String, SetupInfo> getSetupInfoMap() {
+        return setupInfoMap;
+    }
+
+    public String[] getSetupNames() {
+        return setupNames;
     }
 
     public int[] getSubmittedIds() {
@@ -176,10 +182,12 @@ public class LabClientSession implements Serializable {
             this.xmlConfiguration = XmlUtilities.ToXmlString(documentFragment);
 
             /*
-             * Get a list of all setups, must have at least one
+             * Get a list of all setups, must have at least one. Also, keep a seperate list of setup names so that they
+             * appear in the same order as in the configuration
              */
             ArrayList nodeList = XmlUtilities.GetChildNodeList(nodeConfiguration, LabConsts.STRXML_Setup);
-            this.setupInfos = new SetupInfo[nodeList.size()];
+            this.setupInfoMap = new HashMap<>();
+            this.setupNames = new String[nodeList.size()];
             for (int i = 0; i < nodeList.size(); i++) {
                 Node nodeSetup = (Node) nodeList.get(i);
 
@@ -200,10 +208,12 @@ public class LabClientSession implements Serializable {
                 /*
                  * Add setup information to the list
                  */
-                this.setupInfos[i] = new SetupInfo(setupId);
-                this.setupInfos[i].setName(setupName);
-                this.setupInfos[i].setDescription(setupDescription);
-                this.setupInfos[i].setXmlSetup(XmlUtilities.ToXmlString(nodeSetup));
+                SetupInfo setupInfo = new SetupInfo(setupId);
+                setupInfo.setName(setupName);
+                setupInfo.setDescription(setupDescription);
+                setupInfo.setXmlSetup(XmlUtilities.ToXmlString(nodeSetup));
+                this.setupInfoMap.put(setupName, setupInfo);
+                this.setupNames[i] = setupName;
                 logMessage += String.format(STRLOG_SetupIDName_arg, setupId, setupName) + Logfile.STRLOG_Newline;
             }
 
@@ -295,6 +305,10 @@ public class LabClientSession implements Serializable {
         }
     }
 
+    /**
+     *
+     * @param id
+     */
     public void AddCompletedId(int id) {
         /*
          * Check if multisubmit is enabled or completed ids exists
@@ -314,6 +328,10 @@ public class LabClientSession implements Serializable {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public String[] GetSubmittedIds() {
         String[] ids = null;
 
