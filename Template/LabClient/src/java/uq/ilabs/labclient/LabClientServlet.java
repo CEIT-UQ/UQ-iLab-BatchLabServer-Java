@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +26,6 @@ import uq.ilabs.library.labclient.servicebroker.ServiceBrokerAPI;
  *
  * @author uqlpayne
  */
-@WebServlet(name = "LabClientServlet", urlPatterns = {"/LabClientServlet"})
 public class LabClientServlet extends HttpServlet {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
@@ -95,14 +93,16 @@ public class LabClientServlet extends HttpServlet {
                 /*
                  * Get request parameters
                  */
-                String couponId = null;
+                int couponId = 0;
                 String passkey = null;
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 Iterator iterator = parameterMap.keySet().iterator();
                 while (iterator.hasNext()) {
                     String key = (String) iterator.next();
                     if (key.equalsIgnoreCase(Consts.STRREQ_CouponId)) {
-                        couponId = request.getParameter(key);
+                        couponId = Integer.parseInt(request.getParameter(key));
+                    } else if (key.equalsIgnoreCase(Consts.STRREQ_Coupon_Id)) {
+                        couponId = Integer.parseInt(request.getParameter(key));
                     } else if (key.equalsIgnoreCase(Consts.STRREQ_Passkey)) {
                         passkey = request.getParameter(key);
                     } else if (key.equalsIgnoreCase(Consts.STRREQ_ServiceUrl)) {
@@ -119,7 +119,7 @@ public class LabClientServlet extends HttpServlet {
                  */
                 ServiceBrokerAPI serviceBrokerAPI = new ServiceBrokerAPI(configProperties.getServiceUrl());
                 serviceBrokerAPI.setLabServerId(configProperties.getLabServerId());
-                serviceBrokerAPI.setCouponId(Integer.parseInt(couponId));
+                serviceBrokerAPI.setCouponId(couponId);
                 serviceBrokerAPI.setCouponPasskey(passkey);
 
                 /*

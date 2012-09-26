@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="./LabClient.xhtml">
+
+            <ui:define name="stylesheet">
+                <!--stylesheet-->
+            </ui:define>
+
+            <ui:define name="title">
+                Status
+            </ui:define>
+
+            <ui:define name="contentTitle">
+                Status
+            </ui:define>
+
+            <ui:define name="content">
+                #{statusBean.pageLoad()}
+                <h:form>
+                    <table border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <th colspan="2">
+                                LabServer Status
+                            </th>
+                        </tr>
+                        <tr>
+                            <td class="label">
+                                Status:
+                            </td>
+                            <td class="information">
+                                <h:outputLabel value="Online" rendered="#{statusBean.holOnline}" style="color: green" />
+                                <h:outputLabel value="Offline" rendered="#{!statusBean.holOnline}" style="color: red" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">
+                                Message:
+                            </td>
+                            <td class="information">
+                                <h:outputLabel value="#{statusBean.holLabStatusMessage}" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">
+                                &nbsp;
+                            </td>
+                            <td class="button">
+                                <h:commandButton styleClass="button" value="Refresh" action="#{statusBean.actionRefresh()}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">
+                                Experiment Status
+                            </th>
+                        </tr>
+                        <tr>
+                            <td class="label">
+                                Experiment Id:
+                            </td>
+                            <td class="information">
+                                <h:inputText styleClass="textbox" value="#{statusBean.hitExperimentId}" style="height: 16px; width: 60px" />
+                                &nbsp;
+                                <h:selectOneMenu styleClass="dropdown" value="#{statusBean.hsomSelectedExperimentId}" onchange="form.submit()"
+                                                 rendered="#{statusBean.hsomExperimentIdsRendered}" style="width: 66px">
+                                    <f:selectItems value="#{statusBean.experimentIds}" />
+                                </h:selectOneMenu>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">
+                                &nbsp;
+                            </td>
+                            <td class="button">
+                                <h:commandButton styleClass="button" value="Check" action="#{statusBean.actionCheck()}"/>
+                                &nbsp;
+                                <h:commandButton styleClass="button" value="Cancel" action="#{statusBean.actionCancel()}"/>
+                            </td>
+                        </tr>
+                    </table>
+                </h:form>
+                <p>
+                    <h:outputLabel styleClass="#{statusBean.holMessageClass}" value="#{statusBean.holMessage}" rendered="#{!empty(statusBean.holMessage)}" />
+                </p>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
