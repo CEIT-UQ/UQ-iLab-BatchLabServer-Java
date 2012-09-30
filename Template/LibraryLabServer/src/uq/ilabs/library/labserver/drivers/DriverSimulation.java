@@ -20,6 +20,7 @@ import uq.ilabs.library.labserver.Configuration;
 import uq.ilabs.library.labserver.Consts;
 import uq.ilabs.library.labserver.ExperimentResult;
 import uq.ilabs.library.labserver.ExperimentSpecification;
+import uq.ilabs.library.labserver.ExperimentValidation;
 import uq.ilabs.library.labserver.engine.drivers.DriverGeneric;
 
 /**
@@ -51,8 +52,7 @@ public class DriverSimulation extends DriverGeneric {
             + "</" + Consts.STRXML_ExperimentResults + ">";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private int someParameterMin;
-    private int someParameterMax;
+    private ExperimentValidation experimentValidation;
     //</editor-fold>
 
     /**
@@ -73,13 +73,6 @@ public class DriverSimulation extends DriverGeneric {
             if (this.labExperimentResult == null) {
                 throw new NullPointerException(ExperimentResult.class.getSimpleName());
             }
-
-            /*
-             * Get the minimum and maximum values allowed for 'SomeParameter'
-             */
-            Node xmlNode = XmlUtilities.GetChildNode(this.nodeValidation, Consts.STRXML_SomeParameter);
-            this.someParameterMin = XmlUtilities.GetChildValueAsInt(xmlNode, Consts.STRXML_Min);
-            this.someParameterMax = XmlUtilities.GetChildValueAsInt(xmlNode, Consts.STRXML_Max);
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -126,11 +119,11 @@ public class DriverSimulation extends DriverGeneric {
              * Check 'someParameter' is valid
              */
             int someParameter = experimentSpecification.getSomeParameter();
-            if (someParameter < this.someParameterMin) {
-                throw new RuntimeException(String.format(STRERR_ValueLessThanMinimum_arg2, STRERR_SomeParameter, this.someParameterMin));
+            if (someParameter < this.experimentValidation.getSomeParameterMin()) {
+                throw new RuntimeException(String.format(STRERR_ValueLessThanMinimum_arg2, STRERR_SomeParameter, this.experimentValidation.getSomeParameterMin()));
             }
-            if (someParameter > this.someParameterMax) {
-                throw new RuntimeException(String.format(STRERR_ValueGreaterThanMaximum_arg2, STRERR_SomeParameter, this.someParameterMax));
+            if (someParameter > this.experimentValidation.getSomeParameterMax()) {
+                throw new RuntimeException(String.format(STRERR_ValueGreaterThanMaximum_arg2, STRERR_SomeParameter, this.experimentValidation.getSomeParameterMax()));
             }
 
             /*

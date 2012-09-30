@@ -14,6 +14,7 @@ import uq.ilabs.library.lab.utilities.SmtpClient;
 import uq.ilabs.library.labserver.engine.drivers.DriverEquipmentGeneric;
 import uq.ilabs.library.labserver.engine.drivers.DriverGeneric;
 import uq.ilabs.library.labserver.engine.types.ExperimentResultInfo;
+import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
 import uq.ilabs.library.labserver.engine.types.LabExecutionInfo;
 import uq.ilabs.library.labserver.engine.types.LabExperimentInfo;
 import uq.ilabs.library.labserver.labequipment.LabEquipmentAPI;
@@ -147,16 +148,21 @@ public class LabExperimentEngine implements Runnable {
             /*
              * Check if a lab equipment service exists for this lab experiment engine - may not exist
              */
-            if (this.labManagement.getLabEquipmentServiceInfo()[unitId] != null) {
+            if (this.labManagement.getLabEquipmentServiceInfo().length > unitId) {
+                /*
+                 * Get the LabEquipment service information for this unit
+                 */
+                LabEquipmentServiceInfo labEquipmentServiceInfo = this.labManagement.getLabEquipmentServiceInfo()[unitId];
+
                 /*
                  * Try to get a proxy to the LabEquipment service
                  */
-                this.labEquipmentAPI = new LabEquipmentAPI(this.labManagement.getLabEquipmentServiceInfo()[unitId].getServiceUrl());
+                this.labEquipmentAPI = new LabEquipmentAPI(labEquipmentServiceInfo.getServiceUrl());
                 if (this.labEquipmentAPI == null) {
                     throw new NullPointerException(STRERR_LabEquipmentAPI);
                 }
                 this.labEquipmentAPI.setIdentifier(this.labManagement.getConfigProperties().getLabServerGuid());
-                this.labEquipmentAPI.setPasskey(this.labManagement.getLabEquipmentServiceInfo()[unitId].getPasskey());
+                this.labEquipmentAPI.setPasskey(labEquipmentServiceInfo.getPasskey());
 
                 /*
                  * Get the status of the LabEquipment

@@ -366,6 +366,54 @@ public class XmlUtilities {
     }
 
     /**
+     *
+     * @param node
+     * @param allowEmpty
+     * @return
+     * @throws XmlUtilitiesException
+     */
+    public static String GetValue(Node node, boolean allowEmpty) throws XmlUtilitiesException {
+        /*
+         * Check that the node is an ELEMENT node
+         */
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            throw new XmlUtilitiesException(STRERR_NodeIsNotOfTypeElement);
+        }
+
+        /*
+         * Search the child nodes for a TEXT_NODE and get its value
+         */
+        String value = "";
+        NodeList childNodeList = node.getChildNodes();
+        for (int i = 0; i < childNodeList.getLength(); i++) {
+            Node childNode = childNodeList.item(i);
+            if (childNode.getNodeType() == Node.TEXT_NODE) {
+                value = childNode.getNodeValue().trim();
+                break;
+            }
+        }
+
+        /*
+         * Check that the text node has a value
+         */
+        if (allowEmpty == false && (value == null || value.isEmpty())) {
+            throw new XmlUtilitiesException(STRERR_NodeValueDoesNotExist_Arg);
+        }
+
+        return value;
+    }
+
+    /**
+     *
+     * @param node
+     * @return
+     * @throws XmlUtilitiesException
+     */
+    public static String GetValue(Node node) throws XmlUtilitiesException {
+        return GetValue(node, true);
+    }
+
+    /**
      * Get the value of the child node with the specified name from the given parent node.
      *
      * @param parentNode The parent node.
@@ -374,7 +422,7 @@ public class XmlUtilities {
      * @return The value of the child node as a string.
      * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
      * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a value *      * and <code>allowEmpty</code> is false</li> </ul>
+     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a value * * * *      * and <code>allowEmpty</code> is false</li> </ul>
      */
     public static String GetChildValue(Node parentNode, String childName, boolean allowEmpty) throws XmlUtilitiesException {
         /*
@@ -580,6 +628,38 @@ public class XmlUtilities {
     }
 
     /**
+     * Set the value of the node's attribute with the specified name.
+     *
+     * @param node The node.
+     * @param attributeName The name of the attribute.
+     * @param value The string value for the attribute.
+     * @throws XmlUtilitiesException
+     */
+    public static void SetAttribute(Node node, String attributeName, String value) throws XmlUtilitiesException {
+        /*
+         * Check that the node exists
+         */
+        if (node == null) {
+            throw new XmlUtilitiesException(STRERR_NodeIsNull);
+        }
+
+        /*
+         * Check that the name of the attribute has been specified
+         */
+        if (attributeName == null || attributeName.trim().isEmpty()) {
+            throw new XmlUtilitiesException(STRERR_AttributeNameIsNotSpecified);
+        }
+
+        /*
+         * Set the attribute's value
+         */
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            Element element = (Element) node;
+            element.setAttribute(attributeName, value);
+        }
+    }
+
+    /**
      * Set the value of the child node with the specified name from the given parent node.
      *
      * @param parentNode The parent node.
@@ -590,39 +670,7 @@ public class XmlUtilities {
      * string</li> </ul>
      */
     public static void SetChildValue(Node parentNode, String childName, String value) throws XmlUtilitiesException {
-        /*
-         * Get the child node with the specified name
-         */
-        Node childNode = GetChildNode(parentNode, childName);
-
-        /*
-         * Check that the node is an ELEMENT node
-         */
-        if (childNode.getNodeType() != Node.ELEMENT_NODE) {
-            throw new XmlUtilitiesException(STRERR_NodeIsNotOfTypeElement);
-        }
-
-        /*
-         * Search the child nodes for a TEXT_NODE
-         */
-        Node subNode = null;
-        NodeList nodeList = childNode.getChildNodes();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            subNode = nodeList.item(i);
-            if (subNode.getNodeType() == Node.TEXT_NODE) {
-                break;
-            }
-        }
-
-        /*
-         * If a TEXT_NODE node was found, update its value otherwise add a new value
-         */
-        if (subNode != null) {
-            subNode.setNodeValue(value);
-        } else {
-            Text textNode = parentNode.getOwnerDocument().createTextNode(value);
-            childNode.appendChild(textNode);
-        }
+        SetValue(GetChildNode(parentNode, childName), value);
     }
 
     /**
@@ -684,6 +732,51 @@ public class XmlUtilities {
             parentNode.appendChild(element);
         }
 
+    }
+
+    /**
+     * Set the value of the node.
+     *
+     * @param node The node.
+     * @param value The string value for the node.
+     * @throws XmlUtilitiesException
+     */
+    public static void SetValue(Node node, String value) throws XmlUtilitiesException {
+        /*
+         * Check that the node exists
+         */
+        if (node == null) {
+            throw new XmlUtilitiesException(STRERR_NodeIsNull);
+        }
+
+        /*
+         * Check that the node is an ELEMENT node
+         */
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            throw new XmlUtilitiesException(STRERR_NodeIsNotOfTypeElement);
+        }
+
+        /*
+         * Search the child nodes for a TEXT_NODE
+         */
+        Node subNode = null;
+        NodeList nodeList = node.getChildNodes();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            subNode = nodeList.item(i);
+            if (subNode.getNodeType() == Node.TEXT_NODE) {
+                break;
+            }
+        }
+
+        /*
+         * If a TEXT_NODE node was found, update its value otherwise add a new value
+         */
+        if (subNode != null) {
+            subNode.setNodeValue(value);
+        } else {
+            Text textNode = node.getOwnerDocument().createTextNode(value);
+            node.appendChild(textNode);
+        }
     }
 
     /**

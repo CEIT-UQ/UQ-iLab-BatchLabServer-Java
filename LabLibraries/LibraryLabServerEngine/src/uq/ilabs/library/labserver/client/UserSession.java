@@ -11,15 +11,7 @@ package uq.ilabs.library.labserver.client;
 public class UserSession {
 
     private String username;
-    private boolean manager;
-
-    public boolean isManager() {
-        return manager;
-    }
-
-    public void setManager(boolean manager) {
-        this.manager = manager;
-    }
+    private String groupname;
 
     public String getUsername() {
         return username;
@@ -27,5 +19,13 @@ public class UserSession {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getGroupname() {
+        return groupname;
+    }
+
+    public void setGroupname(String groupname) {
+        this.groupname = groupname;
     }
 }

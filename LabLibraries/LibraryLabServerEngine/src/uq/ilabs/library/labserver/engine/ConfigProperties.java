@@ -23,11 +23,6 @@ public class ConfigProperties {
     private static final String STR_ClassName = ConfigProperties.class.getName();
     private static final Level logLevel = Level.INFO;
     /*
-     * Strings
-     */
-    private static final String STR_CsvSplitter = ",";
-    private static final String STR_LabEquipmentService_arg = "LabEquipmentService%d";
-    /*
      * String constants for configuration properties
      */
     private static final String STRCFG_LabServerGuid = "LabServerGuid";
@@ -40,10 +35,12 @@ public class ConfigProperties {
     private static final String STRCFG_ContactEmail = "ContactEmail";
     private static final String STRCFG_CompletedEmailList = "CompletedEmailList";
     private static final String STRCFG_FailedEmailList = "FailedEmailList";
+    private static final String STRCFG_LabEquipmentService_arg = "LabEquipmentService%d";
     /*
      * String constants for logfile messages
      */
-    private static final String STRLOG_Filename_arg = "filename: %s";
+    private static final String STRLOG_Filename_arg = "Filename: %s";
+    private static final String STRLOG_FarmSize_arg = "FarmSize: %s";
     /*
      * String constants for exception messages
      */
@@ -62,6 +59,7 @@ public class ConfigProperties {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String xmlLabConfigurationPath;
+    private String xmlSimulationConfigPath;
     private String labServerGuid;
     private String dbHost;
     private String dbDatabase;
@@ -72,51 +70,8 @@ public class ConfigProperties {
     private String contactEmail;
     private String[] completedEmailList;
     private String[] failedEmailList;
+    private int farmSize;
     private LabEquipmentServiceInfo[] labEquipmentServiceInfo;
-
-    public boolean isAuthenticating() {
-        return authenticating;
-    }
-
-    public String[] getCompletedEmailList() {
-        return completedEmailList;
-    }
-
-    public String getContactEmail() {
-        return contactEmail;
-    }
-
-    public String getDbDatabase() {
-        return dbDatabase;
-    }
-
-    public String getDbHost() {
-        return dbHost;
-    }
-
-    public String getDbPassword() {
-        return dbPassword;
-    }
-
-    public String getDbUser() {
-        return dbUser;
-    }
-
-    public String[] getFailedEmailList() {
-        return failedEmailList;
-    }
-
-    public LabEquipmentServiceInfo[] getLabEquipmentServiceInfo() {
-        return labEquipmentServiceInfo;
-    }
-
-    public String getLabServerGuid() {
-        return labServerGuid;
-    }
-
-    public boolean isLogAuthentication() {
-        return logAuthentication;
-    }
 
     public String getXmlLabConfigurationPath() {
         return xmlLabConfigurationPath;
@@ -124,6 +79,62 @@ public class ConfigProperties {
 
     public void setXmlLabConfigurationPath(String xmlLabConfigurationPath) {
         this.xmlLabConfigurationPath = xmlLabConfigurationPath;
+    }
+
+    public String getXmlSimulationConfigPath() {
+        return xmlSimulationConfigPath;
+    }
+
+    public void setXmlSimulationConfigPath(String xmlSimulationConfigPath) {
+        this.xmlSimulationConfigPath = xmlSimulationConfigPath;
+    }
+
+    public String getLabServerGuid() {
+        return labServerGuid;
+    }
+
+    public String getDbHost() {
+        return dbHost;
+    }
+
+    public String getDbDatabase() {
+        return dbDatabase;
+    }
+
+    public String getDbUser() {
+        return dbUser;
+    }
+
+    public String getDbPassword() {
+        return dbPassword;
+    }
+
+    public boolean isAuthenticating() {
+        return authenticating;
+    }
+
+    public boolean isLogAuthentication() {
+        return logAuthentication;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public String[] getCompletedEmailList() {
+        return completedEmailList;
+    }
+
+    public String[] getFailedEmailList() {
+        return failedEmailList;
+    }
+
+    public int getFarmSize() {
+        return farmSize;
+    }
+
+    public LabEquipmentServiceInfo[] getLabEquipmentServiceInfo() {
+        return labEquipmentServiceInfo;
     }
     //</editor-fold>
 
@@ -208,7 +219,7 @@ public class ConfigProperties {
              */
             String csvString = configProperties.getProperty(STRCFG_CompletedEmailList);
             if (csvString != null) {
-                this.completedEmailList = csvString.split(STR_CsvSplitter);
+                this.completedEmailList = csvString.split(LabConsts.STR_CsvSplitter);
                 for (int i = 0; i < this.completedEmailList.length; i++) {
                     this.completedEmailList[i] = this.completedEmailList[i].trim();
                 }
@@ -219,10 +230,19 @@ public class ConfigProperties {
              */
             csvString = configProperties.getProperty(STRCFG_FailedEmailList);
             if (csvString != null) {
-                this.failedEmailList = csvString.split(STR_CsvSplitter);
+                this.failedEmailList = csvString.split(LabConsts.STR_CsvSplitter);
                 for (int i = 0; i < this.failedEmailList.length; i++) {
                     this.failedEmailList[i] = this.failedEmailList[i].trim();
                 }
+            }
+
+            /*
+             * Get the farm size if specified
+             */
+            try {
+                this.farmSize = Integer.parseInt(configProperties.getProperty(STRCFG_ContactEmail));
+            } catch (NumberFormatException ex) {
+                this.farmSize = 1;
             }
 
             /*
@@ -233,12 +253,12 @@ public class ConfigProperties {
                 /*
                  * Get the labequipment service info if it exists
                  */
-                String csvServiceInfo = configProperties.getProperty(String.format(STR_LabEquipmentService_arg, i));
+                String csvServiceInfo = configProperties.getProperty(String.format(STRCFG_LabEquipmentService_arg, i));
                 if (csvServiceInfo == null) {
                     break;
                 }
 
-                String[] splitService = csvServiceInfo.split(STR_CsvSplitter);
+                String[] splitService = csvServiceInfo.split(LabConsts.STR_CsvSplitter);
 
                 /*
                  * Extract the service url and check
@@ -265,6 +285,13 @@ public class ConfigProperties {
             }
 
             /*
+             * Update farm size if necessary
+             */
+            if (serviceInfo.size() > this.farmSize) {
+                this.farmSize = serviceInfo.size();
+            }
+
+            /*
              * Convert list to an array and save
              */
             this.labEquipmentServiceInfo = serviceInfo.toArray(new LabEquipmentServiceInfo[0]);
@@ -273,6 +300,7 @@ public class ConfigProperties {
             throw ex;
         }
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_FarmSize_arg, this.farmSize));
     }
 }

@@ -23,6 +23,7 @@ import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.engine.ConfigProperties;
+import uq.ilabs.library.labserver.engine.LabConsts;
 
 /**
  *
@@ -33,13 +34,6 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ServiceBrokerAuthenticator.class.getName();
     /*
-     * Initialisation parameters
-     */
-    private static final String STRPRM_LogFilesPath = "LogFilesPath";
-    private static final String STRPRM_LogLevel = "LogLevel";
-    private static final String STRPRM_XmlConfigPropertiesPath = "XmlConfigPropertiesPath";
-    private static final String STRPRM_XmlLabConfigurationPath = "XmlLabConfigurationPath";
-    /*
      * String constants for authorization header
      */
     public static final String STR_Identifier = "identifier";
@@ -48,7 +42,6 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
      * String constants for logfile messages
      */
     private static final String STRLOG_LoggingLevel_arg = "LoggingLevel: %s";
-    private static final String STRLOG_XmlLabConfigurationPath_arg = "XmlLabConfigurationPath: %s";
     //</editor-fold>
 
     @Override
@@ -210,8 +203,8 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
             /*
              * Get the path for the logfiles and logging level
              */
-            String logFilesPath = servletContext.getInitParameter(STRPRM_LogFilesPath);
-            String logLevel = servletContext.getInitParameter(STRPRM_LogLevel);
+            String logFilesPath = servletContext.getInitParameter(LabConsts.STRPRM_LogFilesPath);
+            String logLevel = servletContext.getInitParameter(LabConsts.STRPRM_LogLevel);
 
             /*
              * Create an instance of the logger and set the logging level
@@ -231,14 +224,14 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
             /*
              * Get configuration properties from the file
              */
-            String xmlConfigPropertiesPath = servletContext.getInitParameter(STRPRM_XmlConfigPropertiesPath);
+            String xmlConfigPropertiesPath = servletContext.getInitParameter(LabConsts.STRPRM_XmlConfigPropertiesPath);
             ConfigProperties configProperties = new ConfigProperties(servletContext.getRealPath(xmlConfigPropertiesPath));
             LabServerService.setConfigProperties(configProperties);
 
             /*
              * Get the path to the XML LabConfiguration file
              */
-            String xmlLabConfigurationPath = servletContext.getInitParameter(STRPRM_XmlLabConfigurationPath);
+            String xmlLabConfigurationPath = servletContext.getInitParameter(LabConsts.STRPRM_XmlLabConfigurationPath);
             configProperties.setXmlLabConfigurationPath(servletContext.getRealPath(xmlLabConfigurationPath));
             Logfile.Write(String.format(STRLOG_XmlLabConfigurationPath_arg, configProperties.getXmlLabConfigurationPath()));
 

@@ -1,0 +1,21 @@
+#servicebrokers {
+    padding: 5px;
+    width: 640px;
+}
+#form {
+    border: solid 1px grey;
+}
+
+#form td
+{
+    background-color: #EEE4F8;
+    padding: 5px;
+}
+#servicebrokers td.filler
+{
+    width: 100%;
+}
+#servicebrokers .hinputText
+{
+    width: 400px;
+}

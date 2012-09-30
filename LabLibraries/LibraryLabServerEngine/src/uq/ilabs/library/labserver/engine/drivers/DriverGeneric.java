@@ -2,14 +2,11 @@ package uq.ilabs.library.labserver.engine.drivers;
 
 import java.util.Calendar;
 import java.util.logging.Level;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import uq.ilabs.library.lab.types.ResultReport;
 import uq.ilabs.library.lab.types.StatusCodes;
 import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.utilities.Delay;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.lab.utilities.XmlUtilities;
 import uq.ilabs.library.labserver.engine.LabConfiguration;
 import uq.ilabs.library.labserver.engine.LabConsts;
 import uq.ilabs.library.labserver.engine.LabExperimentResult;
@@ -47,7 +44,7 @@ public class DriverGeneric {
             + "</" + LabConsts.STRXML_ExperimentResults + ">";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    protected Node nodeValidation;
+    protected LabConfiguration labConfiguration;
     protected LabExperimentResult labExperimentResult;
     protected Calendar timeStarted;
     protected Calendar timeCompleted;
@@ -88,19 +85,9 @@ public class DriverGeneric {
             }
 
             /*
-             * Get the driver validation from the XML string
-             */
-            Document xmlDocument = XmlUtilities.GetDocumentFromString(labConfiguration.getXmlValidation());
-            Node nodeRoot = XmlUtilities.GetRootNode(xmlDocument, LabConsts.STRXML_Validation);
-
-            /*
-             * Save a copy of the validation XML node for the derived class
-             */
-            this.nodeValidation = nodeRoot.cloneNode(true);
-
-            /*
              * Initialise local variables and properties
              */
+            this.labConfiguration = labConfiguration;
             this.driverName = this.getClass().getSimpleName();
             this.cancelled = false;
 

@@ -117,7 +117,7 @@ public class LabExperimentManager implements Runnable {
              * Initialise locals
              */
             this.stopRunning = false;
-            this.farmSize = this.labManagement.getLabEquipmentServiceInfo().length;
+            this.farmSize = this.labManagement.getFarmSize();
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -891,7 +891,7 @@ public class LabExperimentManager implements Runnable {
                                         experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName());
                             }
                         }
-                        
+
                         thisState = States.CheckQueue;
                         break;
 

@@ -7,18 +7,19 @@
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <link href="./resources/css/default.css" rel="stylesheet" type="text/css" />
-        <link href="./resources/css/labserver.css" rel="stylesheet" type="text/css" />
-        <title>#{labServerBean.title} - <ui:insert name="webpageTitle">LabServer</ui:insert></title>
+        <link href="./resources/css/template.css" rel="stylesheet" type="text/css" />
+        <ui:insert name="stylesheet"></ui:insert>
+        <title>Facelets Template</title>
     </h:head>
 
     <h:body>
-        <table id="master" border="0" cellspacing="0" cellpadding="0" width="100%">
+        #{labServerBean.checkViewExpired}
+        <table id="template" width="100%">
             <tr>
                 <td colspan="2">
-                    <table id="banner" border="0" cellspacing="0" cellpadding="0">
+                    <table id="banner">
                         <tr>
-                            <td>
-                                <!--<h:graphicImage value="resources/img/uq-logo.gif" width="200" height="72" alt="uq-logo" />-->
+                            <td class="logo">
                                 <a href="http://www.uq.edu.au/" target="_blank">
                                     <img src="resources/img/uq-logo.gif" width="200" height="72" alt="uq-logo"/>
                                 </a>
@@ -32,10 +33,13 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="statusbar" border="0" cellspacing="0" cellpadding="0">
+                    <table id="statusbar">
                         <tr>
                             <td class="user">
-                                <nobr>#{labServerBean.username}&nbsp;</nobr>
+                                #{labServerBean.username}
+                            </td>
+                            <td class="group">
+                                #{labServerBean.groupname}
                             </td>
                             <td class="version">
                                 Version #{labServerBean.version}
@@ -45,11 +49,11 @@
                 </td>
             </tr>
             <tr>
-                <td class="navmenu">
+                <td class="navigation">
                     <table id="navmenu" border="0" cellspacing="0" cellpadding="0">
                         <tr>
                             <td>
-                                <img src="resources/img/generic_content32.jpg" width="200" height="200" alt="generic_content32"/>
+                                <img src="resources/img/generic_content32.jpg" width="200" alt="generic_content32"/>
                             </td>
                         </tr>
                         <tr>
@@ -62,9 +66,7 @@
                                 <ul>
                                     <li><a href="Home.xhtml">&#187;&nbsp;Home</a></li>
                                     <h:panelGroup rendered="#{labServerBean.loggedIn}">
-                                        <h:panelGroup rendered="#{labServerBean.manager}">
-                                            <li><a href="ServiceBrokers.xhtml">&#187;&nbsp;ServiceBrokers</a></li>
-                                        </h:panelGroup>
+                                        <li><a href="ServiceBrokers.xhtml">&#187;&nbsp;ServiceBrokers</a></li>
                                         <li><a href="Logout.xhtml">&#187;&nbsp;Logout</a></li>
                                     </h:panelGroup>
                                 </ul>
@@ -73,7 +75,7 @@
                     </table>
                 </td>
                 <td class="pagecontent">
-                    <table id="content" border="0" cellspacing="0" cellpadding="0">
+                    <table id="content">
                         <tr>
                             <td colspan="2">
                                 <table border="0" cellspacing="0" cellpadding="0">
@@ -82,7 +84,7 @@
                                             <img src="resources/img/level2-arrow.gif" width="28" height="28" alt="level2-arrow"/>
                                         </td>
                                         <td class="title">
-                                            <ui:insert name="contentTitle">Content Title</ui:insert>
+                                            <ui:insert name="title">Content Title</ui:insert>
                                         </td>
                                     </tr>
                                 </table>
@@ -106,7 +108,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="feedback" border="0" cellspacing="0" cellpadding="0">
+                    <table id="feedback">
                         <tr>
                             <td>
                                 &nbsp;
@@ -120,7 +122,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="footer" border="0" cellspacing="0" cellpadding="0">
+                    <table id="footer">
                         <tr>
                             <td class="left">
                                 <a href="http://www.ceit.uq.edu.au/" target="_blank">

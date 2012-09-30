@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>Radioactivity LabServer</comment>
+    <entry key="LabServerGuid">FF464E3507564f28A64F156282BB912E</entry>
+    <entry key="DBHost">localhost</entry>
+    <entry key="DBDatabase">Radioactivity_LabServer</entry>
+    <entry key="DBUser">LabServer</entry>
+    <entry key="DBPassword">ilab</entry>
+    <entry key="Authenticating">true</entry>
+    <entry key="LogAuthentication">false</entry>
+    <entry key="ContactEmail">ilab-admin@itee.uq.edu.au</entry>
+    <entry key="CompletedEmailList">ilab-admin@itee.uq.edu.au, ilab-admin@itee.uq.edu.au</entry>
+    <entry key="FailedEmailList">ilab-admin@itee.uq.edu.au, ilab-admin@itee.uq.edu.au</entry>
+    <entry key="FarmSize">1</entry>
+    <!--<entry key="LabEquipmentService0">http://localhost:8080/RadioactivityLabEquipment/LabEquipmentService, fd3cf16cc855484fb06801379f475837</entry>-->
+</properties>

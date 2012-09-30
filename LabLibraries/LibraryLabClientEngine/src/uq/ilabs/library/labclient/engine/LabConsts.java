@@ -20,6 +20,7 @@ public class LabConsts {
      * Http request parameters are case sensitive (make them lowercase)
      */
     public static final String STRREQ_CouponId = "CouponId";
+    public static final String STRREQ_Coupon_Id = "Coupon_Id";
     public static final String STRREQ_Passkey = "Passkey";
     public static final String STRREQ_ServiceUrl = "ServiceUrl";
     public static final String STRREQ_LabServerId = "LabServerId";

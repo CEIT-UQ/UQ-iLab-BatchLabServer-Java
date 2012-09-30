@@ -54,4 +54,8 @@ public class LabConsts {
      * XML elements in the results
      */
     public static final String STRXML_ExperimentResults = "experimentResults";
+    /*
+     * String constants
+     */
+    public static final String STR_CsvSplitter = ",";
 }

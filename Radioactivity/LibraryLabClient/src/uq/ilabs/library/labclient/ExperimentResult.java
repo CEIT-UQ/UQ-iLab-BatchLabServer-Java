@@ -32,7 +32,7 @@ public class ExperimentResult extends LabExperimentResult {
     private static final String STR_Duration = "Duration (secs)";
     private static final String STR_Trials = "Trials";
     private static final String STR_DataType = "Data Type";
-    private static final String STR_CountsAtDistance = "Counts at Distance:";
+    private static final String STR_CountsAtDistance = "Counts at";
     private static final String STR_CountsForAbsorber = "Counts for Absorber";
     private static final String STR_Millimetres = "mm";
     //</editor-fold>

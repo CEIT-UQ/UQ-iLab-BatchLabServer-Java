@@ -35,10 +35,19 @@ public class LabManagement {
     private ExperimentResultsDB experimentResults;
     private ExperimentStatisticsDB experimentStatistics;
     private WaitNotify signalSubmitted;
+    private int farmSize;
     private LabEquipmentServiceInfo[] labEquipmentServiceInfo;
 
     public ConfigProperties getConfigProperties() {
         return configProperties;
+    }
+
+    public LabConfiguration getLabConfiguration() {
+        return labConfiguration;
+    }
+
+    public ServiceBrokersDB getServiceBrokers() {
+        return serviceBrokers;
     }
 
     public ExperimentQueueDB getExperimentQueue() {
@@ -53,20 +62,16 @@ public class LabManagement {
         return experimentStatistics;
     }
 
-    public LabConfiguration getLabConfiguration() {
-        return labConfiguration;
+    public WaitNotify getSignalSubmitted() {
+        return signalSubmitted;
+    }
+
+    public int getFarmSize() {
+        return farmSize;
     }
 
     public LabEquipmentServiceInfo[] getLabEquipmentServiceInfo() {
         return labEquipmentServiceInfo;
-    }
-
-    public ServiceBrokersDB getServiceBrokers() {
-        return serviceBrokers;
-    }
-
-    public WaitNotify getSignalSubmitted() {
-        return signalSubmitted;
     }
     //</editor-fold>
 
@@ -75,7 +80,7 @@ public class LabManagement {
      * @param labConfiguration
      */
     public LabManagement(ConfigProperties configProperties, LabConfiguration labConfiguration) throws Exception {
-        final String methodName = "ConfigProperties";
+        final String methodName = "LabManagement";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         try {
@@ -145,6 +150,7 @@ public class LabManagement {
             /*
              * Get the lab equipment service information for the farm units
              */
+            this.farmSize = configProperties.getFarmSize();
             this.labEquipmentServiceInfo = configProperties.getLabEquipmentServiceInfo();
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

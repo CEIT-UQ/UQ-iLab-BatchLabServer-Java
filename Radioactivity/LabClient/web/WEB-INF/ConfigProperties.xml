@@ -4,7 +4,7 @@
     <comment>Dummy ServiceBroker</comment>
     <entry key="ServiceUrl">http://localhost:8080/DummyServiceBroker/ServiceBrokerService</entry>
     <!--<entry key="ServiceUrl">http://localhost:8081/ServiceBrokerService.asmx</entry>-->
-    <entry key="LabServerId">2CD01113C51C4ca997B059531CD9469D</entry>
+    <entry key="LabServerId">FF464E3507564f28A64F156282BB912E</entry>
     <!--<entry key="LabServerId">8C0BA543419E4d4ab340d449acd3e057</entry>-->
     <entry key="MultiSubmit">False</entry>
     <entry key="FeedbackEmail">ilab-admin@itee.uq.edu.au</entry>

@@ -1,97 +1,10 @@
-.button
+#template td.navigation
 {
-    font-size: 10pt;
-    width: 72px;
-    height: 24px;
-}
-.dropdown
-{
-    font-size: 10pt;    
-}
-.hit
-{
-    font-size: 10pt;    
-    height: 16px;
-}
-.image
-{
-    border: 0px;
-    padding: 0px;
-}
-
-.box
-{
-    background-color: #EEE4F8;
-    border: solid 1px grey;
-    padding: 5px;
-    width: 640px;
-}
-.textbox
-{
-    width: 100%;
-    height: 16px;
-    font-size: 10pt;
-}
-
-/*
- * Response messages
-*/
-.infomessage, .warningmessage, .errormessage
-{
-    color: Black;
-    border: solid 1px Black;
-    padding: 10px;
-}
-.infomessage
-{
-    background-color: #e8ffe8;
-}
-.warningmessage
-{
-    background-color: #e8e8ff;
-}
-.errormessage
-{
-    background-color: #ffe8e8;
-}
-
-th
-{
-    text-align: left;
-    padding: 10px 0px 10px 0px;
-}
-td.label
-{
-    width: 60px;
-    text-align: left;
-    vertical-align: middle;
-    padding: 5px 5px 5px 0px;
-}
-td.information
-{
-    width: 100%;
-    text-align: left;
-    vertical-align: middle;
-    padding: 5px 5px 5px 0px;
-}
-td.message
-{
-    width: 100%;
-    text-align: left;
-    vertical-align: middle;
-}
-td.button
-{
-    text-align: left;
-    padding-top: 10px;
-    padding-bottom: 15px;
-}
-
-#master td.navmenu
-{
+    background-color: #E7ECEF;
     vertical-align: top;
+    height: 100%;
 }
-#master td.pagecontent
+#template td.pagecontent
 {
     margin: 0px;
     padding: 5px;
@@ -99,15 +12,15 @@ td.button
     width: 100%;
 }
 
-#banner
+#banner td
 {
-    background-color: #003099; /* dark blue */ /* background-color: #500098; dark purple */
-    padding: 0px;
+    background-color: #003099; /* dark blue */
+    /* background-color: #500098; dark purple */
 }
 #banner td.title
 {
     color: white;
-    font-size: 20pt;
+    font-size: 200%;
     text-align: center;
     width: 100%;
 }
@@ -118,18 +31,34 @@ td.button
     background-image: url("../img/gradient.gif"); /* path is relative to where the CSS is located */
     height: 21px;
 }
+#statusbar td.user
+{
+    color: Black;
+    white-space: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#statusbar td.group
+{
+    color: Black;
+    white-space: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+}
 #statusbar td.version
 {
     color: gray;
-    padding-right: 10px;
-    vertical-align: middle;
+    white-space: nowrap;
     text-align: right;
+    vertical-align: middle;
+    padding-right: 10px;
     width: 100%;
 }
 
 #navmenu td.header
 {
-    background-color: #A1BD41; /* Green */ /* background-color: #8141BD; Purple */
+    background-color: #A1BD41; /* Green */
+    /* background-color: #8141BD; Purple */
     color: #FFF;
     padding: 5px;
     font-weight: bold;
@@ -158,26 +87,29 @@ td.button
 }
 #navmenu a:hover, #navmenu a:active
 {
-    background-color: #EEF8E4; /* Light green */ /* background-color: #EEE4F8; Light purple */
+    background-color: #EEF8E4; /* Light green */
+    /* background-color: #EEE4F8; Light purple */
 }
 
-#content
-{
-}
 #content td.title
 {
-    font-size: 18pt;
+    font-size: 160%;
     font-weight: bold;
     color: #333;
     text-align: left;
-    vertical-align: top;    
+    vertical-align: top;
     padding: 2px;
+    width: 100%;
 }
 #content td.filler
 {
     width: 100%;
 }
 
+#feedback
+{
+    font-size: 80%;
+}
 #feedback td
 {
     background-color: silver;
@@ -188,6 +120,16 @@ td.button
     vertical-align: middle;
     height: 19px;
     width: 100%;
+}
+#feedback td.timezone
+{
+    text-align: left;
+    color: Gray;
+    width: 100%;
+}
+#feedback a
+{
+    color: Gray;
 }
 
 #footer td
