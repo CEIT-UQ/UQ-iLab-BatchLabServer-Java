@@ -2,7 +2,13 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
     <comment>Template LabEquipment</comment>
+	
+	<!-- LabServer: Comma-seperated LabServer's name, LabServer's guid and LabServer's passkey -->
     <entry key="LabServer">localhost, 2CD01113C51C4ca997B059531CD9469D, fd3cf16cc855484fb06801379f475837</entry>
+	
+	<!-- Authenticating: If true, deny access if the LabServer's guid and passkey are not valid -->
     <entry key="Authenticating">true</entry>
+	<!-- LogAuthentication: If true, log the LabServer's guid and passkey -->
     <entry key="LogAuthentication">false</entry>
+	
 </properties>

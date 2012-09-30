@@ -1,11 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-    <comment>Dummy ServiceBroker</comment>
+    <comment>ACMachine LabClient</comment>
+	
+	<!-- ServiceUrl: ServiceBroker's web service URL -->
     <entry key="ServiceUrl">http://localhost:8080/DummyServiceBroker/ServiceBrokerService</entry>
-    <!--<entry key="ServiceUrl">http://localhost:8081/ServiceBrokerService.asmx</entry>-->
+	
+	<!-- LabServerId: LabServer's Globally Unique Identifer maximum 40 characters -->
     <entry key="LabServerId">2CD01113C51C4ca997B059531CD9469D</entry>
-    <!--<entry key="LabServerId">8C0BA543419E4d4ab340d449acd3e057</entry>-->
+
+	<!-- MultiSubmit: If true, allows the client to submit further experiments before previously submitted experiments have completed -->
     <entry key="MultiSubmit">False</entry>
-    <entry key="FeedbackEmail">ilab-admin@itee.uq.edu.au</entry>
+	
+	<!-- FeedbackEmail: Email address of administrator for feedback and can be empty -->
+    <entry key="FeedbackEmail"></entry>
+	
+	<!--
+	
+	NOTE: The LabClient can be launched with URL request parameters for ServiceUrl, LabServerId and MultiSubmit. This
+	allows the one deployment of the LabClient web application to be used with multiple ServiceBrokers and LabServers.
+	
+	An example URL that uses the Microsoft Visual Studio development .NET C# code is:
+	
+	/faces/LabClient.xhtml?LabServerId=8C0BA543419E4d4ab340d449acd3e057&ServiceUrl=http://localhost:8081/ServiceBrokerService.asmx&CouponId=12345&Passkey=qwerty
+	
+	Also Note: During development in the NetBeans IDE, the run properties of the LabClient web application must specify
+	the following relative URL to communicate with the Dummy ServiceBroker:
+	
+	/faces/LabClient.xhtml?CouponId=12345&Passkey=qwerty
+	
+	-->
+
 </properties>
