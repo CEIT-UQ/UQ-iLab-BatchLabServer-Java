@@ -6,11 +6,7 @@
     </context-param>
     <context-param>
         <param-name>LogFilesPath</param-name>
-        <param-value>D:\NetBeans\Logfiles\TemplateLabServer.log</param-value>
-    </context-param>
-    <context-param>
-        <param-name>ClientLogFilesPath</param-name>
-        <param-value>D:\NetBeans\Logfiles\TemplateLabServerClient.log</param-value>
+        <param-value>/Logfiles/LabServer.log</param-value>
     </context-param>
     <context-param>
         <param-name>LogLevel</param-name>
@@ -37,26 +33,34 @@
         <servlet-name>LogoutServlet</servlet-name>
         <servlet-class>uq.ilabs.labserver.client.LogoutServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ViewExpiredServlet</servlet-name>
+        <servlet-class>uq.ilabs.labserver.client.ViewExpiredServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LabServerServlet</servlet-name>
-        <url-pattern>/faces/LabServer.xhtml</url-pattern>
+        <url-pattern>/LabServer.do</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/faces/Logout.xhtml</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ViewExpiredServlet</servlet-name>
+        <url-pattern>/faces/ViewExpired.xhtml</url-pattern>
+    </servlet-mapping>
     <session-config>
-        <session-timeout>30</session-timeout>
+        <session-timeout>1</session-timeout>
     </session-config>
     <welcome-file-list>
-        <welcome-file>faces/index.xhtml</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/faces/LabServer.xhtml</location>
+        <location>/faces/ViewExpired.xhtml</location>
     </error-page>
 </web-app>

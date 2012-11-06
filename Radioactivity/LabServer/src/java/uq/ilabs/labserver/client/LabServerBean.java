@@ -6,10 +6,12 @@ package uq.ilabs.labserver.client;
 
 import java.io.Serializable;
 import java.util.logging.Level;
+import javax.annotation.PreDestroy;
 import javax.faces.application.ViewExpiredException;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import uq.ilabs.labserver.service.LabServerService;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
@@ -37,13 +39,6 @@ public class LabServerBean implements Serializable {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
 
-    public String getCheckViewExpired() {
-        if (labServerSession == null) {
-            throw new ViewExpiredException();
-        }
-        return "";
-    }
-
     public String getTitle() {
         return (this.labServerSession != null) ? this.labServerSession.getTitle() : "";
     }
@@ -53,7 +48,7 @@ public class LabServerBean implements Serializable {
     }
 
     public String getContactEmail() {
-        return labServerSession.getContactEmail();
+        return (this.labServerSession != null) ? this.labServerSession.getContactEmail() : "";
     }
 
     public String getUsername() {
@@ -101,6 +96,31 @@ public class LabServerBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         this.labServerSession = (LabServerSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabServer);
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+    }
+
+    /**
+     *
+     */
+    public void checkViewExpired() {
+        if (this.labServerSession == null) {
+            throw new ViewExpiredException();
+        }
+    }
+
+    @PreDestroy
+    private void preDestroy() {
+        final String methodName = "preDestroy";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+
+        /*
+         * Check if the LabServer service is running. If not, close the logger here
+         * otherwise let the service close the logger when it is finished.
+         */
+        if (LabServerService.isInitialised() == false) {
+            Logfile.CloseLogger();
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }

@@ -67,6 +67,14 @@ public class DriverSimulation extends DriverGeneric {
 
         try {
             /*
+             * Create an instance of ExperimentValidation
+             */
+            this.experimentValidation = new ExperimentValidation(configuration.getXmlValidation());
+            if (this.experimentValidation == null) {
+                throw new NullPointerException(ExperimentValidation.class.getSimpleName());
+            }
+
+            /*
              * Create an instance of the experiment result ready to fill in
              */
             this.labExperimentResult = new ExperimentResult(configuration);

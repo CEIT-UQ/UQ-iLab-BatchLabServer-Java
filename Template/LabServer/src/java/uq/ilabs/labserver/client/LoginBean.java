@@ -36,7 +36,6 @@ public class LoginBean {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabServerSession labServerSession;
-    private UsersDB usersDB;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String hitUsername;
@@ -74,10 +73,6 @@ public class LoginBean {
      */
     public LoginBean() {
         this.labServerSession = (LabServerSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabServer);
-        try {
-            this.usersDB = new UsersDB(this.labServerSession.getDbConnection());
-        } catch (Exception ex) {
-        }
     }
 
     /**
@@ -108,7 +103,8 @@ public class LoginBean {
             /*
              * Check if username exists
              */
-            UserInfo userInfo = this.usersDB.RetrieveByUsername(this.hitUsername);
+            UsersDB usersDB = new UsersDB(this.labServerSession.getDbConnection());
+            UserInfo userInfo = usersDB.RetrieveByUsername(this.hitUsername);
             if (userInfo == null) {
                 throw new RuntimeException(STRERR_UnknownUsername);
             }

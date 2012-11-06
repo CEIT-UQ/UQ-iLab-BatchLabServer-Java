@@ -213,6 +213,12 @@ public class ConfigProperties {
              * Get contact email address i.e., Administrator's email address
              */
             this.contactEmail = configProperties.getProperty(STRCFG_ContactEmail);
+            if (this.contactEmail != null) {
+                this.contactEmail = this.contactEmail.trim();
+                if (this.contactEmail.length() == 0) {
+                    this.contactEmail = null;
+                }
+            }
 
             /*
              * Get list of email addresses for when the experiment completes successfully

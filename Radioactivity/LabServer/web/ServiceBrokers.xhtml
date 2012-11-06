@@ -10,7 +10,7 @@
         <ui:composition template="./LabServer.xhtml">
 
             <ui:define name="stylesheet">
-                <link href="./resources/css/servicebrokers.css" rel="stylesheet" type="text/css" />
+                <link href="./resources/css/labserver.css" rel="stylesheet" type="text/css" />
             </ui:define>
 
             <ui:define name="title">
@@ -24,80 +24,87 @@
                         Select a ServiceBroker:
                     </h4>
                     <h:form>
-                        <h:selectOneListbox styleClass="hselectOneListbox" value="#{serviceBrokersBean.selectedName}" style="width: 240px;">
+                        <h:selectOneMenu styleClass="hselectOneMenu" value="#{serviceBrokersBean.selectedName}">
                             <f:selectItems value="#{serviceBrokersBean.names}" />
-                        </h:selectOneListbox>
+                        </h:selectOneMenu>
                         &nbsp;
-                        <h:commandButton styleClass="button" value="Select" action="#{serviceBrokersBean.actionSelect()}"/>
+                        <h:commandButton styleClass="hcommandButton" value="Select" action="#{serviceBrokersBean.actionSelect()}"/>
                     </h:form>
                     <p />
                     <h4>
                         ServiceBroker Information:
                     </h4>
                     <h:form>
-                        <table id="form">
-                            <tr>
-                                <td class="label">
-                                    Name:
-                                </td>
-                                <td class="information">
-                                    <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.name}" disabled="#{serviceBrokersBean.nameDisabled}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label">
-                                    Guid:
-                                </td>
-                                <td class="information">
-                                    <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.guid}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label">
-                                    <nobr>Outgoing Passkey<sup>1</sup>:</nobr>
-                                </td>
-                                <td class="information">
-                                    <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.outPasskey}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label">
-                                    <nobr>Incoming Passkey<sup>2</sup>:</nobr>
-                                </td>
-                                <td class="information">
-                                    <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.inPasskey}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label">
-                                    <nobr>Web Service Url:</nobr>
-                                </td>
-                                <td class="information">
-                                    <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.webServiceUrl}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label">
-                                    Allowed:
-                                </td>
-                                <td class="information">
-                                    <h:selectBooleanCheckbox value="#{serviceBrokersBean.permitted}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label">
-                                    &nbsp;
-                                </td>
-                                <td>
-                                    <h:commandButton styleClass="button" value="Save" action="#{serviceBrokersBean.actionSave()}"/>
-                                    &nbsp;
-                                    <h:commandButton styleClass="button" value="Delete" action="#{serviceBrokersBean.actionDelete()}" disabled="#{serviceBrokersBean.deleteDisabled}"
-                                                     onclick="javascript:return confirm('Delete ServiceBroker?')"/>
-                                    &nbsp;
-                                    <h:commandButton styleClass="button" value="New" action="#{serviceBrokersBean.actionNew()}"/>
-                                </td>
-                            </tr>
-                        </table>
+                        <div class="divInformation">
+                            <table width="100%">
+                                <tr>
+                                    <td class="label">
+                                        Name:
+                                    </td>
+                                    <td class="information">
+                                        <h:panelGroup rendered="#{!serviceBrokerBean.nameDisabled}">
+                                            <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.name}" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{serviceBrokerBean.nameDisabled}">
+                                            <h:inputText styleClass="hinputTextReadOnly" value="#{serviceBrokersBean.name}" readonly="true" />
+                                        </h:panelGroup>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        Guid:
+                                    </td>
+                                    <td class="information">
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.guid}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        <nobr>Outgoing Passkey<sup>1</sup>:</nobr>
+                                    </td>
+                                    <td class="information">
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.outPasskey}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        <nobr>Incoming Passkey<sup>2</sup>:</nobr>
+                                    </td>
+                                    <td class="information">
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.inPasskey}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        <nobr>Web Service Url:</nobr>
+                                    </td>
+                                    <td class="information">
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.webServiceUrl}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        Allowed:
+                                    </td>
+                                    <td class="information">
+                                        <h:selectBooleanCheckbox value="#{serviceBrokersBean.permitted}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="label">
+                                        &nbsp;
+                                    </td>
+                                    <td class="buttons">
+                                        <h:commandButton styleClass="hcommandButton" value="Save" action="#{serviceBrokersBean.actionSave()}"/>
+                                        &nbsp;
+                                        <h:commandButton styleClass="hcommandButton" value="Delete" action="#{serviceBrokersBean.actionDelete()}" disabled="#{serviceBrokersBean.deleteDisabled}"
+                                                         onclick="javascript:return confirm('Delete ServiceBroker?')"/>
+                                        &nbsp;
+                                        <h:commandButton styleClass="hcommandButton" value="New" action="#{serviceBrokersBean.actionNew()}"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
                     </h:form>
                     <i>Notes:</i>
                     <ol style="list-style-type: decimal">

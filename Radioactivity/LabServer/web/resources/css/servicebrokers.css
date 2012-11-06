@@ -1,21 +1,16 @@
-#servicebrokers {
-    padding: 5px;
-    width: 640px;
-}
-#form {
+#servicebrokers .divInformation {
+    width: 600px;
     border: solid 1px grey;
+    background-color: #EEE4F8;
+    padding: 10px;
 }
 
-#form td
+#servicebrokers .hlistbox
 {
-    background-color: #EEE4F8;
-    padding: 5px;
+    width: 150px;
 }
-#servicebrokers td.filler
+
+#servicebrokers .hinputText, .hinputTextReadOnly
 {
     width: 100%;
-}
-#servicebrokers .hinputText
-{
-    width: 400px;
 }

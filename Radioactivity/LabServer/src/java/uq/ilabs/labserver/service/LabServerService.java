@@ -40,6 +40,7 @@ public class LabServerService {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private static boolean initialised = false;
+    private static boolean loggerCreated = false;
     private static ConfigProperties configProperties;
     private static ServiceBrokersDB serviceBrokers;
 
@@ -49,6 +50,14 @@ public class LabServerService {
 
     public static void setInitialised(boolean initialised) {
         LabServerService.initialised = initialised;
+    }
+
+    public static boolean isLoggerCreated() {
+        return loggerCreated;
+    }
+
+    public static void setLoggerCreated(boolean loggerCreated) {
+        LabServerService.loggerCreated = loggerCreated;
     }
 
     public static ConfigProperties getConfigProperties() {

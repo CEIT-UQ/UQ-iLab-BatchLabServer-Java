@@ -1,6 +1,6 @@
 <%--
     Document   : index
-    Created on : 27/08/2012, 2:38:06 PM
+    Created on : 14/10/2012, 12:50:32 PM
     Author     : uqlpayne
 --%>
 
@@ -9,9 +9,9 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Template</title>
+        <title>JSP Page</title>
     </head>
     <body>
-        <h1>Template LabEquipment</h1>
+        <jsp:forward page="/LabServer.do" />
     </body>
 </html>

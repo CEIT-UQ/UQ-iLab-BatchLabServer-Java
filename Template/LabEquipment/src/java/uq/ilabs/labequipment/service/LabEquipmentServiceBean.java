@@ -313,6 +313,11 @@ public class LabEquipmentServiceBean {
             this.equipmentManager.Close();
         }
 
+        /*
+         * Close the logfile
+         */
+        Logfile.CloseLogger();
+
         Logfile.WriteCompleted(Level.INFO, STR_ClassName, methodName);
     }
 }

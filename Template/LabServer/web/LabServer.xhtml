@@ -9,19 +9,19 @@
         <link href="./resources/css/default.css" rel="stylesheet" type="text/css" />
         <link href="./resources/css/template.css" rel="stylesheet" type="text/css" />
         <ui:insert name="stylesheet"></ui:insert>
-        <title>Facelets Template</title>
+        <title><ui:insert name="title">Facelets Template</ui:insert></title>
     </h:head>
 
     <h:body>
-        #{labServerBean.checkViewExpired}
-        <table id="template" width="100%">
+        #{labServerBean.checkViewExpired()}
+        <table id="template" cellpadding="0" width="100%">
             <tr>
                 <td colspan="2">
-                    <table id="banner">
+                    <table id="banner" cellpadding="0">
                         <tr>
                             <td class="logo">
                                 <a href="http://www.uq.edu.au/" target="_blank">
-                                    <img src="resources/img/uq-logo.gif" width="200" height="72" alt="uq-logo"/>
+                                    <img src="./resources/img/uq-logo.gif" width="200" height="72" alt="uq-logo"/>
                                 </a>
                             </td>
                             <td class="title">
@@ -33,7 +33,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="statusbar">
+                    <table id="statusbar" cellpadding="0">
                         <tr>
                             <td class="user">
                                 #{labServerBean.username}
@@ -50,10 +50,10 @@
             </tr>
             <tr>
                 <td class="navigation">
-                    <table id="navmenu" border="0" cellspacing="0" cellpadding="0">
+                    <table id="navmenu" cellpadding="0">
                         <tr>
                             <td>
-                                <img src="resources/img/generic_content32.jpg" width="200" alt="generic_content32"/>
+                                <img src="./resources/img/generic_content32.jpg" width="200" alt="generic_content32"/>
                             </td>
                         </tr>
                         <tr>
@@ -75,13 +75,13 @@
                     </table>
                 </td>
                 <td class="pagecontent">
-                    <table id="content">
+                    <table id="content" cellpadding="0">
                         <tr>
                             <td colspan="2">
-                                <table border="0" cellspacing="0" cellpadding="0">
+                                <table>
                                     <tr>
                                         <td>
-                                            <img src="resources/img/level2-arrow.gif" width="28" height="28" alt="level2-arrow"/>
+                                            <img src="./resources/img/level2-arrow.gif" width="28" height="28" alt="level2-arrow"/>
                                         </td>
                                         <td class="title">
                                             <ui:insert name="title">Content Title</ui:insert>
@@ -92,7 +92,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <img src="resources/img/level2-underline.gif" width="395" height="1" alt="level2-underline"/>
+                                <img src="./resources/img/level2-underline.gif" width="395" height="1" alt="level2-underline"/>
                             </td>
                             <td class="filler">
                                 &nbsp;
@@ -101,6 +101,9 @@
                         <tr>
                             <td colspan="2">
                                 <ui:insert name="content">Content of webpage.</ui:insert>
+                                <p>
+                                    &nbsp;
+                                </p>
                             </td>
                         </tr>
                     </table>
@@ -108,7 +111,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="feedback">
+                    <table id="feedback" cellpadding="0">
                         <tr>
                             <td>
                                 &nbsp;
@@ -122,11 +125,11 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="footer">
+                    <table id="footer" cellpadding="0">
                         <tr>
                             <td class="left">
                                 <a href="http://www.ceit.uq.edu.au/" target="_blank">
-                                    <img class="image" src="resources/img/ceit_logo.gif" width="176" height="64" alt="ceit-logo"/>
+                                    <img class="image" src="./resources/img/ceit_logo.gif" width="176" height="64" alt="ceit-logo"/>
                                 </a>
                             </td>
                             <td class="filler">
@@ -134,7 +137,7 @@
                             </td>
                             <td class="right">
                                 <a href="http://www.mit.edu/" target="_blank">
-                                    <img class="image" src="resources/img/mit-blackred-footer1.gif" width="334" height="36" alt="mit-logo"/>
+                                    <img class="image" src="./resources/img/mit-blackred-footer1.gif" width="334" height="36" alt="mit-logo"/>
                                 </a>
                             </td>
                         </tr>

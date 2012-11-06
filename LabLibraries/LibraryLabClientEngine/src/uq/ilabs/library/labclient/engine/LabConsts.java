@@ -75,6 +75,7 @@ public class LabConsts {
     /*
      * Webpage URLs
      */
+    public static final String STRURL_Faces = "/faces/";
     public static final String STRURL_Home = "Home.xhtml";
     public static final String STRURL_Setup = "Setup.xhtml";
     public static final String STRURL_Results = "Results.xhtml";

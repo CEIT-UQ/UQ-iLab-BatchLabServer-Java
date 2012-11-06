@@ -6,12 +6,6 @@ body {
     margin: 0px;
 }
 
-table {
-    margin: 0px;
-    border: 0px;
-    border-collapse: collapse;
-}
-
 h1, h2, h3, h4
 {
     font-weight: bold;
@@ -33,61 +27,22 @@ h4
     font-size: 100%;
 }
 
-td.label
+img {
+    border: 0px;
+}
+a, a:visited {
+    text-decoration: none;
+}
+a img,:link img,:visited img {
+    border: none
+}
+
+table {
+    border: 0px;
+    border-collapse: collapse;
+}
+th
 {
     text-align: left;
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 5px 5px 5px 0px;
-}
-td.labelwrap
-{
-    text-align: left;
-    vertical-align: middle;
-    padding: 5px 5px 5px 0px;
-    width: 60px;
-}
-
-.hselectOneListbox
-{
-    font-size: 100%;
-}
-.hinputText
-{
-    font-size: 100%;
-    height: 16px;
-}
-.hinputTextReadOnly
-{
-    font-size: 100%;
-    height: 16px;
-}
-
-.button
-{
-    font-size: 100%;
-    width: 72px;
-    height: 24px;
-}
-
-/*
- * Response messages
-*/
-.infomessage, .warningmessage, .errormessage
-{
-    color: Black;
-    border: solid 1px Black;
-    padding: 10px;
-}
-.infomessage
-{
-    background-color: #e8ffe8;
-}
-.warningmessage
-{
-    background-color: #e8e8ff;
-}
-.errormessage
-{
-    background-color: #ffe8e8;
+    padding: 10px 0px 10px 0px;
 }

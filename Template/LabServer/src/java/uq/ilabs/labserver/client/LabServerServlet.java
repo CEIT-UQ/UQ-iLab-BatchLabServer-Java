@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import uq.ilabs.labserver.service.LabServerService;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
@@ -38,17 +39,14 @@ public class LabServerServlet extends HttpServlet {
     //</editor-fold>
 
     /**
-     * Handles the HTTP
-     * <code>GET</code> method.
      *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String methodName = "doGet";
 
         /*
@@ -63,26 +61,33 @@ public class LabServerServlet extends HttpServlet {
         if (labServerSession == null) {
             try {
                 /*
-                 * Get the path for the logfiles and logging level
+                 * Check if the logger has already been created by the LabServer service
                  */
-                String logFilesPath = getServletContext().getInitParameter(Consts.STRPRM_ClientLogFilesPath);
-                String initLogLevel = getServletContext().getInitParameter(Consts.STRPRM_LogLevel);
+                if (LabServerService.isLoggerCreated() == false) {
+                    /*
+                     * Get the path for the logfiles and logging level
+                     */
+                    String logFilesPath = getServletContext().getInitParameter(Consts.STRPRM_LogFilesPath);
+                    logFilesPath = getServletContext().getRealPath(logFilesPath);
+                    String initLogLevel = getServletContext().getInitParameter(Consts.STRPRM_LogLevel);
 
-                /*
-                 * Create an instance of the logger and set the logging level
-                 */
-                Logger logger = Logfile.CreateLogger(logFilesPath);
-                Level level;
-                try {
-                    level = Level.parse(initLogLevel);
-                } catch (Exception ex) {
-                    level = Level.INFO;
+                    /*
+                     * Create an instance of the logger and set the logging level
+                     */
+                    Logger logger = Logfile.CreateLogger(logFilesPath);
+                    LabServerService.setLoggerCreated(true);
+                    Level level = Level.INFO;
+                    try {
+                        level = Level.parse(initLogLevel);
+                    } catch (Exception ex) {
+                    }
+                    logger.setLevel(level);
+
+                    Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
+                            String.format(STRLOG_LoggingLevel_arg, logger.getLevel().toString()));
+                } else {
+                    Logfile.WriteCalled(STR_ClassName, methodName);
                 }
-                logger.setLevel(level);
-
-                Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                        String.format(STRLOG_LoggingLevel_arg, logger.getLevel().toString()));
-
 
                 /*
                  * Log the caller's IP address and hostname
@@ -145,7 +150,7 @@ public class LabServerServlet extends HttpServlet {
         /*
          * Go to the LabServer's home page
          */
-        response.sendRedirect(Consts.STRURL_Home);
+        response.sendRedirect(getServletContext().getContextPath() + Consts.STRURL_Faces + Consts.STRURL_Home);
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }

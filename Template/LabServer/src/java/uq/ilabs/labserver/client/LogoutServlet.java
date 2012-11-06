@@ -24,9 +24,15 @@ public class LogoutServlet extends HttpServlet {
     private static final String STR_ClassName = LogoutServlet.class.getName();
     //</editor-fold>
 
+    /**
+     * 
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String methodName = "doGet";
         Logfile.WriteCalled(STR_ClassName, methodName);
 
@@ -44,9 +50,9 @@ public class LogoutServlet extends HttpServlet {
         }
 
         /*
-         * Go to the ServiceBroker's home page
+         * Go to the LabServer's home page
          */
-        response.sendRedirect(Consts.STRURL_Home);
+        response.sendRedirect(getServletContext().getContextPath() + Consts.STRURL_Faces + Consts.STRURL_Home);
 
         Logfile.WriteCompleted(STR_ClassName, methodName);
     }

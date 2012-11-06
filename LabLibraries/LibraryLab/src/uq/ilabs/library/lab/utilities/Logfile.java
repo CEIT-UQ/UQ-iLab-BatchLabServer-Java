@@ -3,6 +3,7 @@ package uq.ilabs.library.lab.utilities;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -18,15 +19,13 @@ public class Logfile {
     /*
      * String constants
      */
-    private static final String STR_DefaultFilename = "Logfile.log";
     public static final String STRLOG_Newline = System.getProperty("line.separator");
     public static final String STRLOG_Spacer = "  ";
     public static final String STRLOG_Quote = "'";
     /*
      * String constants for logfile messages
      */
-    private static final String STRLOG_LogfileName_arg = "Logfile Name: %s";
-    private static final String STRLOG_LoggingLevel_arg = "Logging Level: %s";
+    private static final String STRLOG_LogfileNameLevel_arg2 = STRLOG_Newline + "Logfile Name: %s" + STRLOG_Newline + "Logging Level: %s";
     private static final String STRLOG_Called = "(): Called";
     private static final String STRLOG_CalledMarker = " >> ";
     private static final String STRLOG_Completed = "(): Completed";
@@ -34,10 +33,12 @@ public class Logfile {
     /*
      * Local variables
      */
-    private static FileHandler loggerFileHandler = null;
-//    private static final Logger logger = Logger.getLogger(STR_ClassName);
     private static final Logger logger = Logger.getAnonymousLogger();
-    private static String absoluteFilename;
+    private static String filename = null;
+
+    public static Logger getLogger() {
+        return logger;
+    }
 
     /**
      * Create a logger to write log information to the specified filename. The filename may be specified with a relative
@@ -46,47 +47,50 @@ public class Logfile {
      * @param filename Filename for the log file.
      */
     public static Logger CreateLogger(String filename) {
-        try {
-            /*
-             * Get the absolute path for the specified filename
-             */
-            File file = new File(filename);
-            absoluteFilename = file.getAbsolutePath();
+        final String methodName = "CreateLogger";
 
-            /*
-             * Send logger output to a file handler
-             */
-            loggerFileHandler = new FileHandler(filename);
-            loggerFileHandler.setFormatter(new SimpleFormatter());
-            logger.addHandler(loggerFileHandler);
-            logger.setLevel(Level.ALL);
+        if (Logfile.filename == null) {
+            try {
+                /*
+                 * Get the absolute path for the specified filename
+                 */
+                File file = new File(filename);
+                Logfile.filename = file.getAbsolutePath();
 
-            /*
-             * Log information
-             */
-            String logMessage = STRLOG_Newline
-                    + String.format(STRLOG_LogfileName_arg, absoluteFilename) + STRLOG_Newline
-                    + String.format(STRLOG_LoggingLevel_arg, logger.getLevel().getName());
-            logger.info(logMessage);
-        } catch (IOException | SecurityException ex) {
-            logger.log(Level.SEVERE, null, ex);
+                /*
+                 * Send logger output to a file handler which appends to the file
+                 */
+                FileHandler loggerFileHandler = new FileHandler(Logfile.filename, true);
+                loggerFileHandler.setFormatter(new SimpleFormatter());
+                logger.addHandler(loggerFileHandler);
+                logger.setLevel(Level.INFO);
+
+                /*
+                 * Log the logger information information
+                 */
+                logger.info(String.format(STRLOG_LogfileNameLevel_arg2, Logfile.filename, logger.getLevel().getName()));
+            } catch (IOException | SecurityException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+
+            Logfile.WriteCompleted(STR_ClassName, methodName);
         }
 
         return logger;
     }
 
     /**
-     * Find the logger that has already been created with a given filename. If the logger has not been created, a new
-     * logger is created with a default filename.
      *
-     * @return Logger
      */
-    public static Logger GetLogger() {
-        if (loggerFileHandler == null) {
-            CreateLogger(STR_DefaultFilename);
-        }
+    public static void CloseLogger() {
+        final String methodName = "CloseLogger";
+        WriteCalled(STR_ClassName, methodName);
 
-        return logger;
+        Handler[] handlers = logger.getHandlers();
+        for (int i = 0; i < handlers.length; i++) {
+            handlers[i].close();
+            logger.removeHandler(handlers[i]);
+        }
     }
 
     public static String Write() {

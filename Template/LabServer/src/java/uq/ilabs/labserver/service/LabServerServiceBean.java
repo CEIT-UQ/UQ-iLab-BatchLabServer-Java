@@ -438,11 +438,16 @@ public class LabServerServiceBean {
         Logfile.WriteCalled(Level.INFO, STR_ClassName, methodName);
 
         /*
-         * Close the LabEquipment Manager
+         * Close the LabExperiment Manager
          */
         if (this.experimentManager != null) {
             this.experimentManager.Close();
         }
+
+        /*
+         * Close the logfile
+         */
+        Logfile.CloseLogger();
 
         Logfile.WriteCompleted(Level.INFO, STR_ClassName, methodName);
     }

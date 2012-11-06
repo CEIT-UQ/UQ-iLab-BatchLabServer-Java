@@ -6,6 +6,7 @@ package uq.ilabs.library.labserver.engine;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.types.*;
 import uq.ilabs.library.lab.utilities.Delay;
@@ -41,8 +42,8 @@ public class LabExperimentEngine implements Runnable {
             + "Unit Id:       %d\r\n"
             + "StatusCode:    %s\r\n"
             + "%s";
-    private static final String STRLOG_MailMessageError_arg = "Error Message: {0}\r\n";
-    private static final String STRLOG_SendingEmail_arg3 = "Sending email - To: '{0}  From: '{1}'  Subject: '{2}'";
+    private static final String STRLOG_MailMessageError_arg = "Error Message: %s";
+    private static final String STRLOG_SendingEmail_arg3 = "Sending email - To: %s  From: %s  Subject: '%s'";
     /*
      * String constants for logfile messages
      */
@@ -75,6 +76,7 @@ public class LabExperimentEngine implements Runnable {
     private static final String STRERR_FailedToUpdateStatisticsStarted = "Failed to update statistics started!";
     private static final String STRERR_FailedToUpdateStatisticsCancelled = "Failed to update statistics cancelled!";
     private static final String STRERR_FailedToUpdateStatisticsCompleted = "Failed to update statistics completed!";
+    private static final String STRERR_ContactEmailNotSpecified = "Contact email not specified!";
     /*
      * Constants
      */
@@ -893,6 +895,11 @@ public class LabExperimentEngine implements Runnable {
         boolean success = false;
 
         try {
+            String from = this.labManagement.getConfigProperties().getContactEmail();
+            if (from == null) {
+                throw new NullPointerException(STRERR_ContactEmailNotSpecified);
+            }
+
             /*
              * Get experiment result information
              */
@@ -922,17 +929,36 @@ public class LabExperimentEngine implements Runnable {
              */
             if (toArray != null && toArray.length > 0) {
                 /*
-                 * Send the email
+                 * Create the email
                  */
                 SmtpClient smtpClient = new SmtpClient();
                 smtpClient.getTo().addAll(Arrays.asList(toArray));
-                smtpClient.setFrom(this.labManagement.getConfigProperties().getContactEmail());
-                smtpClient.setSubject(String.format(STRLOG_MailMessageSubject_arg2,
-                        this.labManagement.getLabConfiguration().getTitle(), resultReport.getStatusCode().toString()));
+                smtpClient.setFrom(from);
+                String subject = String.format(STRLOG_MailMessageSubject_arg2,
+                        this.labManagement.getLabConfiguration().getTitle(), resultReport.getStatusCode().toString());
+                smtpClient.setSubject(subject);
                 smtpClient.setBody(String.format(STRLOG_MailMessageBody_arg7,
                         labExperimentResult.getSbName(), labExperimentResult.getExperimentId(),
                         labExperimentResult.getSetupId(), labExperimentResult.getUserGroup(),
                         this.unitId, resultReport.getStatusCode(), errorMessage));
+
+                /*
+                 * Log the email details
+                 */
+                String to = null;
+                Iterator iterator = smtpClient.getTo().iterator();
+                while (iterator.hasNext()) {
+                    if (to == null) {
+                        to = (String)iterator.next();
+                    } else {
+                        to += "," + (String)iterator.next();
+                    }
+                }
+                Logfile.Write(String.format(STRLOG_SendingEmail_arg3, to, from, subject));
+
+                /*
+                 * Send the email
+                 */
                 success = smtpClient.Send();
             }
         } catch (Exception ex) {

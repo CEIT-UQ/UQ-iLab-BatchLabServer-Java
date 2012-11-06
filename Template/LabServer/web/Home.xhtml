@@ -9,6 +9,7 @@
         <ui:composition template="./LabServer.xhtml">
 
             <ui:define name="stylesheet">
+                <link href="./resources/css/labserver.css" rel="stylesheet" type="text/css" />
             </ui:define>
 
             <ui:define name="title">
@@ -28,7 +29,7 @@
                         document.write('<input type="hidden" name="Timezone" id="Timezone" value="' + timeoffset + '" />');
                     </script>
                     <h:panelGroup rendered="#{!labServerBean.loggedIn}">
-                        <table border="0" cellspacing="0" cellpadding="0">
+                        <table>
                             <tr>
                                 <td class="label">
                                     Username:
@@ -50,7 +51,7 @@
                                     &nbsp;
                                 </td>
                                 <td>
-                                    <h:commandButton styleClass="button" value="Login" action="#{loginBean.actionLogin()}"/>
+                                    <h:commandButton styleClass="hcommandButton" value="Login" action="#{loginBean.actionLogin()}"/>
                                 </td>
                             </tr>
                         </table>

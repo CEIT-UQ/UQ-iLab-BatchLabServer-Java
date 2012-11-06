@@ -13,17 +13,15 @@ import uq.ilabs.library.labserver.engine.LabConsts;
 public class Consts extends LabConsts {
 
     /*
-     * Initialisation parameters
-     */
-    public static final String STRPRM_ClientLogFilesPath = "ClientLogFilesPath";
-    /*
      * Session variables
      */
     public static final String STRSSN_LabServer = "LabServer";
     /*
      * Webpage URLs
      */
+    public static final String STRURL_Faces = "/faces/";
     public static final String STRURL_Home = "Home.xhtml";
+    public static final String STRURL_LabServerServlet = "/LabServer.do";
     /*
      * Webpage style classes
      */
