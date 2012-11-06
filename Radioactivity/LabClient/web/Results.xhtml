@@ -10,14 +10,10 @@
         <ui:composition template="./LabClient.xhtml">
 
             <ui:define name="stylesheet">
-                <!--stylesheet-->
+                <link href="./resources/css/labclient.css" rel="stylesheet" type="text/css" />
             </ui:define>
 
             <ui:define name="title">
-                Results
-            </ui:define>
-
-            <ui:define name="contentTitle">
                 Results
             </ui:define>
 
@@ -35,7 +31,7 @@
                             <td class="information">
                                 <h:inputText styleClass="hinputtext" value="#{resultsBean.hitExperimentId}" style="width: 60px;" />
                                 &nbsp;
-                                <h:selectOneMenu styleClass="dropdown" value="#{resultsBean.hsomSelectedExperimentId}" onchange="form.submit()"
+                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{resultsBean.hsomSelectedExperimentId}" onchange="form.submit()"
                                                  rendered="#{resultsBean.hsomExperimentIdsRendered}" style="width: 66px">
                                     <f:selectItems value="#{resultsBean.experimentIds}" />
                                 </h:selectOneMenu>
@@ -45,10 +41,10 @@
                             <td class="label">
                                 &nbsp;
                             </td>
-                            <td class="button">
-                                <h:commandButton styleClass="button" value="Retrieve" action="#{resultsBean.actionRetrieve()}"/>
+                            <td class="buttons">
+                                <h:commandButton styleClass="hcommandButton" value="Retrieve" action="#{resultsBean.actionRetrieve()}"/>
                                 &nbsp;
-                                <h:commandButton styleClass="button" value="Save" action="#{resultsBean.actionSave()}" disabled="#{resultsBean.hcbSaveDisabled}"/>
+                                <h:commandButton styleClass="hcommandButton" value="Save" action="#{resultsBean.actionSave()}" disabled="#{resultsBean.hcbSaveDisabled}"/>
                             </td>
                         </tr>
                     </table>

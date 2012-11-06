@@ -61,17 +61,17 @@ public class LabClientServlet extends HttpServlet {
                  * Get the path for the logfiles and logging level
                  */
                 String logFilesPath = getServletContext().getInitParameter(LabConsts.STRPRM_LogFilesPath);
+                logFilesPath = getServletContext().getRealPath(logFilesPath);
                 String initLogLevel = getServletContext().getInitParameter(LabConsts.STRPRM_LogLevel);
 
                 /*
                  * Create an instance of the logger and set the logging level
                  */
                 Logger logger = Logfile.CreateLogger(logFilesPath);
-                Level level;
+                Level level = Level.INFO;
                 try {
                     level = Level.parse(initLogLevel);
                 } catch (Exception ex) {
-                    level = Level.INFO;
                 }
                 logger.setLevel(level);
 
@@ -160,7 +160,7 @@ public class LabClientServlet extends HttpServlet {
         /*
          * Go to the LabClient's home page
          */
-        response.sendRedirect(Consts.STRURL_Home);
+        response.sendRedirect(getServletContext().getContextPath() + Consts.STRURL_Faces + Consts.STRURL_Home);
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }

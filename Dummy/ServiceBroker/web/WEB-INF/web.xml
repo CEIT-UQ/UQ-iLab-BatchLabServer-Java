@@ -6,7 +6,7 @@
 	 version="3.0">
     <context-param>
         <param-name>LogFilesPath</param-name>
-        <param-value>D:\NetBeans\Logfiles\DummyServiceBroker.log</param-value>
+        <param-value>/LogFiles/ServiceBroker.log</param-value>
     </context-param>
     <context-param>
         <param-name>LogLevel</param-name>
@@ -17,8 +17,6 @@
         <param-value>/WEB-INF/ConfigProperties.xml</param-value>
     </context-param>
     <session-config>
-        <session-timeout>
-            30
-        </session-timeout>
+        <session-timeout>30</session-timeout>
     </session-config>
 </web-app>

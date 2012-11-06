@@ -6,7 +6,7 @@
     </context-param>
     <context-param>
         <param-name>LogFilesPath</param-name>
-        <param-value>D:\NetBeans\Logfiles\TemplateLabClient.log</param-value>
+        <param-value>/LogFiles/LabClient.log</param-value>
     </context-param>
     <context-param>
         <param-name>LogLevel</param-name>
@@ -31,7 +31,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LabClientServlet</servlet-name>
-        <url-pattern>/faces/LabClient.xhtml</url-pattern>
+        <url-pattern>/LabClient.do</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

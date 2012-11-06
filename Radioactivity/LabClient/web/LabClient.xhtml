@@ -7,21 +7,21 @@
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <link href="./resources/css/default.css" rel="stylesheet" type="text/css" />
-        <link href="./resources/css/labclient.css" rel="stylesheet" type="text/css" />
+        <link href="./resources/css/template.css" rel="stylesheet" type="text/css" />
         <ui:insert name="stylesheet"></ui:insert>
-        <title><ui:insert name="webpageTitle">Facelets Template</ui:insert></title>
+        <title><ui:insert name="title">Facelets Template</ui:insert></title>
     </h:head>
 
     <h:body>
-        #{labClientBean.checkViewExpired}
-        <table id="master" border="0" cellspacing="0" cellpadding="0" width="100%">
+        #{labClientBean.checkViewExpired()}
+        <table id="template" cellpadding="0" width="100%">
             <tr>
                 <td colspan="2">
-                    <table id="banner" border="0" cellspacing="0" cellpadding="0">
+                    <table id="banner" cellpadding="0">
                         <tr>
                             <td class="logo">
                                 <a href="http://www.uq.edu.au/" target="_blank">
-                                    <img class="image" src="resources/img/uq-logo.gif" width="200" height="72" alt="uq-logo" />
+                                    <img src="resources/img/uq-logo.gif" width="200" height="72" alt="uq-logo" />
                                 </a>
                             </td>
                             <td class="title">
@@ -33,7 +33,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="statusbar" border="0" cellspacing="0" cellpadding="0">
+                    <table id="statusbar" cellpadding="0">
                         <tr>
                             <td>
                                 &nbsp;
@@ -47,10 +47,10 @@
             </tr>
             <tr>
                 <td class="navigation">
-                    <table id="navmenu" border="0" cellspacing="0" cellpadding="0">
+                    <table id="navmenu" cellpadding="0">
                         <tr>
                             <td>
-                                <img src="resources/img/Radioactivity1.png" width="200" alt="generic_content32"/>
+                                <img src="resources/img/Radioactivity1.png" width="200" alt="Radioactivity1.png"/>
                             </td>
                         </tr>
                         <tr>
@@ -74,16 +74,16 @@
                     </table>
                 </td>
                 <td class="pagecontent">
-                    <table id="content" border="0" cellspacing="0" cellpadding="0">
+                    <table id="content" cellpadding="0">
                         <tr>
                             <td colspan="2">
-                                <table border="0" cellspacing="0" cellpadding="0">
+                                <table>
                                     <tr>
                                         <td>
                                             <img src="resources/img/level2-arrow.gif" width="28" height="28" alt="level2-arrow"/>
                                         </td>
                                         <td class="title">
-                                            <ui:insert name="contentTitle">Content Title</ui:insert>
+                                            <ui:insert name="title">Content Title</ui:insert>
                                         </td>
                                     </tr>
                                 </table>
@@ -110,7 +110,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="feedback" border="0" cellspacing="0" cellpadding="0">
+                    <table id="feedback" cellpadding="0">
                         <tr>
                             <td>
                                 &nbsp;
@@ -124,7 +124,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <table id="footer" border="0" cellspacing="0" cellpadding="0">
+                    <table id="footer" cellpadding="0">
                         <tr>
                             <td class="left">
                                 <a href="http://www.ceit.uq.edu.au/" target="_blank">
@@ -144,7 +144,6 @@
                 </td>
             </tr>
         </table>
-
     </h:body>
 
 </html>

@@ -10,14 +10,10 @@
         <ui:composition template="./LabClient.xhtml">
 
             <ui:define name="stylesheet">
-                <!--stylesheet-->
+                <link href="./resources/css/labclient.css" rel="stylesheet" type="text/css" />
             </ui:define>
 
             <ui:define name="title">
-                Setup
-            </ui:define>
-
-            <ui:define name="contentTitle">
                 Setup
             </ui:define>
 
@@ -33,7 +29,7 @@
                                 Setup:
                             </td>
                             <td class="information">
-                                <h:selectOneMenu styleClass="dropdown" value="#{setupBean.hsomSetupName}" onchange="form.submit()">
+                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomSetupName}" onchange="form.submit()">
                                     <f:selectItems value="#{setupBean.setupNames}" />
                                 </h:selectOneMenu>
                             </td>
@@ -55,7 +51,7 @@
                                                 Server Url:
                                             </td>
                                             <td class="information">
-                                                <h:selectOneMenu styleClass="dropdown" value="#{setupBean.hsomServerUrl}" style="width: 160px;">
+                                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomServerUrl}" style="width: 160px;">
                                                     <f:selectItems value="#{setupBean.serverUrlList}" />
                                                 </h:selectOneMenu>
                                             </td>
@@ -66,7 +62,7 @@
                                             Time format:
                                         </td>
                                         <td class="information">
-                                            <h:selectOneMenu styleClass="dropdown" value="#{setupBean.hsomTimeFormat}" style="width: 100px;">
+                                            <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomTimeFormat}" style="width: 100px;">
                                                 <f:selectItems value="#{setupBean.timeFormatList}" />
                                             </h:selectOneMenu>
                                         </td>
@@ -78,10 +74,10 @@
                             <td class="label">
                                 &nbsp;
                             </td>
-                            <td class="button">
-                                <h:commandButton styleClass="button" value="Validate" action="#{setupBean.actionValidate()}" />
+                            <td class="buttons">
+                                <h:commandButton styleClass="hcommandButton" value="Validate" action="#{setupBean.actionValidate()}" />
                                 &nbsp;
-                                <h:commandButton styleClass="button" value="Submit" action="#{setupBean.actionSubmit()}" disabled="#{setupBean.hcbSubmitDisabled}" />
+                                <h:commandButton styleClass="hcommandButton" value="Submit" action="#{setupBean.actionSubmit()}" disabled="#{setupBean.hcbSubmitDisabled}" />
                             </td>
                         </tr>
                     </table>

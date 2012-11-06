@@ -6,6 +6,7 @@ package uq.ilabs.labclient;
 
 import java.io.Serializable;
 import java.util.logging.Level;
+import javax.annotation.PreDestroy;
 import javax.faces.application.ViewExpiredException;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -30,13 +31,6 @@ public class LabClientBean implements Serializable {
     private LabClientSession labClientSession;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-
-    public String getCheckViewExpired() {
-        if (labClientSession == null) {
-            throw new ViewExpiredException();
-        }
-        return "";
-    }
 
     public String getTitle() {
         return labClientSession.getTitle();
@@ -65,5 +59,24 @@ public class LabClientBean implements Serializable {
         this.labClientSession = (LabClientSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(LabConsts.STRSSN_LabClient);
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+    }
+
+    /**
+     *
+     */
+    public void checkViewExpired() {
+        if (this.labClientSession == null) {
+            throw new ViewExpiredException();
+        }
+    }
+
+    @PreDestroy
+    private void preDestroy() {
+        final String methodName = "preDestroy";
+        Logfile.WriteCalled(Level.INFO, STR_ClassName, methodName);
+
+        Logfile.CloseLogger();
+
+        Logfile.WriteCompleted(Level.INFO, STR_ClassName, methodName);
     }
 }

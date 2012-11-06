@@ -202,17 +202,17 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
              * Get the path for the logfiles and logging level
              */
             String logFilesPath = servletContext.getInitParameter(LabConsts.STRPRM_LogFilesPath);
+            logFilesPath = servletContext.getRealPath(logFilesPath);
             String logLevel = servletContext.getInitParameter(LabConsts.STRPRM_LogLevel);
 
             /*
              * Create an instance of the logger and set the logging level
              */
             Logger logger = Logfile.CreateLogger(logFilesPath);
-            Level level;
+            Level level = Level.INFO;
             try {
                 level = Level.parse(logLevel);
             } catch (Exception ex) {
-                level = Level.INFO;
             }
             logger.setLevel(level);
 
