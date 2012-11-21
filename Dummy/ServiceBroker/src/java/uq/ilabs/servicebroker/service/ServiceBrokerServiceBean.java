@@ -5,6 +5,8 @@
 package uq.ilabs.servicebroker.service;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import uq.ilabs.library.lab.database.DBConnection;
@@ -523,5 +525,21 @@ public class ServiceBrokerServiceBean {
         }
 
         return labServerAPI;
+    }
+
+    /**
+     *
+     */
+    @PreDestroy
+    private void preDestroy() {
+        final String methodName = "preDestroy";
+        Logfile.WriteCalled(Level.INFO, STR_ClassName, methodName);
+
+        /*
+         * Close the logfile
+         */
+        Logfile.CloseLogger();
+
+        Logfile.WriteCompleted(Level.INFO, STR_ClassName, methodName);
     }
 }

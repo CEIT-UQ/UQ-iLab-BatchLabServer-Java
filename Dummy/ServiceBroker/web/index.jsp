@@ -1,4 +1,4 @@
-<%-- 
+<%--
     Document   : index
     Created on : 10/09/2012, 2:02:35 PM
     Author     : uqlpayne
@@ -12,6 +12,6 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <h1>Dummy ServiceBroker</h1>
     </body>
 </html>
