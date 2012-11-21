@@ -24,7 +24,7 @@
                         Select a ServiceBroker:
                     </h4>
                     <h:form>
-                        <h:selectOneMenu styleClass="hselectOneMenu" value="#{serviceBrokersBean.selectedName}">
+                        <h:selectOneMenu styleClass="hselectOneMenu" value="#{serviceBrokersBean.hsomName}">
                             <f:selectItems value="#{serviceBrokersBean.names}" />
                         </h:selectOneMenu>
                         &nbsp;
@@ -42,11 +42,11 @@
                                         Name:
                                     </td>
                                     <td class="information">
-                                        <h:panelGroup rendered="#{!serviceBrokerBean.nameDisabled}">
-                                            <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.name}" />
+                                        <h:panelGroup rendered="#{!serviceBrokerBean.registered}">
+                                            <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitName}" />
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{serviceBrokerBean.nameDisabled}">
-                                            <h:inputText styleClass="hinputTextReadOnly" value="#{serviceBrokersBean.name}" readonly="true" />
+                                            <h:inputText styleClass="hinputTextReadOnly" value="#{serviceBrokersBean.hitName}" readonly="true" />
                                         </h:panelGroup>
                                     </td>
                                 </tr>
@@ -55,7 +55,7 @@
                                         Guid:
                                     </td>
                                     <td class="information">
-                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.guid}" />
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitGuid}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -63,7 +63,7 @@
                                         <nobr>Outgoing Passkey<sup>1</sup>:</nobr>
                                     </td>
                                     <td class="information">
-                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.outPasskey}" />
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitOutPasskey}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -71,7 +71,7 @@
                                         <nobr>Incoming Passkey<sup>2</sup>:</nobr>
                                     </td>
                                     <td class="information">
-                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.inPasskey}" />
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitInPasskey}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -79,7 +79,7 @@
                                         <nobr>Web Service Url:</nobr>
                                     </td>
                                     <td class="information">
-                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.webServiceUrl}" />
+                                        <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitWebServiceUrl}" />
                                     </td>
                                 </tr>
                                 <tr>
@@ -87,7 +87,7 @@
                                         Allowed:
                                     </td>
                                     <td class="information">
-                                        <h:selectBooleanCheckbox value="#{serviceBrokersBean.permitted}" />
+                                        <h:selectBooleanCheckbox value="#{serviceBrokersBean.hcbPermitted}" />
                                     </td>
                                 </tr>
                                 <tr>

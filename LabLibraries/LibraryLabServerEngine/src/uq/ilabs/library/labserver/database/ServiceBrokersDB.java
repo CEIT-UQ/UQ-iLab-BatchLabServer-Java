@@ -398,7 +398,7 @@ public class ServiceBrokersDB {
      *
      * @return String[]
      */
-    public String[] GetListName() {
+    public String[] GetListOfNames() {
         return this.GetList(STRCOL_Name, null);
     }
 
