@@ -479,7 +479,7 @@ public class DriverSimulation extends DriverGeneric {
                     XmlUtilities.SetChildValue(nodeRoot, Consts.STRXML_Repeat, experimentSpecification.getTrials());
 
                     /*
-                     * Create a CSV string of distances
+                     * Create a CSV string of absorbers
                      */
                     String csvAbsorbers = "";
                     String[] absorbers = experimentSpecification.getAbsorbers();

@@ -19,6 +19,8 @@ public class Consts extends LabConsts {
     /*
      * XML elements in the LabConfiguration.xml file
      */
+    public static final String STRXML_SetupId_RadioactivityVsTime = "RadioactivityVsTime";
+    public static final String STRXML_SetupId_RadioactivityVsDistance = "RadioactivityVsDistance";
     public static final String STRXML_SetupId_SimActivityVsTime = "SimActivityVsTime";
     public static final String STRXML_SetupId_SimActivityVsDistance = "SimActivityVsDistance";
     public static final String STRXML_SetupId_SimActivityVsTimeNoDelay = "SimActivityVsTimeNoDelay";

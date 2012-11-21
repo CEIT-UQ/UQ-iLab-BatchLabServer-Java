@@ -7,7 +7,6 @@ package uq.ilabs.library.labserver;
 import java.util.ArrayList;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;

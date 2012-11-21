@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>Radioactivity LabEquipment</comment>
+
+    <!-- LabServer: Comma-seperated LabServer's name, LabServer's guid and LabServer's passkey -->
+    <entry key="LabServer"> , , </entry>
+
+    <!-- Authenticating: If true, deny access if the LabServer's guid and passkey are not valid -->
+    <entry key="Authenticating">true</entry>
+    <!-- LogAuthentication: If true, log the LabServer's guid and passkey -->
+    <entry key="LogAuthentication">false</entry>
+
+</properties>

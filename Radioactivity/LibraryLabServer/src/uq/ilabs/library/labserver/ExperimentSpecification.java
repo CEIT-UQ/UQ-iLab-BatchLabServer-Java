@@ -37,8 +37,26 @@ public class ExperimentSpecification extends LabExperimentSpecification {
         return source;
     }
 
+    public void setSource(String source) {
+        try {
+            XmlUtilities.SetChildValue(this.nodeSpecification, Consts.STRXML_SourceName, source);
+        } catch (Exception ex) {
+        }
+    }
+
     public String[] getAbsorbers() {
         return absorbers;
+    }
+
+    public void setAbsorbers(String[] absorbers) {
+        try {
+            String csvAbsorbers = "";
+            for (int i = 0; i < absorbers.length; i++) {
+                csvAbsorbers += String.format("%s%s", (!csvAbsorbers.isEmpty()) ? Consts.STR_CsvSplitter : "", absorbers[i]);
+            }
+            XmlUtilities.SetChildValue(this.nodeSpecification, Consts.STRXML_AbsorberName, csvAbsorbers);
+        } catch (Exception ex) {
+        }
     }
 
     public int[] getDistances() {

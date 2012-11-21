@@ -28,8 +28,8 @@
     <entry key="FailedEmailList">ilab-admin@itee.uq.edu.au</entry>
 
     <!-- FarmSize: Number of Lab Experiment engines if no LabEquipment services are specified and can be not specified -->
-    <entry key="FarmSize">1</entry>
+    <!-- <entry key="FarmSize">1</entry> -->
     <!-- LabEquipmentService?: If present and starting at zero, comma-seperated LabEquipment service url and passkey -->
-    <!--<entry key="LabEquipmentService0">http://localhost:8080/RadioactivityLabEquipment/LabEquipmentService, fd3cf16cc855484fb06801379f475837</entry>-->
+    <entry key="LabEquipmentService0">http://localhost:8080/RadioactivityLabEquipment/LabEquipmentService, fd3cf16cc855484fb06801379f475837</entry>
 
 </properties>
