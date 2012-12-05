@@ -195,7 +195,7 @@ public class ServiceBrokerServiceBean {
                 edu.mit.ilab.ExperimentStatus proxyExperimentStatus = new edu.mit.ilab.ExperimentStatus();
                 proxyExperimentStatus.setEstRemainingRuntime(labExperimentStatus.getExperimentStatus().getEstRemainingRuntime());
                 proxyExperimentStatus.setEstRuntime(labExperimentStatus.getExperimentStatus().getEstRuntime());
-                proxyExperimentStatus.setStatusCode(labExperimentStatus.getExperimentStatus().getStatusCode().ordinal());
+                proxyExperimentStatus.setStatusCode(labExperimentStatus.getExperimentStatus().getStatusCode().getValue());
 
                 edu.mit.ilab.WaitEstimate proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
                 proxyWaitEstimate.setEffectiveQueueLength(labExperimentStatus.getExperimentStatus().getWaitEstimate().getEffectiveQueueLength());
@@ -330,7 +330,7 @@ public class ServiceBrokerServiceBean {
                 proxyResultReport = new edu.mit.ilab.ResultReport();
                 proxyResultReport.setErrorMessage(resultReport.getErrorMessage());
                 proxyResultReport.setExperimentResults(resultReport.getXmlExperimentResults());
-                proxyResultReport.setStatusCode(resultReport.getStatusCode().ordinal());
+                proxyResultReport.setStatusCode(resultReport.getStatusCode().getValue());
                 if (resultReport.getWarningMessages() != null) {
                     edu.mit.ilab.ArrayOfString proxyWarningMessages = new edu.mit.ilab.ArrayOfString();
                     proxyWarningMessages.getString().addAll(Arrays.asList(resultReport.getWarningMessages()));
@@ -340,7 +340,7 @@ public class ServiceBrokerServiceBean {
                 proxyResultReport.setXmlResultExtension(resultReport.getXmlResultExtension());
             } else {
                 proxyResultReport = new edu.mit.ilab.ResultReport();
-                proxyResultReport.setStatusCode(StatusCodes.Unknown.ordinal());
+                proxyResultReport.setStatusCode(StatusCodes.Unknown.getValue());
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());

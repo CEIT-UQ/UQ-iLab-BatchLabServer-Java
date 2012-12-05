@@ -188,8 +188,8 @@ public class LabEquipmentServiceBean {
          */
         au.edu.uq.ilab.ExecutionStatus proxyExecutionStatus = new au.edu.uq.ilab.ExecutionStatus();
         proxyExecutionStatus.setExecutionId(executionStatus.getExecutionId());
-        proxyExecutionStatus.setExecuteStatus(executionStatus.getExecuteStatus().ordinal());
-        proxyExecutionStatus.setResultStatus(executionStatus.getResultStatus().ordinal());
+        proxyExecutionStatus.setExecuteStatus(executionStatus.getExecuteStatus().getValue());
+        proxyExecutionStatus.setResultStatus(executionStatus.getResultStatus().getValue());
         proxyExecutionStatus.setTimeRemaining(executionStatus.getTimeRemaining());
         proxyExecutionStatus.setErrorMessage(executionStatus.getErrorMessage());
 
@@ -219,8 +219,8 @@ public class LabEquipmentServiceBean {
          */
         au.edu.uq.ilab.ExecutionStatus proxyExecutionStatus = new au.edu.uq.ilab.ExecutionStatus();
         proxyExecutionStatus.setExecutionId(executionStatus.getExecutionId());
-        proxyExecutionStatus.setExecuteStatus(executionStatus.getExecuteStatus().ordinal());
-        proxyExecutionStatus.setResultStatus(executionStatus.getResultStatus().ordinal());
+        proxyExecutionStatus.setExecuteStatus(executionStatus.getExecuteStatus().getValue());
+        proxyExecutionStatus.setResultStatus(executionStatus.getResultStatus().getValue());
         proxyExecutionStatus.setTimeRemaining(executionStatus.getTimeRemaining());
         proxyExecutionStatus.setErrorMessage(executionStatus.getErrorMessage());
 

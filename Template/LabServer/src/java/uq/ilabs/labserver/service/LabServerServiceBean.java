@@ -181,7 +181,7 @@ public class LabServerServiceBean {
                 edu.mit.ilab.ExperimentStatus proxyExperimentStatus = new edu.mit.ilab.ExperimentStatus();
                 proxyExperimentStatus.setEstRemainingRuntime(experimentStatus.getEstRemainingRuntime());
                 proxyExperimentStatus.setEstRuntime(experimentStatus.getEstRuntime());
-                proxyExperimentStatus.setStatusCode(experimentStatus.getStatusCode().ordinal());
+                proxyExperimentStatus.setStatusCode(experimentStatus.getStatusCode().getValue());
 
                 WaitEstimate waitEstimate = experimentStatus.getWaitEstimate();
                 if (waitEstimate != null) {
@@ -294,7 +294,7 @@ public class LabServerServiceBean {
             proxyResultReport = new edu.mit.ilab.ResultReport();
             proxyResultReport.setErrorMessage(resultReport.getErrorMessage());
             proxyResultReport.setExperimentResults(resultReport.getXmlExperimentResults());
-            proxyResultReport.setStatusCode(resultReport.getStatusCode().ordinal());
+            proxyResultReport.setStatusCode(resultReport.getStatusCode().getValue());
             proxyResultReport.setXmlBlobExtension(resultReport.getXmlBlobExtension());
             proxyResultReport.setXmlResultExtension(resultReport.getXmlResultExtension());
             if (resultReport.getWarningMessages() != null) {

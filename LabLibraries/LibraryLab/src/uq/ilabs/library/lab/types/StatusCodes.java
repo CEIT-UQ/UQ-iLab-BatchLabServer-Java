@@ -38,11 +38,18 @@ public enum StatusCodes {
      * Invalid experiment
      */
     Invalid(7);
+    //
+    //<editor-fold defaultstate="collapsed" desc="Properties">
+    private final int value;
+
+    public int getValue() {
+        return value;
+    }
+    //</editor-fold>
 
     private StatusCodes(int value) {
         this.value = value;
     }
-    private final int value;
 
     public static StatusCodes ToStatusCode(int value)
     {

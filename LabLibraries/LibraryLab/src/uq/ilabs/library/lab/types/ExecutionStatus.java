@@ -12,13 +12,29 @@ public class ExecutionStatus {
 
     public enum Status {
 
-        None(0), Created(1), Initialising(2), Starting(3), Running(4), Stopping(5), Finalising(6), Done(7),
-        Completed(8), Failed(9), Cancelled(10);
+        None(0),
+        Created(1),
+        Initialising(2),
+        Starting(3),
+        Running(4),
+        Stopping(5),
+        Finalising(6),
+        Done(7),
+        Completed(8),
+        Failed(9),
+        Cancelled(10);
+        //
+        //<editor-fold defaultstate="collapsed" desc="Properties">
+        private final int value;
+
+        public int getValue() {
+            return value;
+        }
+        //</editor-fold>
 
         private Status(int value) {
             this.value = value;
         }
-        private final int value;
 
         public static Status ToStatus(int value) {
             switch (value) {

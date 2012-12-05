@@ -117,9 +117,10 @@ public class DriverEquipmentGeneric extends DriverGeneric {
     }
 
     /**
-     *
-     * @param labExperimentSpecification
+     * 
+     * @param xmlSpecification
      * @return
+     * @throws Exception
      */
     @Override
     public LabExperimentResult Execute(String xmlSpecification) throws Exception {
