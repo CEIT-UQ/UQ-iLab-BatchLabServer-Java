@@ -4,14 +4,12 @@
  */
 package uq.ilabs.servicebroker.service;
 
-import edu.mit.ilab.ObjectFactory;
 import edu.mit.ilab.SbAuthHeader;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBElement;
-import javax.xml.ws.ProtocolException;
 import javax.xml.ws.WebServiceContext;
 import uq.ilabs.servicebroker.engine.ConfigProperties;
 
