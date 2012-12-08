@@ -31,6 +31,12 @@ public class AuthenticateToLabEquipment implements SOAPHandler<SOAPMessageContex
     private static final String STR_Identifier = "identifier";
     private static final String STR_Passkey = "passKey";
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Variables">
+    private static boolean initialised = false;
+    private static SOAPFactory soapFactory;
+    private static ObjectFactory objectFactory;
+    private static QName qnameAuthHeader;
+    //</editor-fold>
 
     @Override
     public boolean handleMessage(SOAPMessageContext messageContext) {
@@ -41,6 +47,21 @@ public class AuthenticateToLabEquipment implements SOAPHandler<SOAPMessageContex
          */
         if ((Boolean) messageContext.get(SOAPMessageContext.MESSAGE_OUTBOUND_PROPERTY) == true) {
             try {
+                /*
+                 * Check if local static variables have been initialised
+                 */
+                if (initialised == false) {
+                    soapFactory = SOAPFactory.newInstance();
+                    objectFactory = new ObjectFactory();
+                    JAXBElement<AuthHeader> jaxbElementAuthHeader = objectFactory.createAuthHeader(new AuthHeader());
+                    qnameAuthHeader = jaxbElementAuthHeader.getName();
+
+                    initialised = true;
+                }
+
+                /*
+                 * Process the SOAP header to add the authentication information
+                 */
                 this.ProcessSoapHeader(messageContext);
 
                 /*
@@ -81,57 +102,70 @@ public class AuthenticateToLabEquipment implements SOAPHandler<SOAPMessageContex
      */
     private void ProcessSoapHeader(SOAPMessageContext messageContext) throws SOAPException {
         /*
-         * Get the SOAP envelope and add a SOAP header
+         * Get the SOAP header
          */
         SOAPMessage soapMessage = messageContext.getMessage();
         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
         SOAPHeader soapHeader = soapEnvelope.addHeader();
-        SOAPFactory soapFactory = SOAPFactory.newInstance();
-
-        /*
-         * Create an instance of an authentication header ready to fill in
-         */
-        ObjectFactory objectFactory = new ObjectFactory();
-        JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
 
         /*
          * Get authentication header information from the context and process
          */
-        Object object = messageContext.get(jaxbElement.getName().getLocalPart());
+        Object object = messageContext.get(qnameAuthHeader.getLocalPart());
         if (object instanceof AuthHeader) {
-            AuthHeader authHeader = (AuthHeader) object;
+            /*
+             * AuthHeader
+             */
+            this.ProcessAuthHeader((AuthHeader) object, qnameAuthHeader, soapHeader);
+        }
+    }
 
+    /**
+     *
+     * @param authHeader
+     * @param qnameAuthHeader
+     * @param soapHeader
+     * @return SOAPHeaderElement
+     */
+    private SOAPHeaderElement ProcessAuthHeader(AuthHeader authHeader, QName qnameAuthHeader, SOAPHeader soapHeader) {
+
+        SOAPHeaderElement headerElement;
+
+        try {
             /*
              * Create the authentication header element
              */
-            QName qNameAuthHeader = jaxbElement.getName();
-            SOAPHeaderElement headerElement = soapHeader.addHeaderElement(qNameAuthHeader);
+            headerElement = soapHeader.addHeaderElement(qnameAuthHeader);
 
             /*
-             * Check if identifier is specified
+             * Check if Identifier is specified
              */
             if (authHeader.getIdentifier() != null) {
                 /*
-                 * Create the identifier element and add its value
+                 * Create Identifier element
                  */
-                QName qName = new QName(qNameAuthHeader.getNamespaceURI(), STR_Identifier, qNameAuthHeader.getPrefix());
+                QName qName = new QName(qnameAuthHeader.getNamespaceURI(), STR_Identifier, qnameAuthHeader.getPrefix());
                 SOAPElement element = soapFactory.createElement(qName);
                 element.addTextNode(authHeader.getIdentifier());
                 headerElement.addChildElement(element);
             }
 
             /*
-             * Check if passkey is specified
+             * Check if PassKey is specified
              */
             if (authHeader.getPassKey() != null) {
                 /*
-                 * Create passkey element and add its value
+                 * Create PassKey element
                  */
-                QName qName = new QName(qNameAuthHeader.getNamespaceURI(), STR_Passkey, qNameAuthHeader.getPrefix());
+                QName qName = new QName(qnameAuthHeader.getNamespaceURI(), STR_Passkey, qnameAuthHeader.getPrefix());
                 SOAPElement element = soapFactory.createElement(qName);
                 element.addTextNode(authHeader.getPassKey());
                 headerElement.addChildElement(element);
             }
+        } catch (SOAPException ex) {
+            headerElement = null;
         }
+
+        return headerElement;
     }
 }

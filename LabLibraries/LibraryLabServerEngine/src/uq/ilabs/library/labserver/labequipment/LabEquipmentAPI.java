@@ -5,6 +5,7 @@
 package uq.ilabs.library.labserver.labequipment;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.soap.SOAPFaultException;
 import uq.ilabs.labequipment.AuthHeader;
@@ -37,7 +38,8 @@ public class LabEquipmentAPI {
     private static final String STRERR_ServiceUrl = "serviceUrl";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private LabEquipmentServiceSoap proxyLabEquipment;
+    private LabEquipmentServiceSoap labEquipmentProxy;
+    private QName qnameAuthHeader;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String identifier;
@@ -80,9 +82,16 @@ public class LabEquipmentAPI {
             if (labEquipmentService == null) {
                 throw new NullPointerException(LabEquipmentService.class.getSimpleName());
             }
-            this.proxyLabEquipment = labEquipmentService.getLabEquipmentServiceSoap();
-            BindingProvider bp = (BindingProvider) this.proxyLabEquipment;
-            bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
+            this.labEquipmentProxy = labEquipmentService.getLabEquipmentServiceSoap();
+            ((BindingProvider) this.labEquipmentProxy).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
+
+            /*
+             * Get authentication header QName
+             */
+            ObjectFactory objectFactory = new ObjectFactory();
+            JAXBElement<AuthHeader> jaxbElementAuthHeader = objectFactory.createAuthHeader(new AuthHeader());
+            this.qnameAuthHeader = jaxbElementAuthHeader.getName();
+
         } catch (NullPointerException | IllegalArgumentException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -106,14 +115,9 @@ public class LabEquipmentAPI {
              * Set the authentication information and call the web service
              */
             this.SetAuthHeader();
-            uq.ilabs.labequipment.LabEquipmentStatus proxyLabEquipmentStatus = this.proxyLabEquipment.getLabEquipmentStatus();
+            uq.ilabs.labequipment.LabEquipmentStatus proxyLabEquipmentStatus = this.labEquipmentProxy.getLabEquipmentStatus();
+            labEquipmentStatus = this.ConvertType(proxyLabEquipmentStatus);
 
-            /*
-             * Convert to return type
-             */
-            labEquipmentStatus = new LabEquipmentStatus();
-            labEquipmentStatus.setOnline(proxyLabEquipmentStatus.isOnline());
-            labEquipmentStatus.setStatusMessage(proxyLabEquipmentStatus.getStatusMessage());
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
             labEquipmentStatus = new LabEquipmentStatus();
@@ -142,7 +146,8 @@ public class LabEquipmentAPI {
              * Set the authentication information and call the web service
              */
             this.SetAuthHeader();
-            timeUntilReady = this.proxyLabEquipment.getTimeUntilReady();
+            timeUntilReady = this.labEquipmentProxy.getTimeUntilReady();
+
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
         } catch (Exception ex) {
@@ -173,15 +178,9 @@ public class LabEquipmentAPI {
              * Set the authentication information and call the web service
              */
             this.SetAuthHeader();
-            uq.ilabs.labequipment.Validation proxyValidation = this.proxyLabEquipment.validate(xmlSpecification);
+            uq.ilabs.labequipment.Validation proxyValidation = this.labEquipmentProxy.validate(xmlSpecification);
+            validationReport = this.ConvertType(proxyValidation);
 
-            /*
-             * Convert to return type
-             */
-            validationReport = new ValidationReport();
-            validationReport.setAccepted(proxyValidation.isAccepted());
-            validationReport.setErrorMessage(proxyValidation.getErrorMessage());
-            validationReport.setEstRuntime(proxyValidation.getExecutionTime());
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
             validationReport = new ValidationReport();
@@ -200,7 +199,7 @@ public class LabEquipmentAPI {
     /**
      *
      * @param xmlSpecification
-     * @return
+     * @return ExecutionStatus
      * @throws Exception
      */
     public ExecutionStatus StartLabExecution(String xmlSpecification) throws Exception {
@@ -214,17 +213,9 @@ public class LabEquipmentAPI {
              * Set the authentication information and call the web service
              */
             this.SetAuthHeader();
-            uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.proxyLabEquipment.startLabExecution(xmlSpecification);
+            uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.labEquipmentProxy.startLabExecution(xmlSpecification);
+            executionStatus = this.ConvertType(proxyExecutionStatus);
 
-            /*
-             * Convert to return type
-             */
-            executionStatus = new uq.ilabs.library.lab.types.ExecutionStatus();
-            executionStatus.setExecutionId(proxyExecutionStatus.getExecutionId());
-            executionStatus.setExecuteStatus(ExecutionStatus.Status.ToStatus(proxyExecutionStatus.getExecuteStatus()));
-            executionStatus.setResultStatus(ExecutionStatus.Status.ToStatus(proxyExecutionStatus.getResultStatus()));
-            executionStatus.setTimeRemaining(proxyExecutionStatus.getTimeRemaining());
-            executionStatus.setErrorMessage(proxyExecutionStatus.getErrorMessage());
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
             executionStatus = new ExecutionStatus();
@@ -253,16 +244,9 @@ public class LabEquipmentAPI {
              * Set the authentication information and call the web service
              */
             this.SetAuthHeader();
-            uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.proxyLabEquipment.getLabExecutionStatus(executionId);
+            uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.labEquipmentProxy.getLabExecutionStatus(executionId);
+            executionStatus = this.ConvertType(proxyExecutionStatus);
 
-            /*
-             * Convert to return type
-             */
-            executionStatus = new uq.ilabs.library.lab.types.ExecutionStatus();
-            executionStatus.setExecuteStatus(ExecutionStatus.Status.ToStatus(proxyExecutionStatus.getExecuteStatus()));
-            executionStatus.setResultStatus(ExecutionStatus.Status.ToStatus(proxyExecutionStatus.getResultStatus()));
-            executionStatus.setTimeRemaining(proxyExecutionStatus.getTimeRemaining());
-            executionStatus.setErrorMessage(proxyExecutionStatus.getErrorMessage());
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
             executionStatus = new ExecutionStatus();
@@ -278,7 +262,8 @@ public class LabEquipmentAPI {
 
     /**
      *
-     * @return @throws Exception
+     * @param executionId
+     * @return String
      */
     public String GetLabExecutionResults(int executionId) throws Exception {
         final String methodName = "GetLabExecutionResults";
@@ -291,7 +276,8 @@ public class LabEquipmentAPI {
              * Set the authentication information and call the web service
              */
             this.SetAuthHeader();
-            labExecutionResults = this.proxyLabEquipment.getLabExecutionResults(executionId);
+            labExecutionResults = this.labEquipmentProxy.getLabExecutionResults(executionId);
+
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
         } catch (Exception ex) {
@@ -305,9 +291,9 @@ public class LabEquipmentAPI {
     /**
      *
      * @param executionId
-     * @return
+     * @return boolean
      */
-    public boolean CancelLabExecution(int executionId) {
+    public boolean CancelLabExecution(int executionId) throws Exception {
         final String methodName = "CancelLabExecution";
         Logfile.WriteCalled(STR_ClassName, methodName);
 
@@ -318,7 +304,8 @@ public class LabEquipmentAPI {
              * Set the authentication information and call the web service
              */
             this.SetAuthHeader();
-            success = this.proxyLabEquipment.cancelLabExecution(executionId);
+            success = this.labEquipmentProxy.cancelLabExecution(executionId);
+
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
         } catch (Exception ex) {
@@ -332,6 +319,7 @@ public class LabEquipmentAPI {
         return success;
     }
 
+    //================================================================================================================//
     /**
      *
      */
@@ -343,11 +331,66 @@ public class LabEquipmentAPI {
         authHeader.setIdentifier(this.identifier);
         authHeader.setPassKey(this.passkey);
 
-        if (this.proxyLabEquipment != null) {
-            BindingProvider bindingProvider = (BindingProvider) this.proxyLabEquipment;
-            ObjectFactory objectFactory = new ObjectFactory();
-            JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
-            bindingProvider.getRequestContext().put(jaxbElement.getName().getLocalPart(), authHeader);
-        }
+        /*
+         * Pass the authentication header to the message handler through the message context
+         */
+        ((BindingProvider) this.labEquipmentProxy).getRequestContext().put(this.qnameAuthHeader.getLocalPart(), authHeader);
     }
+
+    //<editor-fold defaultstate="collapsed" desc="ConvertType">
+    /**
+     *
+     * @param proxyExecutionStatus
+     * @return ExecutionStatus
+     */
+    private ExecutionStatus ConvertType(uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus) {
+        ExecutionStatus executionStatus = null;
+
+        if (proxyExecutionStatus != null) {
+            executionStatus = new uq.ilabs.library.lab.types.ExecutionStatus();
+            executionStatus.setExecutionId(proxyExecutionStatus.getExecutionId());
+            executionStatus.setExecuteStatus(ExecutionStatus.Status.ToStatus(proxyExecutionStatus.getExecuteStatus()));
+            executionStatus.setResultStatus(ExecutionStatus.Status.ToStatus(proxyExecutionStatus.getResultStatus()));
+            executionStatus.setTimeRemaining(proxyExecutionStatus.getTimeRemaining());
+            executionStatus.setErrorMessage(proxyExecutionStatus.getErrorMessage());
+        }
+
+        return executionStatus;
+    }
+
+    /**
+     *
+     * @param proxyLabEquipmentStatus
+     * @return LabEquipmentStatus
+     */
+    private LabEquipmentStatus ConvertType(uq.ilabs.labequipment.LabEquipmentStatus proxyLabEquipmentStatus) {
+        LabEquipmentStatus labEquipmentStatus = null;
+
+        if (proxyLabEquipmentStatus != null) {
+            labEquipmentStatus = new LabEquipmentStatus();
+            labEquipmentStatus.setOnline(proxyLabEquipmentStatus.isOnline());
+            labEquipmentStatus.setStatusMessage(proxyLabEquipmentStatus.getStatusMessage());
+        }
+
+        return labEquipmentStatus;
+    }
+
+    /**
+     *
+     * @param proxyValidation
+     * @return ValidationReport
+     */
+    private ValidationReport ConvertType(uq.ilabs.labequipment.Validation proxyValidation) {
+        ValidationReport validationReport = null;
+
+        if (proxyValidation != null) {
+            validationReport = new ValidationReport();
+            validationReport.setAccepted(proxyValidation.isAccepted());
+            validationReport.setErrorMessage(proxyValidation.getErrorMessage());
+            validationReport.setEstRuntime(proxyValidation.getExecutionTime());
+        }
+
+        return validationReport;
+    }
+    //</editor-fold>
 }

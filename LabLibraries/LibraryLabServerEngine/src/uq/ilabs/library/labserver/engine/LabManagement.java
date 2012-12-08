@@ -30,10 +30,10 @@ public class LabManagement {
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private ConfigProperties configProperties;
     private LabConfiguration labConfiguration;
-    private ServiceBrokersDB serviceBrokers;
-    private ExperimentQueueDB experimentQueue;
-    private ExperimentResultsDB experimentResults;
-    private ExperimentStatisticsDB experimentStatistics;
+    private ServiceBrokersDB serviceBrokersDB;
+    private ExperimentQueueDB experimentQueueDB;
+    private ExperimentResultsDB experimentResultsDB;
+    private ExperimentStatisticsDB experimentStatisticsDB;
     private WaitNotify signalSubmitted;
     private int farmSize;
     private LabEquipmentServiceInfo[] labEquipmentServiceInfo;
@@ -46,20 +46,20 @@ public class LabManagement {
         return labConfiguration;
     }
 
-    public ServiceBrokersDB getServiceBrokers() {
-        return serviceBrokers;
+    public ServiceBrokersDB getServiceBrokersDB() {
+        return serviceBrokersDB;
     }
 
-    public ExperimentQueueDB getExperimentQueue() {
-        return experimentQueue;
+    public ExperimentQueueDB getExperimentQueueDB() {
+        return experimentQueueDB;
     }
 
-    public ExperimentResultsDB getExperimentResults() {
-        return experimentResults;
+    public ExperimentResultsDB getExperimentResultsDB() {
+        return experimentResultsDB;
     }
 
-    public ExperimentStatisticsDB getExperimentStatistics() {
-        return experimentStatistics;
+    public ExperimentStatisticsDB getExperimentStatisticsDB() {
+        return experimentStatisticsDB;
     }
 
     public WaitNotify getSignalSubmitted() {
@@ -116,29 +116,28 @@ public class LabManagement {
             /*
              * Create an instance of ServiceBrokers for authentication and name access
              */
-            this.serviceBrokers = new ServiceBrokersDB(dbConnection);
-            if (this.serviceBrokers == null) {
+            this.serviceBrokersDB = new ServiceBrokersDB(dbConnection);
+            if (this.serviceBrokersDB == null) {
                 throw new NullPointerException(ServiceBrokersDB.class.getSimpleName());
             }
-            this.serviceBrokers.setAuthenticating(this.configProperties.isAuthenticating());
-            this.serviceBrokers.setLogAuthentication(this.configProperties.isLogAuthentication());
-            this.serviceBrokers.CreateCache();
+            this.serviceBrokersDB.setAuthenticating(this.configProperties.isAuthenticating());
+            this.serviceBrokersDB.setLogAuthentication(this.configProperties.isLogAuthentication());
 
             /*
              * Initialise local variables
              */
-            this.experimentQueue = new ExperimentQueueDB(dbConnection);
-            if (this.experimentQueue == null) {
+            this.experimentQueueDB = new ExperimentQueueDB(dbConnection);
+            if (this.experimentQueueDB == null) {
                 throw new NullPointerException(ExperimentQueueDB.class.getSimpleName());
             }
 
-            this.experimentResults = new ExperimentResultsDB(dbConnection);
-            if (this.experimentResults == null) {
+            this.experimentResultsDB = new ExperimentResultsDB(dbConnection);
+            if (this.experimentResultsDB == null) {
                 throw new NullPointerException(ExperimentResultsDB.class.getSimpleName());
             }
 
-            this.experimentStatistics = new ExperimentStatisticsDB(dbConnection);
-            if (this.experimentStatistics == null) {
+            this.experimentStatisticsDB = new ExperimentStatisticsDB(dbConnection);
+            if (this.experimentStatisticsDB == null) {
                 throw new NullPointerException(ExperimentStatisticsDB.class.getSimpleName());
             }
 

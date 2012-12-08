@@ -31,6 +31,12 @@ public class AuthenticateToServiceBroker implements SOAPHandler<SOAPMessageConte
     private static final String STR_CouponId = "couponID";
     private static final String STR_CouponPasskey = "couponPassKey";
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Variables">
+    private static boolean initialised = false;
+    private static SOAPFactory soapFactory;
+    private static ObjectFactory objectFactory;
+    private static QName qNameSbAuthHeader;
+    //</editor-fold>
 
     @Override
     public boolean handleMessage(SOAPMessageContext messageContext) {
@@ -41,6 +47,21 @@ public class AuthenticateToServiceBroker implements SOAPHandler<SOAPMessageConte
          */
         if ((Boolean) messageContext.get(SOAPMessageContext.MESSAGE_OUTBOUND_PROPERTY) == true) {
             try {
+                /*
+                 * Check if local static variables have been initialised
+                 */
+                if (initialised == false) {
+                    soapFactory = SOAPFactory.newInstance();
+                    objectFactory = new ObjectFactory();
+                    JAXBElement<SbAuthHeader> jaxbElementSbAuthHeader = objectFactory.createSbAuthHeader(new SbAuthHeader());
+                    qNameSbAuthHeader = jaxbElementSbAuthHeader.getName();
+
+                    initialised = true;
+                }
+
+                /*
+                 * Process the SOAP header to add the authentication information
+                 */
                 this.ProcessSoapHeader(messageContext);
 
                 /*
@@ -89,24 +110,36 @@ public class AuthenticateToServiceBroker implements SOAPHandler<SOAPMessageConte
         /*
          * Get the authentication header information
          */
-        ObjectFactory objectFactory = new ObjectFactory();
-        JAXBElement<SbAuthHeader> jaxbElementSbAuthHeader = objectFactory.createSbAuthHeader(new SbAuthHeader());
-        String qnameLocalPart = jaxbElementSbAuthHeader.getName().getLocalPart();
-        Object object = messageContext.get(qnameLocalPart);
+        Object object = messageContext.get(qNameSbAuthHeader.getLocalPart());
         if (object != null && object instanceof SbAuthHeader) {
-            SbAuthHeader sbAuthHeader = (SbAuthHeader) object;
-            SOAPFactory soapFactory = SOAPFactory.newInstance();
+            /*
+             * SbAuthHeader
+             */
+            this.ProcessSbAuthHeader((SbAuthHeader) object, qNameSbAuthHeader, soapHeader);
+        }
+    }
 
+    /**
+     *
+     * @param sbAuthHeader
+     * @param qnameAuthHeader
+     * @param soapHeader
+     * @return SOAPHeaderElement
+     */
+    private SOAPHeaderElement ProcessSbAuthHeader(SbAuthHeader sbAuthHeader, QName qnameAuthHeader, SOAPHeader soapHeader) {
+
+        SOAPHeaderElement headerElement;
+
+        try {
             /*
              * Create the authentication header element
              */
-            QName qNameSbAuthHeader = jaxbElementSbAuthHeader.getName();
-            SOAPHeaderElement headerElement = soapHeader.addHeaderElement(qNameSbAuthHeader);
+            headerElement = soapHeader.addHeaderElement(qnameAuthHeader);
 
             /*
              * Create couponId element and add to the coupon element
              */
-            QName qName = new QName(qNameSbAuthHeader.getNamespaceURI(), STR_CouponId, qNameSbAuthHeader.getPrefix());
+            QName qName = new QName(qnameAuthHeader.getNamespaceURI(), STR_CouponId, qnameAuthHeader.getPrefix());
             SOAPElement element = soapFactory.createElement(qName);
             element.addTextNode(Long.toString(sbAuthHeader.getCouponID()));
             headerElement.addChildElement(element);
@@ -118,11 +151,15 @@ public class AuthenticateToServiceBroker implements SOAPHandler<SOAPMessageConte
                 /*
                  * Create the coupon passkey element and add its value
                  */
-                qName = new QName(qNameSbAuthHeader.getNamespaceURI(), STR_CouponPasskey, qNameSbAuthHeader.getPrefix());
+                qName = new QName(qnameAuthHeader.getNamespaceURI(), STR_CouponPasskey, qnameAuthHeader.getPrefix());
                 element = soapFactory.createElement(qName);
                 element.addTextNode(sbAuthHeader.getCouponPassKey());
                 headerElement.addChildElement(element);
             }
+        } catch (SOAPException ex) {
+            headerElement = null;
         }
+
+        return headerElement;
     }
 }

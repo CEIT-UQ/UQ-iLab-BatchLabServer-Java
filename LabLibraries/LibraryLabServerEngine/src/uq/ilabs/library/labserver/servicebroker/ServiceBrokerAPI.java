@@ -4,8 +4,13 @@
  */
 package uq.ilabs.library.labserver.servicebroker;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.soap.SOAPFaultException;
 import uq.ilabs.library.lab.utilities.Logfile;
+import uq.ilabs.servicebroker.ObjectFactory;
+import uq.ilabs.servicebroker.SbAuthHeader;
 import uq.ilabs.servicebroker.ServiceBrokerService;
 import uq.ilabs.servicebroker.ServiceBrokerServiceSoap;
 
@@ -30,15 +35,14 @@ public class ServiceBrokerAPI {
     private static final String STRERR_ServiceBrokerService = "serviceBrokerService";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    /*
-     * Local variables
-     */
-    private ServiceBrokerServiceSoap proxyServiceBroker;
+    private ServiceBrokerServiceSoap serviceBrokerProxy;
+    private QName qnameSbAuthHeader;
     //</editor-fold>
 
     /**
      *
      * @param serviceUrl
+     * @throws Exception
      */
     public ServiceBrokerAPI(String serviceUrl) throws Exception {
         final String methodName = "ServiceBrokerAPI";
@@ -64,9 +68,16 @@ public class ServiceBrokerAPI {
             if (serviceBrokerService == null) {
                 throw new NullPointerException(STRERR_ServiceBrokerService);
             }
-            this.proxyServiceBroker = serviceBrokerService.getServiceBrokerServiceSoap();
-            BindingProvider bp = (BindingProvider) this.proxyServiceBroker;
-            bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
+            this.serviceBrokerProxy = serviceBrokerService.getServiceBrokerServiceSoap();
+            ((BindingProvider) this.serviceBrokerProxy).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
+
+            /*
+             * Get authentication header QName
+             */
+            ObjectFactory objectFactory = new ObjectFactory();
+            JAXBElement<SbAuthHeader> jaxbElementSbAuthHeader = objectFactory.createSbAuthHeader(new SbAuthHeader());
+            this.qnameSbAuthHeader = jaxbElementSbAuthHeader.getName();
+
         } catch (NullPointerException | IllegalArgumentException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -87,11 +98,14 @@ public class ServiceBrokerAPI {
         boolean success = false;
 
         try {
-            this.proxyServiceBroker.notify(experimentId);
-
+            this.serviceBrokerProxy.notify(experimentId);
             success = true;
+
+        } catch (SOAPFaultException ex) {
+            Logfile.Write(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
         Logfile.WriteCompleted(STR_ClassName, methodName,

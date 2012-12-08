@@ -226,7 +226,7 @@ public class LabExperimentManager implements Runnable {
             /*
              * First, try cancelling the experiment on the queue
              */
-            if ((success = this.labManagement.getExperimentQueue().Cancel(experimentId, sbName)) == false) {
+            if ((success = this.labManagement.getExperimentQueueDB().Cancel(experimentId, sbName)) == false) {
                 if (this.labExperimentEngines == null) {
                     throw new NullPointerException(STRERR_LabExperimentEngines);
                 }
@@ -276,7 +276,7 @@ public class LabExperimentManager implements Runnable {
         /*
          * Get the wait estimate of the queue
          */
-        WaitEstimate waitEstimate = this.labManagement.getExperimentQueue().GetWaitEstimate();
+        WaitEstimate waitEstimate = this.labManagement.getExperimentQueueDB().GetWaitEstimate();
 
         /*
          * Add in the time remaining before the next experiment can run
@@ -306,7 +306,7 @@ public class LabExperimentManager implements Runnable {
             /*
              * Get the status of the experiment from the queue
              */
-            StatusCodes statusCode = this.labManagement.getExperimentQueue().GetStatus(experimentId, sbName);
+            StatusCodes statusCode = this.labManagement.getExperimentQueueDB().GetStatus(experimentId, sbName);
             switch (statusCode) {
                 case Unknown:
                     /*
@@ -319,7 +319,7 @@ public class LabExperimentManager implements Runnable {
                     /*
                      * Experiment is waiting on the queue
                      */
-                    QueuedExperimentInfo queuedExperimentInfo = this.labManagement.getExperimentQueue().GetQueuedExperimentInfo(experimentId, sbName);
+                    QueuedExperimentInfo queuedExperimentInfo = this.labManagement.getExperimentQueueDB().GetQueuedExperimentInfo(experimentId, sbName);
                     LabExperimentInfo labExperimentInfo = queuedExperimentInfo.getLabExperimentInfo();
                     if (labExperimentInfo != null) {
                         /*
@@ -391,7 +391,7 @@ public class LabExperimentManager implements Runnable {
                     /*
                      * Experiment has completed, cancelled or failed so get the status from the experiment results
                      */
-                    ResultReport resultReport = this.labManagement.getExperimentResults().RetrieveResultReport(experimentId, sbName);
+                    ResultReport resultReport = this.labManagement.getExperimentResultsDB().RetrieveResultReport(experimentId, sbName);
                     labExperimentStatus.setExperimentStatus(new ExperimentStatus(resultReport.getStatusCode()));
                     break;
             }
@@ -510,12 +510,12 @@ public class LabExperimentManager implements Runnable {
             /*
              * Try getting the result of the completed experiment
              */
-            resultReport = this.labManagement.getExperimentResults().RetrieveResultReport(experimentId, sbName);
+            resultReport = this.labManagement.getExperimentResultsDB().RetrieveResultReport(experimentId, sbName);
             if (resultReport.getStatusCode() == StatusCodes.Unknown) {
                 /*
                  * No results found for the experiment, check the queue to see if it ever existed
                  */
-                StatusCodes statusCode = this.labManagement.getExperimentQueue().GetStatus(experimentId, sbName);
+                StatusCodes statusCode = this.labManagement.getExperimentQueueDB().GetStatus(experimentId, sbName);
                 resultReport.setStatusCode(statusCode);
             }
         } catch (Exception ex) {
@@ -563,7 +563,7 @@ public class LabExperimentManager implements Runnable {
              * Add the experiment to the queue
              */
             try {
-                QueuedExperimentInfo queuedExperimentInfo = this.labManagement.getExperimentQueue().Enqueue(labExperimentInfo);
+                QueuedExperimentInfo queuedExperimentInfo = this.labManagement.getExperimentQueueDB().Enqueue(labExperimentInfo);
                 if (queuedExperimentInfo == null) {
                     throw new RuntimeException(STRERR_FailedToEnqueueExperiment);
                 }
@@ -580,7 +580,7 @@ public class LabExperimentManager implements Runnable {
                  * Update the statistics with revised wait estimate
                  */
                 queuedExperimentInfo.setWaitTime((int) waitEstimate.getEstWait());
-                this.labManagement.getExperimentStatistics().Submitted(queuedExperimentInfo);
+                this.labManagement.getExperimentStatisticsDB().Submitted(queuedExperimentInfo);
 
                 /*
                  * Tell lab experiment manager thread that an experiment has been submitted
@@ -742,7 +742,7 @@ public class LabExperimentManager implements Runnable {
                         /*
                          * Revert any 'Running' experiments back to 'Waiting' so that they can be run again
                          */
-                        ArrayList<LabExperimentInfo> labExperimentInfoList = this.labManagement.getExperimentQueue().RetrieveByStatus(StatusCodes.Running);
+                        ArrayList<LabExperimentInfo> labExperimentInfoList = this.labManagement.getExperimentQueueDB().RetrieveByStatus(StatusCodes.Running);
                         if (labExperimentInfoList != null) {
                             Iterator iterator = labExperimentInfoList.iterator();
                             while (iterator.hasNext()) {
@@ -751,24 +751,24 @@ public class LabExperimentManager implements Runnable {
                                 /*
                                  * Change the experiment status to 'Waiting' so the experiment engine will find it to run again
                                  */
-                                success = this.labManagement.getExperimentQueue().UpdateStatus(labExperimentInfo.getQueueId(), StatusCodes.Waiting);
+                                success = this.labManagement.getExperimentQueueDB().UpdateStatus(labExperimentInfo.getQueueId(), StatusCodes.Waiting);
 
                                 /*
                                  * Delete the database statistics entry for this experiment
                                  */
-                                ExperimentStatisticInfo experimentStatisticInfo = this.labManagement.getExperimentStatistics().RetrieveByExperimentId(
+                                ExperimentStatisticInfo experimentStatisticInfo = this.labManagement.getExperimentStatisticsDB().RetrieveByExperimentId(
                                         labExperimentInfo.getExperimentId(), labExperimentInfo.getSbName());
                                 if (experimentStatisticInfo != null) {
-                                    this.labManagement.getExperimentStatistics().Delete(experimentStatisticInfo.getId());
+                                    this.labManagement.getExperimentStatisticsDB().Delete(experimentStatisticInfo.getId());
                                 }
 
                                 /*
                                  * Delete the database results entry for this experiment
                                  */
-                                ExperimentResultInfo experimentResultInfo = this.labManagement.getExperimentResults().RetrieveByExperimentId(
+                                ExperimentResultInfo experimentResultInfo = this.labManagement.getExperimentResultsDB().RetrieveByExperimentId(
                                         labExperimentInfo.getExperimentId(), labExperimentInfo.getSbName());
                                 if (experimentResultInfo != null) {
-                                    this.labManagement.getExperimentResults().Delete(experimentResultInfo.getId());
+                                    this.labManagement.getExperimentResultsDB().Delete(experimentResultInfo.getId());
                                 }
 
                                 String logMessage = String.format(STRLOG_RevertToWaiting_arg, labExperimentInfo.getExperimentId(), labExperimentInfo.getSbName(), success);
@@ -815,7 +815,7 @@ public class LabExperimentManager implements Runnable {
                         /*
                          * Check the queue to see if there are any experiments waiting
                          */
-                        if (this.labManagement.getExperimentQueue().GetCountWaiting() > 0) {
+                        if (this.labManagement.getExperimentQueueDB().GetCountWaiting() > 0) {
                             thisState = States.StartEngine;
                             break;
                         }
@@ -882,7 +882,7 @@ public class LabExperimentManager implements Runnable {
                          * Check if any experiments have not notified their ServiceBroker
                          */
                         success = true;
-                        ArrayList<ExperimentResultInfo> allNotNotified = this.labManagement.getExperimentResults().RetrieveAllNotNotified();
+                        ArrayList<ExperimentResultInfo> allNotNotified = this.labManagement.getExperimentResultsDB().RetrieveAllNotNotified();
                         if (allNotNotified != null) {
                             Iterator iterator = allNotNotified.iterator();
                             while (iterator.hasNext() && success == true) {

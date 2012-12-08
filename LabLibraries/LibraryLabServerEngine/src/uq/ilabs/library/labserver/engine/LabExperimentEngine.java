@@ -544,7 +544,7 @@ public class LabExperimentEngine implements Runnable {
                         /*
                          * Check if there is an experiment to run
                          */
-                        if ((labExperimentInfo = this.labManagement.getExperimentQueue().Dequeue(this.unitId)) == null) {
+                        if ((labExperimentInfo = this.labManagement.getExperimentQueueDB().Dequeue(this.unitId)) == null) {
                             /*
                              * No experiment to run
                              */
@@ -707,7 +707,7 @@ public class LabExperimentEngine implements Runnable {
                 /*
                  * Update the statistics for starting the experiment
                  */
-                if (this.labManagement.getExperimentStatistics().Started(
+                if (this.labManagement.getExperimentStatisticsDB().Started(
                         labExperimentInfo.getExperimentId(), labExperimentInfo.getSbName(), this.unitId) == false) {
                     throw new RuntimeException(STRERR_FailedToUpdateStatisticsStarted);
                 }
@@ -809,14 +809,14 @@ public class LabExperimentEngine implements Runnable {
             LabExperimentInfo labExperimentInfo = this.labExecutionInfo.getLabExperimentInfo();
             labExperimentResult.SetLabExperimentInfo(labExperimentInfo);
             ExperimentResultInfo experimentResultInfo = labExperimentResult.GetExperimentResultInfo();
-            if (this.labManagement.getExperimentResults().Add(experimentResultInfo) < 0) {
+            if (this.labManagement.getExperimentResultsDB().Add(experimentResultInfo) < 0) {
                 throw new RuntimeException(STRERR_FailedToSaveExperimentResults);
             }
 
             /*
              * Update experiment status in the queue table
              */
-            if (this.labManagement.getExperimentQueue().UpdateStatus(labExperimentInfo.getQueueId(), experimentResultInfo.getStatusCode()) == false) {
+            if (this.labManagement.getExperimentQueueDB().UpdateStatus(labExperimentInfo.getQueueId(), experimentResultInfo.getStatusCode()) == false) {
                 throw new RuntimeException(STRERR_FailedToUpdateQueueStatus);
             }
 
@@ -827,14 +827,14 @@ public class LabExperimentEngine implements Runnable {
                 /*
                  * Update statistics for cancelled experiment
                  */
-                if (this.labManagement.getExperimentStatistics().Cancelled(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
+                if (this.labManagement.getExperimentStatisticsDB().Cancelled(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
                     throw new RuntimeException(STRERR_FailedToUpdateStatisticsCancelled);
                 }
             } else {
                 /*
                  * Update statistics for completed experiment
                  */
-                if (this.labManagement.getExperimentStatistics().Completed(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
+                if (this.labManagement.getExperimentStatisticsDB().Completed(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
                     throw new RuntimeException(STRERR_FailedToUpdateStatisticsCompleted);
                 }
             }
@@ -866,11 +866,11 @@ public class LabExperimentEngine implements Runnable {
             /*
              * Notify the ServiceBroker so that the results can be retrieved
              */
-            String serviceUrl = this.labManagement.getServiceBrokers().GetServiceUrlByName(sbName);
+            String serviceUrl = this.labManagement.getServiceBrokersDB().GetServiceUrlByName(sbName);
             ServiceBrokerAPI serviceBrokerAPI = new ServiceBrokerAPI(serviceUrl);
             if (serviceBrokerAPI != null) {
                 if ((success = serviceBrokerAPI.Notify(experimentId)) == true) {
-                    success = this.labManagement.getExperimentResults().UpdateNotified(experimentId, sbName);
+                    success = this.labManagement.getExperimentResultsDB().UpdateNotified(experimentId, sbName);
                 }
             }
         } catch (Exception ex) {
@@ -949,9 +949,9 @@ public class LabExperimentEngine implements Runnable {
                 Iterator iterator = smtpClient.getTo().iterator();
                 while (iterator.hasNext()) {
                     if (to == null) {
-                        to = (String)iterator.next();
+                        to = (String) iterator.next();
                     } else {
-                        to += "," + (String)iterator.next();
+                        to += "," + (String) iterator.next();
                     }
                 }
                 Logfile.Write(String.format(STRLOG_SendingEmail_arg3, to, from, subject));

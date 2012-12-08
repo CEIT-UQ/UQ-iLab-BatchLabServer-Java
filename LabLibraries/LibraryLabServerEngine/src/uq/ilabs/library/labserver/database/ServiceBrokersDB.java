@@ -6,7 +6,6 @@ package uq.ilabs.library.labserver.database;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
@@ -22,42 +21,27 @@ public class ServiceBrokersDB {
     public static final String STR_ClassName = ServiceBrokersDB.class.getName();
     private static final Level logLevel = Level.FINEST;
     /*
-     * String constants
-     */
-    private static final String STR_localhost = "localhost";
-    /*
      * String constants for logfile messages
      */
-    private static final String STRLOG_CachingServiceBrokers = "Caching ServiceBrokers...";
-    private static final String STRLOG_CachedServiceBroker_arg = "%d: %s";
-    private static final String STRLOG_GuidPasskey_arg = "Guid: %s  Passkey: %s";
     private static final String STRLOG_Id_arg = "Id: %d";
-    private static final String STRLOG_SbName_arg = "sbName: %s";
     private static final String STRLOG_Count_arg = "Count: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
-    private static final String STRLOG_ServiceBrokerAuthenticated_arg = "ServiceBroker Authenticated: %s";
     /*
      * String constants for exception messages
      */
     private static final String STRERR_DBConnection = "dBConnection";
-    private static final String STRERR_Name = "name";
-    private static final String STRERR_Guid = "guid";
-    private static final String STRERR_Passkey = "passkey";
-    private static final String STRERR_AccessDenied = "Access is denied!";
-    private static final String STRERR_IncorrectPasskey_arg = "Incorrect Passkey: %s";
-    private static final String STRERR_ServiceBrokerNotFound = "ServiceBroker not found!";
     /*
-     * Database column names - must be lowercase
+     * Database column names
      */
-    private static final String STRCOL_Id = "id";
-    private static final String STRCOL_Name = "name";
-    private static final String STRCOL_Guid = "guid";
-    private static final String STRCOL_OutPasskey = "outpasskey";
-    private static final String STRCOL_InPasskey = "inpasskey";
-    private static final String STRCOL_ServiceUrl = "serviceurl";
-    private static final String STRCOL_Permitted = "permitted";
-    private static final String STRCOL_DateCreated = "datecreated";
-    private static final String STRCOL_DateModified = "datemodified";
+    private static final String STRCOL_Id = "Id";
+    private static final String STRCOL_Name = "Name";
+    private static final String STRCOL_Guid = "Guid";
+    private static final String STRCOL_OutPasskey = "OutPasskey";
+    private static final String STRCOL_InPasskey = "InPasskey";
+    private static final String STRCOL_ServiceUrl = "ServiceUrl";
+    private static final String STRCOL_Permitted = "Permitted";
+    private static final String STRCOL_DateCreated = "DateCreated";
+    private static final String STRCOL_DateModified = "DateModified";
     /*
      * String constants for SQL processing
      */
@@ -69,7 +53,6 @@ public class ServiceBrokersDB {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Connection sqlConnection;
-    private ArrayList<ServiceBrokerInfo> serviceBrokerInfoList;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private boolean authenticating;
@@ -116,155 +99,6 @@ public class ServiceBrokersDB {
         this.logAuthentication = false;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public int CreateCache() {
-        final String methodName = "CreateCache";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
-
-        int cacheSize = -1;
-        try {
-            /*
-             * Retrieve all ServiceBrokers
-             */
-            this.serviceBrokerInfoList = this.RetrieveAll();
-
-            /*
-             * Log the ServiceBroker info cache
-             */
-            String logMessage = STRLOG_CachingServiceBrokers + Logfile.STRLOG_Newline;
-            for (int i = 0; i < this.serviceBrokerInfoList.size(); i++) {
-                logMessage += String.format(STRLOG_CachedServiceBroker_arg, i + 1, this.serviceBrokerInfoList.get(i).getName()) + Logfile.STRLOG_Newline;
-            }
-            Logfile.Write(logMessage);
-
-            /*
-             * ServiceBrokers cached successfully
-             */
-            cacheSize = this.serviceBrokerInfoList.size();
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
-
-        return cacheSize;
-    }
-
-    /**
-     * Authenticate the ServiceBroker for the specified GUID and outgoing passkey.
-     *
-     * @param guid The ServiceBroker's GUID (identity).
-     * @param passKey The passkey sent by the ServiceBroker to the LabServer.
-     * @return The ServiceBroker's GUID if the ServiceBroker information exists and is allowed access.
-     */
-    public String Authenticate(String guid, String passkey) {
-        final String methodName = "Authenticate";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
-
-        try {
-            /*
-             * Check special case where the call is made directly from the 'Test Web Service...' web page on the
-             * localhost during application development and testing.
-             */
-            if (guid == null && passkey == null) {
-                /*
-                 * ServiceBroker is localhost where SOAP header contains no information
-                 */
-                ServiceBrokerInfo serviceBrokerInfo = RetrieveByName(STR_localhost);
-                if (serviceBrokerInfo == null) {
-                    throw new Exception(STRERR_ServiceBrokerNotFound);
-                }
-                guid = serviceBrokerInfo.getGuid();
-                passkey = serviceBrokerInfo.getOutPasskey();
-            }
-
-            /*
-             * Check that parameters are valid
-             */
-            if (guid == null) {
-                throw new NullPointerException(STRERR_Guid);
-            }
-            if (passkey == null) {
-                throw new NullPointerException(STRERR_Passkey);
-            }
-
-            /*
-             * Remove whitespace
-             */
-            guid = guid.trim();
-            passkey = passkey.trim();
-
-            /*
-             * Check if the GUID and passkey should be logged
-             */
-            if (this.isLogAuthentication() == true) {
-                /*
-                 * Log the ServiceBroker's GUID and passkey
-                 */
-                Logfile.Write(String.format(STRLOG_GuidPasskey_arg, guid, passkey));
-            }
-
-            /*
-             * Check if using cache
-             */
-            ServiceBrokerInfo serviceBrokerInfo = null;
-            if (this.serviceBrokerInfoList == null) {
-                /*
-                 * No cache, retrieve the ServiceBroker information from the database
-                 */
-                serviceBrokerInfo = this.RetrieveByGuid(guid);
-            } else {
-                /*
-                 * Scan the ServiceBroker info cache for a matching entry
-                 */
-                Iterator iterator = this.serviceBrokerInfoList.iterator();
-                while (iterator.hasNext()) {
-                    serviceBrokerInfo = (ServiceBrokerInfo) iterator.next();
-                    if (guid.equalsIgnoreCase(serviceBrokerInfo.getGuid()) == true) {
-                        break;
-                    }
-                    serviceBrokerInfo = null;
-                }
-            }
-
-            /*
-             * Check if a ServiceBroker has been found
-             */
-            if (serviceBrokerInfo == null) {
-                throw new RuntimeException(STRERR_ServiceBrokerNotFound);
-            }
-
-            /*
-             * Check the passkey - comparison is not case-sensitive
-             */
-            if (passkey.equalsIgnoreCase(serviceBrokerInfo.getOutPasskey()) == false) {
-                throw new RuntimeException(STRERR_IncorrectPasskey_arg);
-            }
-
-            /*
-             * Check if the ServiceBroker is permitted access
-             */
-            if (serviceBrokerInfo.isPermitted() == false) {
-                throw new RuntimeException(String.format(STRERR_AccessDenied));
-            }
-
-            /*
-             * ServiceBroker authenticated
-             */
-            Logfile.Write(String.format(STRLOG_ServiceBrokerAuthenticated_arg, serviceBrokerInfo.getName()));
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            guid = null;
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
-
-        return guid;
     }
 
     /**
@@ -518,7 +352,7 @@ public class ServiceBrokersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = sqlConnection.prepareCall(STRSQLCMD_GetList);
-                sqlStatement.setString(1, columnName);
+                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
                 sqlStatement.setString(2, strval);
 
                 /*
@@ -579,7 +413,7 @@ public class ServiceBrokersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, columnName);
+                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
