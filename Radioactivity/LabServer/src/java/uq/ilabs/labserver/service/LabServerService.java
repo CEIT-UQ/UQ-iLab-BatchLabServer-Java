@@ -6,15 +6,15 @@ package uq.ilabs.labserver.service;
 
 import edu.mit.ilab.AuthHeader;
 import edu.mit.ilab.ObjectFactory;
+import java.util.HashMap;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBElement;
-import javax.xml.ws.ProtocolException;
 import javax.xml.ws.WebServiceContext;
-import uq.ilabs.library.labserver.database.ServiceBrokersDB;
 import uq.ilabs.library.labserver.engine.ConfigProperties;
+import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
 
 /**
  *
@@ -37,12 +37,13 @@ public class LabServerService {
     private WebServiceContext wsContext;
     @EJB
     private LabServerServiceBean labServerServiceBean;
+    private static String qnameAuthHeaderLocalPart;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private static boolean initialised = false;
     private static boolean loggerCreated = false;
     private static ConfigProperties configProperties;
-    private static ServiceBrokersDB serviceBrokers;
+    private static HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo;
 
     public static boolean isInitialised() {
         return initialised;
@@ -68,146 +69,85 @@ public class LabServerService {
         LabServerService.configProperties = configProperties;
     }
 
-    public static ServiceBrokersDB getServiceBrokers() {
-        return serviceBrokers;
+    public static HashMap<String, ServiceBrokerInfo> getMapServiceBrokerInfo() {
+        return mapServiceBrokerInfo;
     }
 
-    public static void setServiceBrokers(ServiceBrokersDB serviceBrokers) {
-        LabServerService.serviceBrokers = serviceBrokers;
+    public static void setMapServiceBrokerInfo(HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo) {
+        LabServerService.mapServiceBrokerInfo = mapServiceBrokerInfo;
     }
     //</editor-fold>
 
-    /**
-     *
-     * @param experimentID
-     * @return
-     */
     public boolean cancel(int experimentID) {
-        String identifier = this.ProcessAuthHeader();
-        String sbName = serviceBrokers.GetNameByGuid(identifier);
-        return labServerServiceBean.cancel(experimentID, sbName);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.cancel(authHeader, experimentID);
     }
 
-    /**
-     *
-     * @param userGroup
-     * @param priorityHint
-     * @return
-     */
     public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(java.lang.String userGroup, int priorityHint) {
-        this.ProcessAuthHeader();
-        return labServerServiceBean.getEffectiveQueueLength(userGroup, priorityHint);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.getEffectiveQueueLength(authHeader, userGroup, priorityHint);
     }
 
-    /**
-     *
-     * @param experimentID
-     * @return
-     */
     public edu.mit.ilab.LabExperimentStatus getExperimentStatus(int experimentID) {
-        String identifier = this.ProcessAuthHeader();
-        String sbName = serviceBrokers.GetNameByGuid(identifier);
-        return labServerServiceBean.getExperimentStatus(experimentID, sbName);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.getExperimentStatus(authHeader, experimentID);
     }
 
-    /**
-     *
-     * @param userGroup
-     * @return
-     */
     public java.lang.String getLabConfiguration(java.lang.String userGroup) {
-        this.ProcessAuthHeader();
-        return labServerServiceBean.getLabConfiguration(userGroup);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.getLabConfiguration(authHeader, userGroup);
     }
 
-    /**
-     *
-     * @return
-     */
-    public java.lang.String getLabInfo() throws Exception {
-        this.ProcessAuthHeader();
-        return labServerServiceBean.getLabInfo();
+    public java.lang.String getLabInfo() {
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.getLabInfo(authHeader);
     }
 
-    /**
-     *
-     * @return
-     */
     public edu.mit.ilab.LabStatus getLabStatus() {
-        this.ProcessAuthHeader();
-        return labServerServiceBean.getLabStatus();
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.getLabStatus(authHeader);
     }
 
-    /**
-     *
-     * @param experimentID
-     * @return
-     */
     public edu.mit.ilab.ResultReport retrieveResult(int experimentID) {
-        String identifier = this.ProcessAuthHeader();
-        String sbName = serviceBrokers.GetNameByGuid(identifier);
-        return labServerServiceBean.retrieveResult(experimentID, sbName);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.retrieveResult(authHeader, experimentID);
     }
 
-    /**
-     *
-     * @param experimentID
-     * @param experimentSpecification
-     * @param userGroup
-     * @param priorityHint
-     * @return
-     */
     public edu.mit.ilab.SubmissionReport submit(int experimentID, java.lang.String experimentSpecification, java.lang.String userGroup, int priorityHint) {
-        String identifier = this.ProcessAuthHeader();
-        String sbName = serviceBrokers.GetNameByGuid(identifier);
-        return labServerServiceBean.submit(experimentID, sbName, experimentSpecification, userGroup, priorityHint);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.submit(authHeader, experimentID, experimentSpecification, userGroup, priorityHint);
     }
 
-    /**
-     *
-     * @param experimentSpecification
-     * @param userGroup
-     * @return
-     */
     public edu.mit.ilab.ValidationReport validate(java.lang.String experimentSpecification, java.lang.String userGroup) {
-        this.ProcessAuthHeader();
-        return labServerServiceBean.validate(experimentSpecification, userGroup);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labServerServiceBean.validate(authHeader, experimentSpecification, userGroup);
     }
 
+    //================================================================================================================//
     /**
      *
-     * @return String
+     * @return AuthHeader
      */
-    private String ProcessAuthHeader() {
+    private AuthHeader GetAuthHeader() {
+        AuthHeader authHeader = null;
+
         /*
          * Get the authentication header from the message context
          */
-        ObjectFactory objectFactory = new ObjectFactory();
-        JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
-        Object object = wsContext.getMessageContext().get(jaxbElement.getName().getLocalPart());
+        if (qnameAuthHeaderLocalPart == null) {
+            ObjectFactory objectFactory = new ObjectFactory();
+            JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
+            qnameAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
+        }
+        Object object = wsContext.getMessageContext().get(qnameAuthHeaderLocalPart);
 
         /*
          * Check that it is an AuthHeader
          */
-        String identifier = null;
-        String passkey = null;
         if (object != null && object instanceof AuthHeader) {
-            /*
-             * Get the ServiceBroker's guid and outgoing passkey
-             */
-            AuthHeader authHeader = (AuthHeader) object;
-            identifier = authHeader.getIdentifier();
-            passkey = authHeader.getPassKey();
+            authHeader = (AuthHeader) object;
         }
 
-        /*
-         * Authenticate - Do we just return a boolean or do we throw an exception?
-         */
-        boolean success = labServerServiceBean.Authenticate(identifier, passkey);
-        if (success == false) {
-            throw new ProtocolException(STR_AccessDenied);
-        }
-
-        return (success == true) ? identifier : null;
+        return authHeader;
     }
 }

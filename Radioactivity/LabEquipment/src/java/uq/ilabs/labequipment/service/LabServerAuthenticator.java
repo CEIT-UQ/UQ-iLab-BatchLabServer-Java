@@ -7,6 +7,7 @@ package uq.ilabs.labequipment.service;
 import au.edu.uq.ilab.AuthHeader;
 import au.edu.uq.ilab.ObjectFactory;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -33,7 +34,7 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabServerAuthenticator.class.getName();
     /*
-     * String constants for authorization header
+     * String constants
      */
     private static final String STR_Identifier = "identifier";
     private static final String STR_Passkey = "passKey";
@@ -41,6 +42,10 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
      * String constants for logfile messages
      */
     private static final String STRLOG_LoggingLevel_arg = "LoggingLevel: %s";
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Variables">
+    private static ObjectFactory objectFactory;
+    private static String qnameAuthHeaderLocalPart;
     //</editor-fold>
 
     @Override
@@ -60,6 +65,13 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
                  */
                 if (LabEquipmentService.isInitialised() == false) {
                     GetInitParameters((ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT));
+
+                    /*
+                     * Get the authentication header names
+                     */
+                    objectFactory = new ObjectFactory();
+                    JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
+                    qnameAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
                 }
 
                 /*
@@ -75,7 +87,7 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
                 ProcessSoapHeader(messageContext);
 
                 success = true;
-            } catch (Exception ex) {
+            } catch (SOAPException | IOException ex) {
                 Logfile.WriteError(ex.toString());
                 throw new ProtocolException(ex);
             }
@@ -112,13 +124,6 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
         SOAPHeader soapHeader = soapEnvelope.getHeader();
 
         /*
-         * Get the authentication header names
-         */
-        ObjectFactory objectFactory = new ObjectFactory();
-        JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
-        String qnameAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
-
-        /*
          * Scan through the header's child elements looking for the authentication header
          */
         Iterator iterator = soapHeader.getChildElements();
@@ -136,14 +141,15 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
                 String localName = elementName.getLocalName();
 
                 /*
-                 * Check if this is an authentication header
+                 * Process the authentication header and pass to the web service through the
+                 * message context. The scope has to be changed from HANDLER to APPLICATION so
+                 * that the web service can see the message context map
                  */
                 if (localName.equalsIgnoreCase(qnameAuthHeaderLocalPart) == true) {
                     /*
-                     * Put the authentication header into the message context where it can be processed by the web
-                     * service
+                     * AuthHeader
                      */
-                    AuthHeader authHeader = ProcessSoapElement(soapElement);
+                    AuthHeader authHeader = ProcessSoapElementAuthHeader(soapElement);
                     messageContext.put(qnameAuthHeaderLocalPart, authHeader);
                     messageContext.setScope(qnameAuthHeaderLocalPart, MessageContext.Scope.APPLICATION);
                 }
@@ -156,13 +162,8 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
      * @param soapElement
      * @return AuthHeader
      */
-    private AuthHeader ProcessSoapElement(SOAPElement soapElement) {
-        /*
-         * Create an instance of the authentication header ready to fill in
-         */
-        ObjectFactory objectFactory = new ObjectFactory();
+    private AuthHeader ProcessSoapElementAuthHeader(SOAPElement soapElement) {
         AuthHeader authHeader = objectFactory.createAuthHeader();
-
         Iterator iterator = soapElement.getChildElements();
         while (iterator.hasNext()) {
             /*
@@ -195,7 +196,7 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
      *
      * @param servletContext
      */
-    private void GetInitParameters(ServletContext servletContext) throws Exception {
+    private void GetInitParameters(ServletContext servletContext) {
         final String methodName = "GetInitParameters";
 
         try {

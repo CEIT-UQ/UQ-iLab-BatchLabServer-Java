@@ -46,3 +46,73 @@ th
     text-align: left;
     padding: 10px 0px 10px 0px;
 }
+
+/*
+ * Response messages
+*/
+.infomessage, .warningmessage, .errormessage
+{
+    color: Black;
+    border: solid 1px Black;
+    padding: 10px;
+}
+.infomessage
+{
+    background-color: #e8ffe8;
+}
+.warningmessage
+{
+    background-color: #e8e8ff;
+}
+.errormessage
+{
+    background-color: #ffe8e8;
+}
+
+td.label, td.labelwrap, td.labelbold
+{
+    width: 60px;
+    text-align: left;
+    vertical-align: middle;
+    padding: 5px 5px 5px 0px;
+}
+td.label, td.labelbold, td.information
+{
+    white-space: nowrap;
+}
+td.labelbold
+{
+    font-weight: bold;
+}
+td.buttons
+{
+    text-align: left;
+    padding-top: 10px;
+    padding-bottom: 15px;
+}
+
+td.infotable {
+    border: solid 1px grey;
+    background-color: #EEE4F8;
+    padding: 10px;
+}
+
+.hcommandButton
+{
+    font-size: 100%;
+    width: 72px;
+    height: 24px;
+}
+.hinputText, .hinputTextReadOnly
+{
+    font-size: 100%;
+    height: 16px;
+}
+.hinputTextReadOnly
+{
+    background-color: #E8E8E8;
+}
+.hselectOneMenu
+{
+    font-size: 100%;
+}

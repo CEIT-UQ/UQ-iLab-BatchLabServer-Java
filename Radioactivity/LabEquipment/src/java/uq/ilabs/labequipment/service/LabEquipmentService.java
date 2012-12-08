@@ -11,7 +11,6 @@ import javax.ejb.EJB;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBElement;
-import javax.xml.ws.ProtocolException;
 import javax.xml.ws.WebServiceContext;
 import uq.ilabs.library.labequipment.engine.ConfigProperties;
 
@@ -36,6 +35,7 @@ public class LabEquipmentService {
     private WebServiceContext wsContext;
     @EJB
     private LabEquipmentServiceBean labEquipmentServiceBean;
+    private static String qnameAuthHeaderLocalPart;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private static boolean initialised = false;
@@ -59,74 +59,65 @@ public class LabEquipmentService {
     //</editor-fold>
 
     public au.edu.uq.ilab.LabEquipmentStatus getLabEquipmentStatus() {
-        this.ProcessAuthHeader();
-        return labEquipmentServiceBean.GetLabEquipmentStatus();
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labEquipmentServiceBean.GetLabEquipmentStatus(authHeader);
     }
 
     public int getTimeUntilReady() {
-        this.ProcessAuthHeader();
-        return labEquipmentServiceBean.GetTimeUntilReady();
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labEquipmentServiceBean.GetTimeUntilReady(authHeader);
     }
 
     public au.edu.uq.ilab.Validation validate(java.lang.String xmlSpecification) {
-        this.ProcessAuthHeader();
-        return labEquipmentServiceBean.Validate(xmlSpecification);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labEquipmentServiceBean.Validate(authHeader, xmlSpecification);
     }
 
     public au.edu.uq.ilab.ExecutionStatus startLabExecution(java.lang.String xmlSpecification) {
-        this.ProcessAuthHeader();
-        return labEquipmentServiceBean.StartLabExecution(xmlSpecification);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labEquipmentServiceBean.StartLabExecution(authHeader, xmlSpecification);
     }
 
     public au.edu.uq.ilab.ExecutionStatus getLabExecutionStatus(int executionId) {
-        this.ProcessAuthHeader();
-        return labEquipmentServiceBean.GetLabExecutionStatus(executionId);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labEquipmentServiceBean.GetLabExecutionStatus(authHeader, executionId);
     }
 
     public java.lang.String getLabExecutionResults(int executionId) {
-        this.ProcessAuthHeader();
-        return labEquipmentServiceBean.GetLabExecutionResults(executionId);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labEquipmentServiceBean.GetLabExecutionResults(authHeader, executionId);
     }
 
     public boolean cancelLabExecution(int executionId) {
-        this.ProcessAuthHeader();
-        return labEquipmentServiceBean.CancelLabExecution(executionId);
+        AuthHeader authHeader = this.GetAuthHeader();
+        return labEquipmentServiceBean.CancelLabExecution(authHeader, executionId);
     }
 
+    //================================================================================================================//
     /**
      *
-     * @return boolean
+     * @return SbAuthHeader
      */
-    private String ProcessAuthHeader() {
+    private AuthHeader GetAuthHeader() {
+        AuthHeader authHeader = null;
+
         /*
          * Get the authentication header from the message context
          */
-        ObjectFactory objectFactory = new ObjectFactory();
-        JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
-        Object object = wsContext.getMessageContext().get(jaxbElement.getName().getLocalPart());
+        if (qnameAuthHeaderLocalPart == null) {
+            ObjectFactory objectFactory = new ObjectFactory();
+            JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
+            qnameAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
+        }
+        Object object = wsContext.getMessageContext().get(qnameAuthHeaderLocalPart);
 
         /*
          * Check that it is an AuthHeader
          */
-        String identifier = null;
-        String passkey = null;
         if (object != null && object instanceof AuthHeader) {
-            /*
-             * Get the LabServer's guid and passkey
-             */
-            AuthHeader authHeader = (AuthHeader) object;
-            identifier = authHeader.getIdentifier();
-            passkey = authHeader.getPassKey();
+            authHeader = (AuthHeader) object;
         }
 
-        /*
-         * Authenticate - Do we just return a boolean or do we throw an exception?
-         */
-        boolean success = labEquipmentServiceBean.Authenticate(identifier, passkey);
-        if (success == false) {
-            throw new ProtocolException(STR_AccessDenied);
-        }
-
-        return (success == true) ? identifier : null;
+        return authHeader;
     }
 }

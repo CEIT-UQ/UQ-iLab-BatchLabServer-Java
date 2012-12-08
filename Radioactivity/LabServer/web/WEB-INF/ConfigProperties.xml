@@ -21,11 +21,11 @@
     <entry key="LogAuthentication">false</entry>
 
     <!-- ContactEmail: Email address for LabServer's manager. If not specified, no email is sent. -->
-    <entry key="ContactEmail">ilab-admin@itee.uq.edu.au</entry>
+    <entry key="ContactEmail"></entry>
     <!-- CompletedEmailList: Comma-seperated list of email addresses that will receive an email when the experiment completes. If not specified, no email is sent. -->
-    <entry key="CompletedEmailList">ilab-admin@itee.uq.edu.au</entry>
+    <entry key="CompletedEmailList"></entry>
     <!-- FailedEmailList: Comma-seperated list of email addresses that will receive an email when the experiment fails. If not specified, no email is sent. -->
-    <entry key="FailedEmailList">ilab-admin@itee.uq.edu.au</entry>
+    <entry key="FailedEmailList"></entry>
 
     <!-- FarmSize: Number of Lab Experiment engines if no LabEquipment services are specified and can be not specified -->
     <!-- <entry key="FarmSize">1</entry> -->
