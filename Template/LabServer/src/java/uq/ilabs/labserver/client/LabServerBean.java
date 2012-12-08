@@ -4,7 +4,6 @@
  */
 package uq.ilabs.labserver.client;
 
-import java.io.Serializable;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.faces.application.ViewExpiredException;
@@ -23,7 +22,7 @@ import uq.ilabs.library.labserver.client.UserSession;
  */
 @ManagedBean
 @SessionScoped
-public class LabServerBean implements Serializable {
+public class LabServerBean {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabServerBean.class.getName();

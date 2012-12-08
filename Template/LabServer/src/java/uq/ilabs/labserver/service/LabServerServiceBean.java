@@ -5,17 +5,24 @@
 package uq.ilabs.labserver.service;
 
 import edu.mit.ilab.ArrayOfString;
+import edu.mit.ilab.AuthHeader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+import javax.xml.ws.ProtocolException;
 import uq.ilabs.library.lab.types.*;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.Configuration;
 import uq.ilabs.library.labserver.ExperimentManager;
+import uq.ilabs.library.labserver.database.ServiceBrokersDB;
 import uq.ilabs.library.labserver.engine.ConfigProperties;
 import uq.ilabs.library.labserver.engine.LabManagement;
+import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
 
 /**
  *
@@ -31,25 +38,34 @@ public class LabServerServiceBean {
     /*
      * String constants for logfile messages
      */
-    private static final String STRLOG_ExperimentIdSbName_arg2 = "ExperimentId: %d  SbName: %s";
+    private static final String STRLOG_AuthHeaderNull = "AuthHeader: null";
+    private static final String STRLOG_IdentifierPasskey_arg2 = "Identifier: '%s'  Passkey: '%s'";
+    private static final String STRLOG_ExperimentId_arg = "ExperimentId: %d";
     private static final String STRLOG_UserGroupPriorityHint_arg2 = "UserGroup: %s  PriorityHint: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
-    private static final String STRLOG_IdentifierPasskey_arg2 = "Identifier: '%s'  Passkey: '%s'";
     /*
      * String constants for exception messages
      */
     private static final String STRERR_ExperimentManagerCreateFailed = "ExperimentManager.Create() Failed!";
     private static final String STRERR_ExperimentManagerStartFailed = "ExperimentManager.Start() Failed!";
+    private static final String STRERR_AccessDenied_arg = "LabServer Access Denied: %s";
+    private static final String STRERR_AuthHeaderNull = "AuthHeader is null";
+    private static final String STRERR_ServiceBrokerGuidNull = "ServiceBroker Guid is null";
+    private static final String STRERR_ServiceBrokerGuidUnkown_arg = "ServiceBroker Guid '%s' is unknown";
+    private static final String STRERR_PasskeyNull = "Passkey is null";
+    private static final String STRERR_PasskeyInvalid_arg = "Passkey '%s' is invalid";
+    private static final String STRERR_AccessNotPermitted = "Access is not permitted";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private ConfigProperties configProperties;
     private ExperimentManager experimentManager;
+    private ServiceBrokersDB serviceBrokersDB;
     //</editor-fold>
 
     /**
      * Constructor - Seems that this gets called when the project is deployed which is unexpected. To get around this,
      * check to see if the LabServer has been initialised and the configuration properties set. Can't do logging until
-     * the ServiceBroker has been initialised and the logger created.
+     * the LabServer has been initialised and the logger created.
      */
     public LabServerServiceBean() {
         final String methodName = "LabServerServiceBean";
@@ -72,10 +88,7 @@ public class LabServerServiceBean {
                 Configuration configuration = new Configuration(null, this.configProperties.getXmlLabConfigurationPath());
                 LabManagement labManagement = new LabManagement(this.configProperties, configuration);
 
-                /*
-                 * Set the ServiceBrokers for LabServer service authentication access
-                 */
-                LabServerService.setServiceBrokers(labManagement.getServiceBrokers());
+                this.serviceBrokersDB = labManagement.getServiceBrokersDB();
 
                 /*
                  * Create an instance of the the experiment manager
@@ -104,15 +117,28 @@ public class LabServerServiceBean {
 
     /**
      *
+     * @param authHeader
      * @param experimentId
-     * @return
+     * @return boolean
      */
-    public boolean cancel(int experimentId, String sbName) {
+    public boolean cancel(AuthHeader authHeader, int experimentId) {
         final String STR_MethodName = "cancel";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
-                String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
+                String.format(STRLOG_ExperimentId_arg, experimentId));
 
-        boolean success = this.experimentManager.Cancel(experimentId, sbName);
+        boolean success = false;
+
+        String sbName = this.Authenticate(authHeader);
+
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            success = this.experimentManager.Cancel(experimentId, sbName);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, STR_MethodName,
                 String.format(STRLOG_Success_arg, success));
@@ -122,29 +148,29 @@ public class LabServerServiceBean {
 
     /**
      *
+     * @param authHeader
      * @param userGroup
      * @param priorityHint
-     * @return
+     * @return edu.mit.ilab.WaitEstimate
      */
-    public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(String userGroup, int priorityHint) {
+    public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(AuthHeader authHeader, String userGroup, int priorityHint) {
         final String STR_MethodName = "getEffectiveQueueLength";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
                 String.format(STRLOG_UserGroupPriorityHint_arg2, userGroup, priorityHint));
 
         edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        WaitEstimate waitEstimate = this.experimentManager.GetEffectiveQueueLength(userGroup, priorityHint);
+        this.Authenticate(authHeader);
 
-        /*
-         * Convert to return type
-         */
-        if (waitEstimate != null) {
-            proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
-            proxyWaitEstimate.setEffectiveQueueLength(waitEstimate.getEffectiveQueueLength());
-            proxyWaitEstimate.setEstWait(waitEstimate.getEstWait());
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            WaitEstimate waitEstimate = this.experimentManager.GetEffectiveQueueLength(userGroup, priorityHint);
+            proxyWaitEstimate = this.ConvertType(waitEstimate);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
@@ -154,44 +180,28 @@ public class LabServerServiceBean {
 
     /**
      *
-     * @param experimentID
-     * @return
+     * @param authHeader
+     * @param experimentId
+     * @return edu.mit.ilab.LabExperimentStatus
      */
-    public edu.mit.ilab.LabExperimentStatus getExperimentStatus(int experimentId, String sbName) {
+    public edu.mit.ilab.LabExperimentStatus getExperimentStatus(AuthHeader authHeader, int experimentId) {
         final String STR_MethodName = "getExperimentStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
-                String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
+                String.format(STRLOG_ExperimentId_arg, experimentId));
 
         edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        LabExperimentStatus labExperimentStatus = this.experimentManager.GetLabExperimentStatus(experimentId, sbName);
+        String sbName = this.Authenticate(authHeader);
 
-        /*
-         * Convert to return type
-         */
-        if (labExperimentStatus != null) {
-            proxyLabExperimentStatus = new edu.mit.ilab.LabExperimentStatus();
-            proxyLabExperimentStatus.setMinTimetoLive(labExperimentStatus.getMinTimetoLive());
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            LabExperimentStatus labExperimentStatus = this.experimentManager.GetLabExperimentStatus(experimentId, sbName);
+            proxyLabExperimentStatus = this.ConvertType(labExperimentStatus);
 
-            ExperimentStatus experimentStatus = labExperimentStatus.getExperimentStatus();
-            if (experimentStatus != null) {
-                edu.mit.ilab.ExperimentStatus proxyExperimentStatus = new edu.mit.ilab.ExperimentStatus();
-                proxyExperimentStatus.setEstRemainingRuntime(experimentStatus.getEstRemainingRuntime());
-                proxyExperimentStatus.setEstRuntime(experimentStatus.getEstRuntime());
-                proxyExperimentStatus.setStatusCode(experimentStatus.getStatusCode().getValue());
-
-                WaitEstimate waitEstimate = experimentStatus.getWaitEstimate();
-                if (waitEstimate != null) {
-                    edu.mit.ilab.WaitEstimate proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
-                    proxyWaitEstimate.setEffectiveQueueLength(waitEstimate.getEffectiveQueueLength());
-                    proxyWaitEstimate.setEstWait(waitEstimate.getEstWait());
-                    proxyExperimentStatus.setWait(proxyWaitEstimate);
-                }
-                proxyLabExperimentStatus.setStatusReport(proxyExperimentStatus);
-            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
@@ -201,19 +211,27 @@ public class LabServerServiceBean {
 
     /**
      *
+     * @param authHeader
      * @param userGroup
      * @return String
      */
-    public String getLabConfiguration(String userGroup) {
+    public String getLabConfiguration(AuthHeader authHeader, String userGroup) {
         final String STR_MethodName = "getLabConfiguration";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
 
-        String labConfiguration;
+        String labConfiguration = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        labConfiguration = this.experimentManager.GetXmlLabConfiguration(userGroup);
+        this.Authenticate(authHeader);
+
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            labConfiguration = this.experimentManager.GetXmlLabConfiguration(userGroup);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
@@ -222,18 +240,26 @@ public class LabServerServiceBean {
 
     /**
      *
+     * @param authHeader
      * @return String
      */
-    public String getLabInfo() throws Exception {
+    public String getLabInfo(AuthHeader authHeader) {
         final String STR_MethodName = "getLabInfo";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
 
-        String labInfo;
+        String labInfo = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        labInfo = this.experimentManager.GetLabInfo();
+        this.Authenticate(authHeader);
+
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            labInfo = this.experimentManager.GetLabInfo();
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
@@ -242,26 +268,26 @@ public class LabServerServiceBean {
 
     /**
      *
-     * @return
+     * @param authHeader
+     * @return edu.mit.ilab.LabStatus
      */
-    public edu.mit.ilab.LabStatus getLabStatus() {
+    public edu.mit.ilab.LabStatus getLabStatus(AuthHeader authHeader) {
         final String STR_MethodName = "getLabStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
 
         edu.mit.ilab.LabStatus proxyLabStatus = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        LabStatus labStatus = this.experimentManager.GetLabStatus();
+        this.Authenticate(authHeader);
 
-        /*
-         * Convert to return type
-         */
-        if (labStatus != null) {
-            proxyLabStatus = new edu.mit.ilab.LabStatus();
-            proxyLabStatus.setLabStatusMessage(labStatus.getLabStatusMessage());
-            proxyLabStatus.setOnline(labStatus.isOnline());
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            LabStatus labStatus = this.experimentManager.GetLabStatus();
+            proxyLabStatus = this.ConvertType(labStatus);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
@@ -271,37 +297,32 @@ public class LabServerServiceBean {
 
     /**
      *
+     * @param authHeader
      * @param experimentId
-     * @param sbName
-     * @return
+     * @return edu.mit.ilab.ResultReport
      */
-    public edu.mit.ilab.ResultReport retrieveResult(int experimentId, String sbName) {
+    public edu.mit.ilab.ResultReport retrieveResult(AuthHeader authHeader, int experimentId) {
         final String STR_MethodName = "retrieveResult";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
-                String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
+                String.format(STRLOG_ExperimentId_arg, experimentId));
 
         edu.mit.ilab.ResultReport proxyResultReport = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        ResultReport resultReport = this.experimentManager.RetrieveResult(experimentId, sbName);
+        String sbName = this.Authenticate(authHeader);
 
-        /*
-         * Convert to return type
-         */
-        if (resultReport != null) {
-            proxyResultReport = new edu.mit.ilab.ResultReport();
-            proxyResultReport.setErrorMessage(resultReport.getErrorMessage());
-            proxyResultReport.setExperimentResults(resultReport.getXmlExperimentResults());
-            proxyResultReport.setStatusCode(resultReport.getStatusCode().getValue());
-            proxyResultReport.setXmlBlobExtension(resultReport.getXmlBlobExtension());
-            proxyResultReport.setXmlResultExtension(resultReport.getXmlResultExtension());
-            if (resultReport.getWarningMessages() != null) {
-                ArrayOfString proxyWarningMessages = new ArrayOfString();
-                proxyWarningMessages.getString().addAll(Arrays.asList(resultReport.getWarningMessages()));
-                proxyResultReport.setWarningMessages(proxyWarningMessages);
-            }
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            ResultReport resultReport = this.experimentManager.RetrieveResult(experimentId, sbName);
+            proxyResultReport = this.ConvertType(resultReport);
+
+            /*
+             * Convert to return type
+             */
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
@@ -311,53 +332,30 @@ public class LabServerServiceBean {
 
     /**
      *
+     * @param authHeader
      * @param experimentId
-     * @param sbName
      * @param experimentSpecification
      * @param userGroup
      * @param priorityHint
-     * @return
+     * @return edu.mit.ilab.SubmissionReport
      */
-    public edu.mit.ilab.SubmissionReport submit(int experimentId, String sbName, String experimentSpecification, String userGroup, int priorityHint) {
+    public edu.mit.ilab.SubmissionReport submit(AuthHeader authHeader, int experimentId, String experimentSpecification, String userGroup, int priorityHint) {
         final String STR_MethodName = "submit";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
 
         edu.mit.ilab.SubmissionReport proxySubmissionReport = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        SubmissionReport submissionReport = this.experimentManager.Submit(experimentId, sbName, experimentSpecification, userGroup, priorityHint);
+        String sbName = this.Authenticate(authHeader);
 
-        /*
-         * Convert to return type
-         */
-        if (submissionReport != null) {
-            proxySubmissionReport = new edu.mit.ilab.SubmissionReport();
-            proxySubmissionReport.setExperimentID(experimentId);
-            proxySubmissionReport.setMinTimeToLive(submissionReport.getMinTimeToLive());
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            SubmissionReport submissionReport = this.experimentManager.Submit(experimentId, sbName, experimentSpecification, userGroup, priorityHint);
+            proxySubmissionReport = this.ConvertType(submissionReport);
 
-            ValidationReport validationReport = submissionReport.getValidationReport();
-            if (validationReport != null) {
-                edu.mit.ilab.ValidationReport proxyValidationReport = new edu.mit.ilab.ValidationReport();
-                proxyValidationReport.setAccepted(validationReport.isAccepted());
-                proxyValidationReport.setErrorMessage(validationReport.getErrorMessage());
-                proxyValidationReport.setEstRuntime(validationReport.getEstRuntime());
-                if (validationReport.getWarningMessages() != null) {
-                    ArrayOfString proxyWarningMessages = new ArrayOfString();
-                    proxyWarningMessages.getString().addAll(Arrays.asList(validationReport.getWarningMessages()));
-                    proxyValidationReport.setWarningMessages(proxyWarningMessages);
-                }
-                proxySubmissionReport.setVReport(proxyValidationReport);
-
-                WaitEstimate waitEstimate = submissionReport.getWaitEstimate();
-                if (waitEstimate != null) {
-                    edu.mit.ilab.WaitEstimate proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
-                    proxyWaitEstimate.setEffectiveQueueLength(waitEstimate.getEffectiveQueueLength());
-                    proxyWaitEstimate.setEstWait(waitEstimate.getEstWait());
-                    proxySubmissionReport.setWait(proxyWaitEstimate);
-                }
-            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
@@ -369,33 +367,25 @@ public class LabServerServiceBean {
      *
      * @param experimentSpecification
      * @param userGroup
-     * @return
+     * @return edu.mit.ilab.ValidationReport
      */
-    public edu.mit.ilab.ValidationReport validate(String experimentSpecification, String userGroup) {
+    public edu.mit.ilab.ValidationReport validate(AuthHeader authHeader, String experimentSpecification, String userGroup) {
         final String STR_MethodName = "validate";
         Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
 
         edu.mit.ilab.ValidationReport proxyValidationReport = null;
 
-        /*
-         * Pass on to the experiment manager
-         */
-        ValidationReport validationReport = this.experimentManager.Validate(experimentSpecification, userGroup);
+        this.Authenticate(authHeader);
 
-        /*
-         * Convert to return type
-         */
-        if (validationReport != null) {
-            proxyValidationReport = new edu.mit.ilab.ValidationReport();
-            proxyValidationReport.setAccepted(validationReport.isAccepted());
-            proxyValidationReport.setErrorMessage(validationReport.getErrorMessage());
-            proxyValidationReport.setEstRuntime(validationReport.getEstRuntime());
+        try {
+            /*
+             * Pass on to the experiment manager
+             */
+            ValidationReport validationReport = this.experimentManager.Validate(experimentSpecification, userGroup);
+            proxyValidationReport = this.ConvertType(validationReport);
 
-            if (validationReport.getWarningMessages() != null) {
-                ArrayOfString proxyWarningMessages = new ArrayOfString();
-                proxyWarningMessages.getString().addAll(Arrays.asList(validationReport.getWarningMessages()));
-                proxyValidationReport.setWarningMessages(proxyWarningMessages);
-            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
@@ -403,31 +393,243 @@ public class LabServerServiceBean {
         return proxyValidationReport;
     }
 
+    //================================================================================================================//
     /**
      *
-     * @param identifier
-     * @param passkey
-     * @return
+     * @param authHeader
+     * @return String
      */
-    public boolean Authenticate(String identifier, String passkey) {
-        /*
-         * Assume this will succeed
-         */
-        boolean success = true;
+    private String Authenticate(AuthHeader authHeader) {
+
+        String sbName = null;
 
         /*
          * Check if authenticating
          */
         if (configProperties.isAuthenticating()) {
             if (configProperties.isLogAuthentication()) {
-                Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, identifier, passkey));
+                if (authHeader == null) {
+                    Logfile.Write(STRLOG_AuthHeaderNull);
+                } else {
+                    Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, authHeader.getIdentifier(), authHeader.getPassKey()));
+                }
             }
 
-            success = LabServerService.getServiceBrokers().Authenticate(identifier, passkey) != null;
+            try {
+                /*
+                 * Check that AuthHeader and ServiceBroker Guid are specified
+                 */
+                if (authHeader == null) {
+                    throw new ProtocolException(STRERR_AuthHeaderNull);
+                }
+                if (authHeader.getIdentifier() == null) {
+                    throw new ProtocolException(STRERR_ServiceBrokerGuidNull);
+                }
+
+                /*
+                 * Check if the ServiceBrokerInfo cache exists
+                 */
+                HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo = LabServerService.getMapServiceBrokerInfo();
+                if (mapServiceBrokerInfo == null) {
+                    /*
+                     * Create the cache and populate
+                     */
+                    mapServiceBrokerInfo = new HashMap<>();
+                    ArrayList serviceBrokerInfoList = this.serviceBrokersDB.RetrieveAll();
+                    Iterator iterator = serviceBrokerInfoList.iterator();
+                    while (iterator.hasNext()) {
+                        ServiceBrokerInfo serviceBrokerInfo = (ServiceBrokerInfo) iterator.next();
+                        mapServiceBrokerInfo.put(serviceBrokerInfo.getGuid(), serviceBrokerInfo);
+                    }
+                    LabServerService.setMapServiceBrokerInfo(mapServiceBrokerInfo);
+                }
+
+                /*
+                 * Check if the ServiceBrokerInfo for this ServiceBroker Guid exists
+                 */
+                ServiceBrokerInfo serviceBrokerInfo = mapServiceBrokerInfo.get(authHeader.getIdentifier());
+                if (serviceBrokerInfo == null) {
+                    throw new ProtocolException(String.format(STRERR_ServiceBrokerGuidUnkown_arg, authHeader.getIdentifier()));
+                }
+
+                /*
+                 * Verify the passkey
+                 */
+                if (authHeader.getPassKey() == null) {
+                    throw new ProtocolException(STRERR_PasskeyNull);
+                }
+                if (authHeader.getPassKey().equalsIgnoreCase(serviceBrokerInfo.getOutPasskey()) == false) {
+                    throw new ProtocolException(String.format(STRERR_PasskeyInvalid_arg, authHeader.getPassKey()));
+                }
+
+                /*
+                 * Check that the ServiceBroker is permitted access
+                 */
+                if (serviceBrokerInfo.isPermitted() == false) {
+                    throw new ProtocolException(STRERR_AccessNotPermitted);
+                }
+
+                /*
+                 * Successfully authenticated
+                 */
+                sbName = serviceBrokerInfo.getName();
+
+            } catch (ProtocolException ex) {
+                String message = String.format(STRERR_AccessDenied_arg, ex.getMessage());
+                Logfile.WriteError(message);
+                throw new ProtocolException(message);
+            }
         }
 
-        return success;
+        return sbName;
     }
+
+    //<editor-fold defaultstate="collapsed" desc="ConvertType">
+    /**
+     *
+     * @param strings
+     * @return ArrayOfString
+     */
+    private ArrayOfString ConvertType(String[] strings) {
+        ArrayOfString arrayOfString = null;
+
+        if (strings != null) {
+            arrayOfString = new ArrayOfString();
+            arrayOfString.getString().addAll(Arrays.asList(strings));
+        }
+
+        return arrayOfString;
+    }
+
+    /**
+     *
+     * @param experimentStatus
+     * @return edu.mit.ilab.ExperimentStatus
+     */
+    private edu.mit.ilab.ExperimentStatus ConvertType(ExperimentStatus experimentStatus) {
+        edu.mit.ilab.ExperimentStatus proxyExperimentStatus = null;
+
+        if (experimentStatus != null) {
+            proxyExperimentStatus = new edu.mit.ilab.ExperimentStatus();
+            proxyExperimentStatus.setEstRemainingRuntime(experimentStatus.getEstRemainingRuntime());
+            proxyExperimentStatus.setEstRuntime(experimentStatus.getEstRuntime());
+            proxyExperimentStatus.setStatusCode(experimentStatus.getStatusCode().getValue());
+            proxyExperimentStatus.setWait(this.ConvertType(experimentStatus.getWaitEstimate()));
+        }
+
+        return proxyExperimentStatus;
+    }
+
+    /**
+     *
+     * @param labExperimentStatus
+     * @return edu.mit.ilab.LabExperimentStatus
+     */
+    private edu.mit.ilab.LabExperimentStatus ConvertType(LabExperimentStatus labExperimentStatus) {
+        edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
+
+        if (labExperimentStatus != null) {
+            proxyLabExperimentStatus = new edu.mit.ilab.LabExperimentStatus();
+            proxyLabExperimentStatus.setMinTimetoLive(labExperimentStatus.getMinTimetoLive());
+            proxyLabExperimentStatus.setStatusReport(this.ConvertType(labExperimentStatus.getExperimentStatus()));
+        }
+
+        return proxyLabExperimentStatus;
+    }
+
+    /**
+     *
+     * @param labStatus
+     * @return edu.mit.ilab.LabStatus
+     */
+    private edu.mit.ilab.LabStatus ConvertType(LabStatus labStatus) {
+        edu.mit.ilab.LabStatus proxyLabStatus = null;
+
+        if (labStatus != null) {
+            proxyLabStatus = new edu.mit.ilab.LabStatus();
+            proxyLabStatus.setLabStatusMessage(labStatus.getLabStatusMessage());
+            proxyLabStatus.setOnline(labStatus.isOnline());
+        }
+
+        return proxyLabStatus;
+    }
+
+    /**
+     *
+     * @param resultReport
+     * @return edu.mit.ilab.ResultReport
+     */
+    private edu.mit.ilab.ResultReport ConvertType(ResultReport resultReport) {
+        edu.mit.ilab.ResultReport proxyResultReport = null;
+
+        if (resultReport != null) {
+            proxyResultReport = new edu.mit.ilab.ResultReport();
+            proxyResultReport.setErrorMessage(resultReport.getErrorMessage());
+            proxyResultReport.setExperimentResults(resultReport.getXmlExperimentResults());
+            proxyResultReport.setStatusCode(resultReport.getStatusCode().getValue());
+            proxyResultReport.setXmlBlobExtension(resultReport.getXmlBlobExtension());
+            proxyResultReport.setXmlResultExtension(resultReport.getXmlResultExtension());
+            proxyResultReport.setWarningMessages(this.ConvertType(resultReport.getWarningMessages()));
+        }
+
+        return proxyResultReport;
+    }
+
+    /**
+     *
+     * @param submissionReport
+     * @return edu.mit.ilab.SubmissionReport
+     */
+    private edu.mit.ilab.SubmissionReport ConvertType(SubmissionReport submissionReport) {
+        edu.mit.ilab.SubmissionReport proxySubmissionReport = null;
+
+        if (submissionReport != null) {
+            proxySubmissionReport = new edu.mit.ilab.SubmissionReport();
+            proxySubmissionReport.setExperimentID(submissionReport.getExperimentId());
+            proxySubmissionReport.setMinTimeToLive(submissionReport.getMinTimeToLive());
+            proxySubmissionReport.setVReport(this.ConvertType(submissionReport.getValidationReport()));
+            proxySubmissionReport.setWait(this.ConvertType(submissionReport.getWaitEstimate()));
+        }
+
+        return proxySubmissionReport;
+    }
+
+    /**
+     *
+     * @param validationReport
+     * @return edu.mit.ilab.ValidationReport
+     */
+    private edu.mit.ilab.ValidationReport ConvertType(ValidationReport validationReport) {
+        edu.mit.ilab.ValidationReport proxyValidationReport = null;
+
+        if (validationReport != null) {
+            proxyValidationReport = new edu.mit.ilab.ValidationReport();
+            proxyValidationReport.setAccepted(validationReport.isAccepted());
+            proxyValidationReport.setErrorMessage(validationReport.getErrorMessage());
+            proxyValidationReport.setEstRuntime(validationReport.getEstRuntime());
+            proxyValidationReport.setWarningMessages(this.ConvertType(validationReport.getWarningMessages()));
+        }
+
+        return proxyValidationReport;
+    }
+
+    /**
+     *
+     * @param waitEstimate
+     * @return edu.mit.ilab.WaitEstimate
+     */
+    private edu.mit.ilab.WaitEstimate ConvertType(WaitEstimate waitEstimate) {
+        edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
+
+        if (waitEstimate != null) {
+            proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
+            proxyWaitEstimate.setEffectiveQueueLength(waitEstimate.getEffectiveQueueLength());
+            proxyWaitEstimate.setEstWait(waitEstimate.getEstWait());
+        }
+
+        return proxyWaitEstimate;
+    }
+    //</editor-fold>
 
     /**
      *

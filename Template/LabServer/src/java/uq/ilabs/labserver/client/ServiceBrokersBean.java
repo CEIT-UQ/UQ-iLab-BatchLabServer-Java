@@ -4,7 +4,6 @@
  */
 package uq.ilabs.labserver.client;
 
-import java.io.Serializable;
 import java.util.logging.Level;
 import javax.faces.application.ViewExpiredException;
 import javax.faces.bean.ManagedBean;
@@ -23,7 +22,7 @@ import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
  */
 @ManagedBean
 @SessionScoped
-public class ServiceBrokersBean implements Serializable {
+public class ServiceBrokersBean {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ServiceBrokersBean.class.getName();
@@ -31,85 +30,88 @@ public class ServiceBrokersBean implements Serializable {
     /*
      * String constants
      */
-    private static final String STR_SaveSuccessful_arg = "Information for ServiceBroker '%s' was saved successfully.";
-    private static final String STR_DeleteSuccessful_arg = "Information for ServiceBroker '%s' was deleted successfully.";
+    private static final String STR_ServiceBroker_arg = "ServiceBroker '%s' ";
+    private static final String STR_SaveSuccessful_arg = STR_ServiceBroker_arg + "saved successfully.";
+    private static final String STR_UpdateSuccessful_arg = STR_ServiceBroker_arg + "updated successfully.";
+    private static final String STR_DeleteSuccessful_arg = STR_ServiceBroker_arg + "deleted successfully.";
     /*
      * String constants for exception messages
      */
-    private static final String STRERR_Name = "Name";
-    private static final String STRERR_Guid = "Guid";
-    private static final String STRERR_OutPasskey = "OutPasskey";
-    private static final String STRERR_WebServiceUrl = "Web Service Url";
+    private static final String STRERR_ServiceBrokerName = "ServiceBroker Name";
+    private static final String STRERR_ServiceBrokerGuid = "ServiceBroker Guid";
+    private static final String STRERR_OutgoingPasskey = "Outgoing Passkey";
+    private static final String STRERR_ServiceUrl = "Service Url";
     private static final String STRERR_NotSpecified_arg = "%s: Not specified!";
-    private static final String STRERR_AlreadyExists_arg = "%s: Already exists!";
-    private static final String STRERR_RetrieveFailed_arg = "%s: Information could not be retrieved.";
-    private static final String STRERR_SaveFailed_arg = "%s: Information could not be saved.";
-    private static final String STRERR_DeleteFailed_arg = "%s: Information could not be deleted.";
+    private static final String STRERR_AlreadyExists_arg = STR_ServiceBroker_arg + "already exists!";
+    private static final String STRERR_RetrieveFailed_arg = STR_ServiceBroker_arg + "could not be retrieved.";
+    private static final String STRERR_SaveFailed_arg = STR_ServiceBroker_arg + "could not be saved.";
+    private static final String STRERR_UpdateFailed_arg = STR_ServiceBroker_arg + "could not be updated.";
+    private static final String STRERR_DeleteFailed_arg = STR_ServiceBroker_arg + "could not be deleted.";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabServerSession labServerSession;
     private ServiceBrokersDB serviceBrokersDB;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private String hsomName;
-    private String hitName;
-    private String hitGuid;
-    private String hitOutPasskey;
-    private String hitInPasskey;
-    private String hitWebServiceUrl;
+    private String hsomServiceBroker;
+    private String hitServiceBrokerName;
+    private String hitServiceBrokerGuid;
+    private String hitOutgoingPasskey;
+    private String hitIncomingPasskey;
+    private String hitServiceUrl;
     private boolean hcbPermitted;
-    private String[] names;
+    private String[] serviceBrokers;
     private boolean registered;
-    private boolean deleteDisabled;
+//    private boolean deleteDisabled;
     private String holMessage;
     private String holMessageClass;
 
-    public String getHsomName() {
-        return hsomName;
+    public String getHsomServiceBroker() {
+        return hsomServiceBroker;
     }
 
-    public void setHsomName(String hsomName) {
-        this.hsomName = hsomName;
+    public void setHsomServiceBroker(String hsomServiceBroker) {
+        this.hsomServiceBroker = hsomServiceBroker;
     }
 
-    public String getHitName() {
-        return hitName;
+    public String getHitServiceBrokerName() {
+        return hitServiceBrokerName;
     }
 
-    public void setHitName(String hitName) {
-        this.hitName = hitName;
+    public void setHitServiceBrokerName(String hitServiceBrokerName) {
+        this.hitServiceBrokerName = hitServiceBrokerName;
     }
 
-    public String getHitGuid() {
-        return hitGuid;
+    public String getHitServiceBrokerGuid() {
+        return hitServiceBrokerGuid;
     }
 
-    public void setHitGuid(String hitGuid) {
-        this.hitGuid = hitGuid;
+    public void setHitServiceBrokerGuid(String hitServiceBrokerGuid) {
+        this.hitServiceBrokerGuid = hitServiceBrokerGuid;
     }
 
-    public String getHitOutPasskey() {
-        return hitOutPasskey;
+    public String getHitOutgoingPasskey() {
+        return hitOutgoingPasskey;
     }
 
-    public void setHitOutPasskey(String hitOutPasskey) {
-        this.hitOutPasskey = hitOutPasskey;
+    public void setHitOutgoingPasskey(String hitOutgoingPasskey) {
+        this.hitOutgoingPasskey = hitOutgoingPasskey;
     }
 
-    public String getHitInPasskey() {
-        return hitInPasskey;
+    public String getHitIncomingPasskey() {
+        return hitIncomingPasskey;
     }
 
-    public void setHitInPasskey(String hitInPasskey) {
-        this.hitInPasskey = hitInPasskey;
+    public void setHitIncomingPasskey(String hitIncomingPasskey) {
+        this.hitIncomingPasskey = hitIncomingPasskey;
     }
 
-    public String getHitWebServiceUrl() {
-        return hitWebServiceUrl;
+    public String getHitServiceUrl() {
+        return hitServiceUrl;
     }
 
-    public void setHitWebServiceUrl(String hitWebServiceUrl) {
-        this.hitWebServiceUrl = hitWebServiceUrl;
+    public void setHitServiceUrl(String hitServiceUrl) {
+        this.hitServiceUrl = hitServiceUrl;
     }
 
     public boolean isHcbPermitted() {
@@ -120,18 +122,17 @@ public class ServiceBrokersBean implements Serializable {
         this.hcbPermitted = hcbPermitted;
     }
 
-    public String[] getNames() {
-        return names;
+    public String[] getServiceBrokers() {
+        return serviceBrokers;
     }
 
     public boolean isRegistered() {
         return registered;
     }
 
-    public boolean isDeleteDisabled() {
-        return deleteDisabled;
-    }
-
+//    public boolean isDeleteDisabled() {
+//        return deleteDisabled;
+//    }
     public String getHolMessage() {
         return holMessage;
     }
@@ -149,6 +150,11 @@ public class ServiceBrokersBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         this.labServerSession = (LabServerSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabServer);
+
+        try {
+            this.serviceBrokersDB = new ServiceBrokersDB(this.labServerSession.getDbConnection());
+        } catch (Exception ex) {
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -171,27 +177,12 @@ public class ServiceBrokersBean implements Serializable {
             /*
              * Not a postback, initialise page controls
              */
-            try {
-                /*
-                 * Get the LabServer's instance of the ServiceBroker class if it exists. It won't exist if the service
-                 * has not been initialised yet
-                 */
-                if ((this.serviceBrokersDB = LabServerService.getServiceBrokers()) == null) {
-                    this.serviceBrokersDB = new ServiceBrokersDB(this.labServerSession.getDbConnection());
-                }
+            this.serviceBrokers = this.CreateServiceBrokerList();
 
-                /*
-                 * Get the names of the ServiceBrokers
-                 */
-                this.names = this.CreateServiceBrokerList();
-
-                /*
-                 * Clear the page
-                 */
-                actionNew();
-            } catch (Exception ex) {
-                ShowMessageError(ex.getMessage());
-            }
+            /*
+             * Clear the page
+             */
+            actionNew();
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
@@ -203,15 +194,13 @@ public class ServiceBrokersBean implements Serializable {
      */
     public String actionSelect() {
 
-        if (this.hsomName != null && this.hsomName.equals(this.names[0]) == false) {
+        if (this.hsomServiceBroker != null && this.hsomServiceBroker.equals(this.serviceBrokers[0]) == false) {
             PopulateServiceBrokerInfo();
-            this.hsomName = this.names[0];
+            this.hsomServiceBroker = this.serviceBrokers[0];
             this.ShowMessageInfo(null);
         }
 
-        /*
-         * Navigate to the current page
-         */
+        /* Navigate to the current page */
         return null;
     }
 
@@ -223,80 +212,12 @@ public class ServiceBrokersBean implements Serializable {
         final String methodName = "actionSave";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        try {
-            /*
-             * Create instance of ServiceBroker info ready to fill in
-             */
-            ServiceBrokerInfo serviceBrokerInfo = new ServiceBrokerInfo();
-
-            /*
-             * Check if adding a new Servicebroker or updating an existing one
-             */
-            if (this.registered == false) {
-                /*
-                 * Adding a new ServiceBroker, check that a name has been entered
-                 */
-                this.hitName = this.hitName.trim();
-                if (this.hitName.isEmpty() == true) {
-                    throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_Name));
-                }
-                serviceBrokerInfo.setName(this.hitName);
-
-                /*
-                 * Check if name already exists
-                 */
-                if (this.serviceBrokersDB.RetrieveByName(this.hitName) != null) {
-                    throw new Exception(String.format(STRERR_AlreadyExists_arg, this.hitName));
-                }
-            } else {
-                /*
-                 * Updating an existing ServiceBroker
-                 */
-                serviceBrokerInfo = this.serviceBrokersDB.RetrieveByName(hitName);
-            }
-
-            /*
-             * Check that a guid has been entered
-             */
-            this.hitGuid = this.hitGuid.trim();
-            if (this.hitGuid.isEmpty() == true) {
-                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_Guid));
-            }
-            serviceBrokerInfo.setGuid(this.hitGuid);
-
-            /*
-             * Check that an outgoing passkey has been entered
-             */
-            this.hitOutPasskey = this.hitOutPasskey.trim();
-            if (serviceBrokerInfo.getOutPasskey().isEmpty() == true) {
-                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_OutPasskey));
-            }
-            serviceBrokerInfo.setOutPasskey(this.hitOutPasskey);
-
-            /*
-             * An incoming passkey is optional
-             */
-            this.hitInPasskey = this.hitInPasskey.trim();
-            serviceBrokerInfo.setInPasskey(this.hitInPasskey);
-
-            /*
-             * Check that a web service url has been entered
-             */
-            this.hitWebServiceUrl = this.hitWebServiceUrl.trim();
-            if (serviceBrokerInfo.getServiceUrl().isEmpty() == true) {
-                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_WebServiceUrl));
-            }
-            serviceBrokerInfo.setServiceUrl(this.hitWebServiceUrl);
-
-            /*
-             * Get allowed status
-             */
-            serviceBrokerInfo.setPermitted(this.hcbPermitted);
-
-            /*
-             * Check if adding a new Servicebroker or updating an existing one
-             */
-            if (this.registered == false) {
+        /*
+         * Parse the web page information
+         */
+        ServiceBrokerInfo serviceBrokerInfo = this.Parse(null);
+        if (serviceBrokerInfo != null) {
+            try {
                 /*
                  * Add information for a new ServiceBroker
                  */
@@ -305,38 +226,79 @@ public class ServiceBrokersBean implements Serializable {
                 }
 
                 /*
-                 * Update ServiceBroker list
+                 * Refresh the ServiceBroker list
                  */
-                this.names = this.serviceBrokersDB.GetListOfNames();
-                this.hsomName = serviceBrokerInfo.getName();
-            } else {
+                this.serviceBrokers = this.CreateServiceBrokerList();
+
+                /*
+                 * Recache ServiceBrokers
+                 */
+                LabServerService.setMapServiceBrokerInfo(null);
+
+                /*
+                 * Information saved successfully
+                 */
+                this.registered = true;
+                ShowMessageInfo(String.format(STR_SaveSuccessful_arg, serviceBrokerInfo.getName()));
+
+            } catch (Exception ex) {
+                ShowMessageError(ex.getMessage());
+                Logfile.WriteError(ex.toString());
+            }
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+
+        /* Navigate to the current page */
+        return null;
+    }
+
+    /**
+     *
+     * @return String
+     */
+    public String actionUpdate() {
+        final String methodName = "actionUpdate";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+
+        try {
+            /*
+             * Get the ServiceBroker info for the selected ServiceBroker
+             */
+            ServiceBrokerInfo serviceBrokerInfo = this.serviceBrokersDB.RetrieveByName(this.hitServiceBrokerName);
+            if (serviceBrokerInfo == null) {
+                throw new Exception(String.format(STRERR_RetrieveFailed_arg, this.hitServiceBrokerName));
+            }
+
+            /*
+             * Parse the web page information
+             */
+            serviceBrokerInfo = this.Parse(serviceBrokerInfo);
+            if (serviceBrokerInfo != null) {
                 /*
                  * Update information for an existing ServiceBroker
                  */
                 if (this.serviceBrokersDB.Update(serviceBrokerInfo) == false) {
                     throw new Exception(String.format(STRERR_SaveFailed_arg, serviceBrokerInfo.getName()));
                 }
+
+                /*
+                 * Recache ServiceBrokers
+                 */
+                LabServerService.setMapServiceBrokerInfo(null);
+
+                /*
+                 * Information updated successfully
+                 */
+                ShowMessageInfo(String.format(STR_UpdateSuccessful_arg, serviceBrokerInfo.getName()));
             }
-
-            /*
-             * Recache ServiceBrokers
-             */
-            this.serviceBrokersDB.CreateCache();
-
-            /*
-             * Information saved successfully
-             */
-            ShowMessageInfo(String.format(STR_SaveSuccessful_arg, serviceBrokerInfo.getName()));
         } catch (Exception ex) {
-            ShowMessageError(ex.getMessage());
-            Logfile.WriteError(ex.toString());
+            this.ShowMessageError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Navigate to the current page
-         */
+        /* Navigate to the current page */
         return null;
     }
 
@@ -350,28 +312,36 @@ public class ServiceBrokersBean implements Serializable {
 
         try {
             /*
-             * Delete the ServiceBroker information
+             * Get the ServiceBroker info for the selected ServiceBroker
              */
-            ServiceBrokerInfo serviceBrokerInfo = this.serviceBrokersDB.RetrieveByName(this.hsomName);
+            ServiceBrokerInfo serviceBrokerInfo = this.serviceBrokersDB.RetrieveByName(this.hitServiceBrokerName);
+            if (serviceBrokerInfo == null) {
+                throw new Exception(String.format(STRERR_RetrieveFailed_arg, this.hitServiceBrokerName));
+            }
+
+            /*
+             * Delete the ServiceBroker
+             */
             if (this.serviceBrokersDB.Delete(serviceBrokerInfo.getId()) == false) {
                 throw new Exception(String.format(STRERR_DeleteFailed_arg, serviceBrokerInfo.getName()));
             }
 
             /*
-             * Update ServiceBroker list and information
+             * Refresh the ServiceBroker list and clear the page
              */
-            this.names = this.serviceBrokersDB.GetListOfNames();
+            this.serviceBrokers = this.CreateServiceBrokerList();
             actionNew();
 
             /*
              * Recache ServiceBrokers
              */
-            this.serviceBrokersDB.CreateCache();
+            LabServerService.setMapServiceBrokerInfo(null);
 
             /*
              * Information deleted successfully
              */
             ShowMessageInfo(String.format(STR_DeleteSuccessful_arg, serviceBrokerInfo.getName()));
+
         } catch (Exception ex) {
             ShowMessageError(ex.getMessage());
             Logfile.WriteError(ex.toString());
@@ -379,9 +349,7 @@ public class ServiceBrokersBean implements Serializable {
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Navigate to the current page
-         */
+        /* Navigate to the current page */
         return null;
     }
 
@@ -396,27 +364,25 @@ public class ServiceBrokersBean implements Serializable {
         /*
          * Clear information
          */
-        this.hsomName = null;
-        this.hitName = null;
-        this.hitGuid = null;
-        this.hitOutPasskey = null;
-        this.hitInPasskey = null;
-        this.hitWebServiceUrl = null;
+        this.hsomServiceBroker = null;
+        this.hitServiceBrokerName = null;
+        this.hitServiceBrokerGuid = null;
+        this.hitServiceUrl = null;
+        this.hitOutgoingPasskey = null;
+        this.hitIncomingPasskey = null;
         this.hcbPermitted = false;
 
         /*
          * Update controls
          */
         this.registered = false;
-        this.deleteDisabled = true;
+//        this.deleteDisabled = true;
 
         this.ShowMessageInfo(null);
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Navigate to the current page
-         */
+        /* Navigate to the current page */
         return null;
     }
 
@@ -455,32 +421,110 @@ public class ServiceBrokersBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         try {
-            ServiceBrokerInfo serviceBrokerInfo = this.serviceBrokersDB.RetrieveByName(this.hsomName);
+            ServiceBrokerInfo serviceBrokerInfo = this.serviceBrokersDB.RetrieveByName(this.hsomServiceBroker);
             if (serviceBrokerInfo == null) {
-                throw new Exception(String.format(STRERR_RetrieveFailed_arg, this.hsomName));
+                throw new Exception(String.format(STRERR_RetrieveFailed_arg, this.hsomServiceBroker));
             }
 
             /*
              * Update information
              */
-            this.hitName = serviceBrokerInfo.getName();
-            this.hitGuid = serviceBrokerInfo.getGuid();
-            this.hitOutPasskey = serviceBrokerInfo.getOutPasskey();
-            this.hitInPasskey = serviceBrokerInfo.getInPasskey();
-            this.hitWebServiceUrl = serviceBrokerInfo.getServiceUrl();
+            this.hitServiceBrokerName = serviceBrokerInfo.getName();
+            this.hitServiceBrokerGuid = serviceBrokerInfo.getGuid();
+            this.hitServiceUrl = serviceBrokerInfo.getServiceUrl();
+            this.hitOutgoingPasskey = serviceBrokerInfo.getOutPasskey();
+            this.hitIncomingPasskey = serviceBrokerInfo.getInPasskey();
             this.hcbPermitted = serviceBrokerInfo.isPermitted();
 
             /*
              * Update controls
              */
             this.registered = true;
-            this.deleteDisabled = false;
+//            this.deleteDisabled = false;
+
         } catch (Exception ex) {
             ShowMessageError(ex.getMessage());
             Logfile.WriteError(ex.toString());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+    }
+
+    /**
+     *
+     * @param serviceBrokerInfo
+     * @return ServiceBrokerInfo
+     */
+    private ServiceBrokerInfo Parse(ServiceBrokerInfo serviceBrokerInfo) {
+        final String methodName = "Parse";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+
+        try {
+            /*
+             * Check if ServiceBrokerInfo has been provided
+             */
+            if (serviceBrokerInfo == null) {
+                /*
+                 * Create instance of ServiceBrokerInfo ready to fill in
+                 */
+                serviceBrokerInfo = new ServiceBrokerInfo();
+
+                /*
+                 * Check that ServiceBroker Name has been entered
+                 */
+                this.hitServiceBrokerName = this.hitServiceBrokerName.trim();
+                if (this.hitServiceBrokerName.isEmpty() == true) {
+                    throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_ServiceBrokerName));
+                }
+                serviceBrokerInfo.setName(this.hitServiceBrokerName);
+
+                /*
+                 * Check if ServiceBroker Name already exists
+                 */
+                if (this.serviceBrokersDB.RetrieveByName(this.hitServiceBrokerName) != null) {
+                    throw new Exception(String.format(STRERR_AlreadyExists_arg, this.hitServiceBrokerName));
+                }
+            }
+
+            /*
+             * Check that ServiceBroker Guid has been entered
+             */
+            this.hitServiceBrokerGuid = this.hitServiceBrokerGuid.trim();
+            if (this.hitServiceBrokerGuid.isEmpty() == true) {
+                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_ServiceBrokerGuid));
+            }
+            serviceBrokerInfo.setGuid(this.hitServiceBrokerGuid);
+
+            /*
+             * Check that Outgoing Passkey has been entered
+             */
+            this.hitOutgoingPasskey = this.hitOutgoingPasskey.trim();
+            if (this.hitOutgoingPasskey.isEmpty() == true) {
+                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_OutgoingPasskey));
+            }
+            serviceBrokerInfo.setOutPasskey(this.hitOutgoingPasskey);
+
+            /*
+             * Get allowed status
+             */
+            serviceBrokerInfo.setPermitted(this.hcbPermitted);
+
+            /*
+             * Optional Information
+             */
+            this.hitServiceUrl = this.hitServiceUrl.trim();
+            serviceBrokerInfo.setServiceUrl(this.hitServiceUrl.isEmpty() ? null : this.hitServiceUrl);
+            this.hitIncomingPasskey = this.hitIncomingPasskey.trim();
+            serviceBrokerInfo.setInPasskey(this.hitIncomingPasskey.isEmpty() ? null : this.hitIncomingPasskey);
+
+        } catch (Exception ex) {
+            this.ShowMessageError(ex.getMessage());
+            serviceBrokerInfo = null;
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+
+        return serviceBrokerInfo;
     }
 
     /**

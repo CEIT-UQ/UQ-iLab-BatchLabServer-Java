@@ -4,10 +4,12 @@
  */
 package uq.ilabs.labequipment.service;
 
+import au.edu.uq.ilab.AuthHeader;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+import javax.xml.ws.ProtocolException;
 import uq.ilabs.library.lab.types.ExecutionStatus;
 import uq.ilabs.library.lab.types.LabEquipmentStatus;
 import uq.ilabs.library.lab.types.Validation;
@@ -29,8 +31,9 @@ public class LabEquipmentServiceBean {
     /*
      * String constants for logfile messages
      */
-    private static final String STRLOG_ExecutionId_arg = "ExecutionId: %d";
+    private static final String STRLOG_AuthHeaderNull = "AuthHeader: null";
     private static final String STRLOG_IdentifierPasskey_arg2 = "Identifier: '%s'  Passkey: '%s'";
+    private static final String STRLOG_ExecutionId_arg = "ExecutionId: %d";
     private static final String STRLOG_LabEquipmentStatus_arg2 = "Online: %s  StatusMessage: %s";
     private static final String STRLOG_TimeUntilReady_arg = "TimeUntilReady: %d seconds";
     private static final String STRLOG_Validation_arg3 = "Accepted: %s  ExecutionTime: %d  ErrorMessage: %s";
@@ -41,6 +44,7 @@ public class LabEquipmentServiceBean {
      */
     private static final String STRERR_EquipmentManagerCreateFailed = "EquipmentManager.Create() failed!";
     private static final String STRERR_EquipmentManagerStartFailed = "EquipmentManager.Start() failed!";
+    private static final String STRERR_AccessDenied = "LabEquipmentService - Access Denied!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private ConfigProperties configProperties;
@@ -50,7 +54,7 @@ public class LabEquipmentServiceBean {
     /**
      * Constructor - Seems that this gets called when the project is deployed which is unexpected. To get around this,
      * check to see if the LabEquipment has been initialised and the configuration properties set. Can't do logging
-     * until the ServiceBroker has been initialised and the logger created.
+     * until the LabEquipment has been initialised and the logger created.
      */
     public LabEquipmentServiceBean() {
         final String methodName = "LabEquipmentServiceBean";
@@ -94,43 +98,61 @@ public class LabEquipmentServiceBean {
 
     /**
      *
-     * @return
+     * @param authHeader
+     * @return au.edu.uq.ilab.LabEquipmentStatus
      */
-    public au.edu.uq.ilab.LabEquipmentStatus GetLabEquipmentStatus() {
+    public au.edu.uq.ilab.LabEquipmentStatus GetLabEquipmentStatus(AuthHeader authHeader) {
         final String methodName = "GetLabEquipmentStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Pass on to the Equipment Manager
-         */
-        LabEquipmentStatus labEquipmentStatus = equipmentManager.GetLabEquipmentStatus();
+        au.edu.uq.ilab.LabEquipmentStatus proxyLabEquipmentStatus = null;
 
-        /*
-         * Convert to return type
-         */
-        au.edu.uq.ilab.LabEquipmentStatus proxyLabEquipmentStatus = new au.edu.uq.ilab.LabEquipmentStatus();
-        proxyLabEquipmentStatus.setOnline(labEquipmentStatus.isOnline());
-        proxyLabEquipmentStatus.setStatusMessage(labEquipmentStatus.getStatusMessage());
+        this.Authenticate(authHeader);
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_LabEquipmentStatus_arg2,
-                labEquipmentStatus.isOnline(), labEquipmentStatus.getStatusMessage()));
+        try {
+            /*
+             * Pass on to the Equipment Manager
+             */
+            LabEquipmentStatus labEquipmentStatus = equipmentManager.GetLabEquipmentStatus();
+            proxyLabEquipmentStatus = this.ConvertType(labEquipmentStatus);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
+
+        String message = "";
+        if (proxyLabEquipmentStatus != null) {
+            message = String.format(STRLOG_LabEquipmentStatus_arg2,
+                    proxyLabEquipmentStatus.isOnline(), proxyLabEquipmentStatus.getStatusMessage());
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName, message);
 
         return proxyLabEquipmentStatus;
     }
 
     /**
      *
-     * @return
+     * @param authHeader
+     * @return int
      */
-    public int GetTimeUntilReady() {
+    public int GetTimeUntilReady(AuthHeader authHeader) {
         final String methodName = "GetTimeUntilReady";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Pass on to the Equipment Manager
-         */
-        int timeUntilReady = equipmentManager.GetTimeUntilReady();
+        int timeUntilReady = -1;
+
+        this.Authenticate(authHeader);
+
+        try {
+            /*
+             * Pass on to the Equipment Manager
+             */
+            timeUntilReady = equipmentManager.GetTimeUntilReady();
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_TimeUntilReady_arg, timeUntilReady));
@@ -140,110 +162,137 @@ public class LabEquipmentServiceBean {
 
     /**
      *
+     * @param authHeader
      * @param xmlSpecification
-     * @return
+     * @return au.edu.uq.ilab.Validation
      */
-    public au.edu.uq.ilab.Validation Validate(String xmlSpecification) {
+    public au.edu.uq.ilab.Validation Validate(AuthHeader authHeader, String xmlSpecification) {
         final String methodName = "Validate";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 xmlSpecification);
 
-        /*
-         * Pass on to the Equipment Manager
-         */
-        Validation validation = equipmentManager.Validate(xmlSpecification);
+        au.edu.uq.ilab.Validation proxyValidation = null;
 
-        /*
-         * Convert to return type
-         */
-        au.edu.uq.ilab.Validation proxyValidation = new au.edu.uq.ilab.Validation();
-        proxyValidation.setAccepted(validation.isAccepted());
-        proxyValidation.setErrorMessage(validation.getErrorMessage());
-        proxyValidation.setExecutionTime(validation.getExecutionTime());
+        this.Authenticate(authHeader);
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Validation_arg3,
-                validation.isAccepted(), validation.getExecutionTime(), validation.getErrorMessage()));
+        try {
+            /*
+             * Pass on to the Equipment Manager
+             */
+            Validation validation = equipmentManager.Validate(xmlSpecification);
+            proxyValidation = this.ConvertType(validation);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
+
+        String message = "";
+        if (proxyValidation != null) {
+            message = String.format(STRLOG_Validation_arg3,
+                    proxyValidation.isAccepted(), proxyValidation.getExecutionTime(), proxyValidation.getErrorMessage());
+        }
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName, message);
+
 
         return proxyValidation;
     }
 
     /**
      *
+     * @param authHeader
      * @param xmlSpecification
-     * @return
+     * @return au.edu.uq.ilab.ExecutionStatus
      */
-    public au.edu.uq.ilab.ExecutionStatus StartLabExecution(String xmlSpecification) {
+    public au.edu.uq.ilab.ExecutionStatus StartLabExecution(AuthHeader authHeader, String xmlSpecification) {
         final String methodName = "StartLabExecution";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 xmlSpecification);
 
-        /*
-         * Pass on to the Equipment Manager
-         */
-        ExecutionStatus executionStatus = equipmentManager.StartLabExecution(xmlSpecification);
+        au.edu.uq.ilab.ExecutionStatus proxyExecutionStatus = null;
 
-        /*
-         * Convert to return type
-         */
-        au.edu.uq.ilab.ExecutionStatus proxyExecutionStatus = new au.edu.uq.ilab.ExecutionStatus();
-        proxyExecutionStatus.setExecutionId(executionStatus.getExecutionId());
-        proxyExecutionStatus.setExecuteStatus(executionStatus.getExecuteStatus().getValue());
-        proxyExecutionStatus.setResultStatus(executionStatus.getResultStatus().getValue());
-        proxyExecutionStatus.setTimeRemaining(executionStatus.getTimeRemaining());
-        proxyExecutionStatus.setErrorMessage(executionStatus.getErrorMessage());
+        this.Authenticate(authHeader);
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_ExecutionStatus_arg5, executionStatus.getExecutionId(), executionStatus.getExecuteStatus(),
-                executionStatus.getResultStatus(), executionStatus.getTimeRemaining(), executionStatus.getErrorMessage()));
+        try {
+            /*
+             * Pass on to the Equipment Manager
+             */
+            ExecutionStatus executionStatus = equipmentManager.StartLabExecution(xmlSpecification);
+            proxyExecutionStatus = this.ConvertType(executionStatus);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
+
+        String message = "";
+        if (proxyExecutionStatus != null) {
+            message = String.format(STRLOG_ExecutionStatus_arg5, proxyExecutionStatus.getExecutionId(), proxyExecutionStatus.getExecuteStatus(),
+                    proxyExecutionStatus.getResultStatus(), proxyExecutionStatus.getTimeRemaining(), proxyExecutionStatus.getErrorMessage());
+        }
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName, message);
 
         return proxyExecutionStatus;
     }
 
     /**
      *
-     * @return
+     * @param authHeader
+     * @param executionId
+     * @return au.edu.uq.ilab.ExecutionStatus
      */
-    public au.edu.uq.ilab.ExecutionStatus GetLabExecutionStatus(int executionId) {
+    public au.edu.uq.ilab.ExecutionStatus GetLabExecutionStatus(AuthHeader authHeader, int executionId) {
         final String methodName = "GetLabExecutionStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExecutionId_arg, executionId));
 
-        /*
-         * Pass on to the Equipment Manager
-         */
-        ExecutionStatus executionStatus = equipmentManager.GetLabExecutionStatus(executionId);
+        au.edu.uq.ilab.ExecutionStatus proxyExecutionStatus = null;
 
-        /*
-         * Convert to return type
-         */
-        au.edu.uq.ilab.ExecutionStatus proxyExecutionStatus = new au.edu.uq.ilab.ExecutionStatus();
-        proxyExecutionStatus.setExecutionId(executionStatus.getExecutionId());
-        proxyExecutionStatus.setExecuteStatus(executionStatus.getExecuteStatus().getValue());
-        proxyExecutionStatus.setResultStatus(executionStatus.getResultStatus().getValue());
-        proxyExecutionStatus.setTimeRemaining(executionStatus.getTimeRemaining());
-        proxyExecutionStatus.setErrorMessage(executionStatus.getErrorMessage());
+        this.Authenticate(authHeader);
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_ExecutionStatus_arg5, executionStatus.getExecutionId(), executionStatus.getExecuteStatus(),
-                executionStatus.getResultStatus(), executionStatus.getTimeRemaining(), executionStatus.getErrorMessage()));
+        try {
+            /*
+             * Pass on to the Equipment Manager
+             */
+            ExecutionStatus executionStatus = equipmentManager.GetLabExecutionStatus(executionId);
+            proxyExecutionStatus = this.ConvertType(executionStatus);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
+
+        String message = "";
+        if (proxyExecutionStatus != null) {
+            message = String.format(STRLOG_ExecutionStatus_arg5, proxyExecutionStatus.getExecutionId(), proxyExecutionStatus.getExecuteStatus(),
+                    proxyExecutionStatus.getResultStatus(), proxyExecutionStatus.getTimeRemaining(), proxyExecutionStatus.getErrorMessage());
+        }
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName, message);
 
         return proxyExecutionStatus;
     }
 
     /**
      *
+     * @param authHeader
+     * @param executionId
      * @return String
      */
-    public String GetLabExecutionResults(int executionId) {
+    public String GetLabExecutionResults(AuthHeader authHeader, int executionId) {
         final String methodName = "GetLabExecutionResults";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExecutionId_arg, executionId));
 
-        /*
-         * Pass on to the Equipment Manager
-         */
-        String labExecutionResults = equipmentManager.GetLabExecutionResults(executionId);
+        String labExecutionResults = null;
+
+        this.Authenticate(authHeader);
+
+        try {
+            /*
+             * Pass on to the Equipment Manager
+             */
+            labExecutionResults = equipmentManager.GetLabExecutionResults(executionId);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 labExecutionResults);
@@ -253,17 +302,28 @@ public class LabEquipmentServiceBean {
 
     /**
      *
+     * @param authHeader
+     * @param executionId
      * @return boolean
      */
-    public boolean CancelLabExecution(int executionId) {
+    public boolean CancelLabExecution(AuthHeader authHeader, int executionId) {
         final String methodName = "CancelLabExecution";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExecutionId_arg, executionId));
 
-        /*
-         * Pass on to the Equipment Manager
-         */
-        boolean success = equipmentManager.CancelLabExecution(executionId);
+        boolean success = false;
+
+        this.Authenticate(authHeader);
+
+        try {
+            /*
+             * Pass on to the Equipment Manager
+             */
+            success = equipmentManager.CancelLabExecution(executionId);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.getMessage());
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Success_arg, success));
@@ -271,36 +331,107 @@ public class LabEquipmentServiceBean {
         return success;
     }
 
+    //================================================================================================================//
     /**
      *
      * @param identifier
      * @param passkey
      * @return boolean
      */
-    public boolean Authenticate(String identifier, String passkey) {
+    private boolean Authenticate(AuthHeader authHeader) {
         /*
-         * Assume this will succeed
+         * Assume this will fail
          */
-        boolean success = true;
+        boolean success = false;
 
         /*
          * Check if authenticating
          */
         if (this.configProperties.isAuthenticating()) {
             if (this.configProperties.isLogAuthentication()) {
-                Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, identifier, passkey));
+                if (authHeader == null) {
+                    Logfile.Write(STRLOG_AuthHeaderNull);
+                } else {
+                    Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, authHeader.getIdentifier(), authHeader.getPassKey()));
+                }
             }
 
             /*
              * Check the identifier and passkey
              */
-            success = this.configProperties.getLabServerGuid().equalsIgnoreCase(identifier)
-                    && this.configProperties.getLabServerPasskey().equalsIgnoreCase(passkey);
+            if (authHeader == null
+                    || this.configProperties.getLabServerGuid().equalsIgnoreCase(authHeader.getIdentifier()) == false
+                    || this.configProperties.getLabServerPasskey().equalsIgnoreCase(authHeader.getPassKey()) == false) {
+                /*
+                 * Identifier or passkey not valid
+                 */
+                throw new ProtocolException(STRERR_AccessDenied);
+            }
+
+            success = true;
         }
 
         return success;
     }
 
+    /**
+     *
+     * @param labEquipmentStatus
+     * @return au.edu.uq.ilab.LabEquipmentStatus
+     */
+    private au.edu.uq.ilab.LabEquipmentStatus ConvertType(LabEquipmentStatus labEquipmentStatus) {
+        au.edu.uq.ilab.LabEquipmentStatus proxyLabEquipmentStatus = null;
+
+        if (labEquipmentStatus != null) {
+            proxyLabEquipmentStatus = new au.edu.uq.ilab.LabEquipmentStatus();
+            proxyLabEquipmentStatus.setOnline(labEquipmentStatus.isOnline());
+            proxyLabEquipmentStatus.setStatusMessage(labEquipmentStatus.getStatusMessage());
+        }
+
+        return proxyLabEquipmentStatus;
+    }
+
+    /**
+     *
+     * @param validation
+     * @return au.edu.uq.ilab.Validation
+     */
+    private au.edu.uq.ilab.Validation ConvertType(Validation validation) {
+        au.edu.uq.ilab.Validation proxyValidation = null;
+
+        if (validation != null) {
+            proxyValidation = new au.edu.uq.ilab.Validation();
+            proxyValidation.setAccepted(validation.isAccepted());
+            proxyValidation.setErrorMessage(validation.getErrorMessage());
+            proxyValidation.setExecutionTime(validation.getExecutionTime());
+        }
+
+        return proxyValidation;
+    }
+
+    /**
+     *
+     * @param executionStatus
+     * @return au.edu.uq.ilab.ExecutionStatus
+     */
+    private au.edu.uq.ilab.ExecutionStatus ConvertType(ExecutionStatus executionStatus) {
+        au.edu.uq.ilab.ExecutionStatus proxyExecutionStatus = null;
+
+        if (executionStatus != null) {
+            proxyExecutionStatus = new au.edu.uq.ilab.ExecutionStatus();
+            proxyExecutionStatus.setExecutionId(executionStatus.getExecutionId());
+            proxyExecutionStatus.setExecuteStatus(executionStatus.getExecuteStatus().getValue());
+            proxyExecutionStatus.setResultStatus(executionStatus.getResultStatus().getValue());
+            proxyExecutionStatus.setTimeRemaining(executionStatus.getTimeRemaining());
+            proxyExecutionStatus.setErrorMessage(executionStatus.getErrorMessage());
+        }
+
+        return proxyExecutionStatus;
+    }
+
+    /**
+     *
+     */
     @PreDestroy
     private void preDestroy() {
         final String methodName = "preDestroy";

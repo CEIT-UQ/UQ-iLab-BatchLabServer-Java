@@ -4,7 +4,6 @@
  */
 package uq.ilabs.labclient;
 
-import java.io.Serializable;
 import java.util.logging.Level;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -23,7 +22,7 @@ import uq.ilabs.library.labclient.engine.types.SetupInfo;
  */
 @ManagedBean
 @SessionScoped
-public class SetupBean implements Serializable {
+public class SetupBean {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = SetupBean.class.getName();

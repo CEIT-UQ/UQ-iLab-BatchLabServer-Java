@@ -42,8 +42,7 @@ public class LabClientServlet extends HttpServlet {
     //</editor-fold>
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String methodName = "doGet";
 
         /*
