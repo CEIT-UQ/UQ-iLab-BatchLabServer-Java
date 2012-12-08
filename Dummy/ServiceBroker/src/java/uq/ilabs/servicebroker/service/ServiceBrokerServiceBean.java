@@ -4,11 +4,14 @@
  */
 package uq.ilabs.servicebroker.service;
 
+import edu.mit.ilab.SbAuthHeader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+import javax.xml.ws.ProtocolException;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.types.*;
 import uq.ilabs.library.lab.utilities.Logfile;
@@ -34,16 +37,24 @@ public class ServiceBrokerServiceBean {
     /*
      * String constants for logfile messages
      */
+    private static final String STRLOG_SbAuthHeaderNull = "SbAuthHeader: null";
+    private static final String STRLOG_CouponIdPasskey_arg2 = "CouponId: %d  CouponPasskey: '%s'";
     private static final String STRLOG_ServiceBrokerGuid_arg = "ServiceBrokerGuid: %s";
     private static final String STRLOG_LabServerGuid_arg = "LabServerGuid: %s";
-    private static final String STRLOG_CouponIdPasskey_arg2 = "CouponId: %d  CouponPasskey: '%s'";
     private static final String STRLOG_ExperimentId_arg = " ExperimentId: %d";
-    private static final String STRLOG_Success_arg = " Success: %s";
-    private static final String STRLOG_LabStatus_arg2 = "Online: %s  Message: %s";
+    /*
+     * String constants for exception messages
+     */
+    private static final String STRERR_AccessDenied_arg = "LabServer Access Denied: %s";
+    private static final String STRERR_SbAuthHeaderNull = "SbAuthHeader is null";
+    private static final String STRERR_CouponIdInvalid_arg = "CouponId %d is invalid";
+    private static final String STRERR_CouponPasskeyNull = "CouponPasskey is null";
+    private static final String STRERR_CouponPasskeyInvalid_arg = "CouponPasskey '%s' is invalid";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private ConfigProperties configProperties;
     private ExperimentsDB dbExperiments;
+    private HashMap<String, LabServerAPI> mapLabServerAPI;
     //</editor-fold>
 
     /**
@@ -86,6 +97,11 @@ public class ServiceBrokerServiceBean {
                 if (this.dbExperiments == null) {
                     throw new NullPointerException(ExperimentsDB.class.getSimpleName());
                 }
+
+                /*
+                 * Initialise local variables
+                 */
+                this.mapLabServerAPI = new HashMap<>();
             } catch (Exception ex) {
                 Logfile.WriteError(ex.toString());
             }
@@ -97,14 +113,16 @@ public class ServiceBrokerServiceBean {
     /**
      *
      * @param experimentId
-     * @return
+     * @return boolean
      */
-    public boolean cancel(int experimentId) {
+    public boolean cancel(SbAuthHeader sbAuthHeader, int experimentId) {
         final String STR_MethodName = "cancel";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         boolean success = false;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -122,23 +140,25 @@ public class ServiceBrokerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName,
-                String.format(STRLOG_Success_arg, success));
+        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
         return success;
     }
 
     /**
      *
+     * @param sbAuthHeader
      * @param labServerGuid
      * @param priorityHint
-     * @return
+     * @return edu.mit.ilab.WaitEstimate
      */
-    public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(String labServerGuid, int priorityHint) {
+    public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(SbAuthHeader sbAuthHeader, String labServerGuid, int priorityHint) {
         final String STR_MethodName = "getEffectiveQueueLength";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName);
 
         edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -146,13 +166,8 @@ public class ServiceBrokerServiceBean {
              */
             LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
             WaitEstimate waitEstimate = labServerAPI.GetEffectiveQueueLength(STR_UserGroup, priorityHint);
+            proxyWaitEstimate = this.ConvertType(waitEstimate);
 
-            /*
-             * Convert to return type
-             */
-            proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
-            proxyWaitEstimate.setEffectiveQueueLength(waitEstimate.getEffectiveQueueLength());
-            proxyWaitEstimate.setEstWait(waitEstimate.getEstWait());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -163,16 +178,20 @@ public class ServiceBrokerServiceBean {
     }
 
     /**
+     * /**
      *
+     * @param sbAuthHeader
      * @param experimentId
-     * @return
+     * @return edu.mit.ilab.LabExperimentStatus
      */
-    public edu.mit.ilab.LabExperimentStatus getExperimentStatus(int experimentId) {
+    public edu.mit.ilab.LabExperimentStatus getExperimentStatus(SbAuthHeader sbAuthHeader, int experimentId) {
         final String STR_MethodName = "getExperimentStatus";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -185,24 +204,7 @@ public class ServiceBrokerServiceBean {
                  */
                 LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
                 LabExperimentStatus labExperimentStatus = labServerAPI.GetExperimentStatus(experimentId);
-
-                /*
-                 * Convert to the return type
-                 */
-                proxyLabExperimentStatus = new edu.mit.ilab.LabExperimentStatus();
-                proxyLabExperimentStatus.setMinTimetoLive(labExperimentStatus.getMinTimetoLive());
-
-                edu.mit.ilab.ExperimentStatus proxyExperimentStatus = new edu.mit.ilab.ExperimentStatus();
-                proxyExperimentStatus.setEstRemainingRuntime(labExperimentStatus.getExperimentStatus().getEstRemainingRuntime());
-                proxyExperimentStatus.setEstRuntime(labExperimentStatus.getExperimentStatus().getEstRuntime());
-                proxyExperimentStatus.setStatusCode(labExperimentStatus.getExperimentStatus().getStatusCode().getValue());
-
-                edu.mit.ilab.WaitEstimate proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
-                proxyWaitEstimate.setEffectiveQueueLength(labExperimentStatus.getExperimentStatus().getWaitEstimate().getEffectiveQueueLength());
-                proxyWaitEstimate.setEstWait(labExperimentStatus.getExperimentStatus().getWaitEstimate().getEstWait());
-                proxyExperimentStatus.setWait(proxyWaitEstimate);
-
-                proxyLabExperimentStatus.setStatusReport(proxyExperimentStatus);
+                proxyLabExperimentStatus = this.ConvertType(labExperimentStatus);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
@@ -215,40 +217,47 @@ public class ServiceBrokerServiceBean {
 
     /**
      *
+     * @param sbAuthHeader
      * @param labServerGuid
-     * @return
+     * @return String
      */
-    public java.lang.String getLabConfiguration(String labServerGuid) {
+    public String getLabConfiguration(SbAuthHeader sbAuthHeader, String labServerGuid) {
         final String STR_MethodName = "getLabConfiguration";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName);
 
-        String xmlLabConfiguration = null;
+        String labConfiguration = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
              * Pass to LabServer for processing
              */
             LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
-            xmlLabConfiguration = labServerAPI.GetLabConfiguration(STR_UserGroup);
+            labConfiguration = labServerAPI.GetLabConfiguration(STR_UserGroup);
+
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
-        return xmlLabConfiguration;
+        return labConfiguration;
     }
 
     /**
      *
+     * @param sbAuthHeader
      * @param labServerGuid
-     * @return
+     * @return String
      */
-    public java.lang.String getLabInfo(String labServerGuid) {
+    public String getLabInfo(SbAuthHeader sbAuthHeader, String labServerGuid) {
         final String STR_MethodName = "getLabInfo";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName);
 
         String labInfo = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -256,6 +265,7 @@ public class ServiceBrokerServiceBean {
              */
             LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
             labInfo = labServerAPI.GetLabInfo();
+
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -267,15 +277,18 @@ public class ServiceBrokerServiceBean {
 
     /**
      *
+     * @param sbAuthHeader
      * @param labServerGuid
-     * @return
+     * @return edu.mit.ilab.LabStatus
      */
-    public edu.mit.ilab.LabStatus getLabStatus(String labServerGuid) {
+    public edu.mit.ilab.LabStatus getLabStatus(SbAuthHeader sbAuthHeader, String labServerGuid) {
         final String STR_MethodName = "getLabStatus";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName,
                 String.format(STRLOG_LabServerGuid_arg, labServerGuid));
 
         edu.mit.ilab.LabStatus proxyLabStatus = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -283,34 +296,31 @@ public class ServiceBrokerServiceBean {
              */
             LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
             LabStatus labStatus = labServerAPI.GetLabStatus();
+            proxyLabStatus = this.ConvertType(labStatus);
 
-            /*
-             * Convert to the return type
-             */
-            proxyLabStatus = new edu.mit.ilab.LabStatus();
-            proxyLabStatus.setOnline(labStatus.isOnline());
-            proxyLabStatus.setLabStatusMessage(labStatus.getLabStatusMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName,
-                String.format(STRLOG_LabStatus_arg2, proxyLabStatus.isOnline(), proxyLabStatus.getLabStatusMessage()));
+        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
 
         return proxyLabStatus;
     }
 
     /**
      *
+     * @param sbAuthHeader
      * @param experimentId
-     * @return
+     * @return edu.mit.ilab.ResultReport
      */
-    public edu.mit.ilab.ResultReport retrieveResult(int experimentId) {
+    public edu.mit.ilab.ResultReport retrieveResult(SbAuthHeader sbAuthHeader, int experimentId) {
         final String STR_MethodName = "retrieveResult";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         edu.mit.ilab.ResultReport proxyResultReport = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -323,24 +333,7 @@ public class ServiceBrokerServiceBean {
                  */
                 LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
                 ResultReport resultReport = labServerAPI.RetrieveResult(experimentId);
-
-                /*
-                 * Convert to the return type
-                 */
-                proxyResultReport = new edu.mit.ilab.ResultReport();
-                proxyResultReport.setErrorMessage(resultReport.getErrorMessage());
-                proxyResultReport.setExperimentResults(resultReport.getXmlExperimentResults());
-                proxyResultReport.setStatusCode(resultReport.getStatusCode().getValue());
-                if (resultReport.getWarningMessages() != null) {
-                    edu.mit.ilab.ArrayOfString proxyWarningMessages = new edu.mit.ilab.ArrayOfString();
-                    proxyWarningMessages.getString().addAll(Arrays.asList(resultReport.getWarningMessages()));
-                    proxyResultReport.setWarningMessages(proxyWarningMessages);
-                }
-                proxyResultReport.setXmlBlobExtension(resultReport.getXmlBlobExtension());
-                proxyResultReport.setXmlResultExtension(resultReport.getXmlResultExtension());
-            } else {
-                proxyResultReport = new edu.mit.ilab.ResultReport();
-                proxyResultReport.setStatusCode(StatusCodes.Unknown.getValue());
+                proxyResultReport = this.ConvertType(resultReport);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
@@ -353,17 +346,20 @@ public class ServiceBrokerServiceBean {
 
     /**
      *
+     * @param sbAuthHeader
      * @param labServerGuid
      * @param experimentSpecification
      * @param priorityHint
      * @param emailNotification
-     * @return
+     * @return edu.mit.ilab.ClientSubmissionReport
      */
-    public edu.mit.ilab.ClientSubmissionReport submit(String labServerGuid, String experimentSpecification, int priorityHint, boolean emailNotification) {
+    public edu.mit.ilab.ClientSubmissionReport submit(SbAuthHeader sbAuthHeader, String labServerGuid, String experimentSpecification, int priorityHint, boolean emailNotification) {
         final String STR_MethodName = "submit";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName);
 
         edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -376,6 +372,7 @@ public class ServiceBrokerServiceBean {
              */
             LabServerAPI labServerAPI = this.GetLabServerAPI(labServerGuid);
             SubmissionReport submissionReport = labServerAPI.Submit(experimentId, experimentSpecification, STR_UserGroup, priorityHint);
+            proxyClientSubmissionReport = this.ConvertType(submissionReport);
 
             /*
              * Check if experiment was accepted
@@ -386,29 +383,6 @@ public class ServiceBrokerServiceBean {
                  */
                 this.dbExperiments.Add(labServerGuid);
             }
-
-            /*
-             * Convert to the return type
-             */
-            proxyClientSubmissionReport = new edu.mit.ilab.ClientSubmissionReport();
-            proxyClientSubmissionReport.setExperimentID(submissionReport.getExperimentId());
-            proxyClientSubmissionReport.setMinTimeToLive(submissionReport.getMinTimeToLive());
-
-            edu.mit.ilab.ValidationReport proxyValidationReport = new edu.mit.ilab.ValidationReport();
-            proxyValidationReport.setAccepted(submissionReport.getValidationReport().isAccepted());
-            proxyValidationReport.setErrorMessage(submissionReport.getValidationReport().getErrorMessage());
-            proxyValidationReport.setEstRuntime(submissionReport.getValidationReport().getEstRuntime());
-            if (submissionReport.getValidationReport().getWarningMessages() != null) {
-                edu.mit.ilab.ArrayOfString proxyWarningMessages = new edu.mit.ilab.ArrayOfString();
-                proxyWarningMessages.getString().addAll(Arrays.asList(submissionReport.getValidationReport().getWarningMessages()));
-                proxyValidationReport.setWarningMessages(proxyWarningMessages);
-            }
-            proxyClientSubmissionReport.setVReport(proxyValidationReport);
-
-            edu.mit.ilab.WaitEstimate proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
-            proxyWaitEstimate.setEffectiveQueueLength(submissionReport.getWaitEstimate().getEffectiveQueueLength());
-            proxyWaitEstimate.setEstWait(submissionReport.getWaitEstimate().getEstWait());
-            proxyClientSubmissionReport.setWait(proxyWaitEstimate);
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -420,15 +394,18 @@ public class ServiceBrokerServiceBean {
 
     /**
      *
+     * @param sbAuthHeader
      * @param labServerGuid
      * @param experimentSpecification
-     * @return
+     * @return edu.mit.ilab.ValidationReport
      */
-    public edu.mit.ilab.ValidationReport validate(String labServerGuid, String experimentSpecification) {
+    public edu.mit.ilab.ValidationReport validate(SbAuthHeader sbAuthHeader, String labServerGuid, String experimentSpecification) {
         final String STR_MethodName = "validate";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName);
 
         edu.mit.ilab.ValidationReport proxyValidationReport = null;
+
+        this.Authenticate(sbAuthHeader);
 
         try {
             /*
@@ -436,19 +413,8 @@ public class ServiceBrokerServiceBean {
              */
             LabServerAPI labServerAPI = this.GetLabServerAPI(labServerGuid);
             ValidationReport validationReport = labServerAPI.Validate(experimentSpecification, labServerGuid);
+            proxyValidationReport = this.ConvertType(validationReport);
 
-            /*
-             * Convert to the return type
-             */
-            proxyValidationReport = new edu.mit.ilab.ValidationReport();
-            proxyValidationReport.setAccepted(validationReport.isAccepted());
-            proxyValidationReport.setErrorMessage(validationReport.getErrorMessage());
-            proxyValidationReport.setEstRuntime(validationReport.getEstRuntime());
-            if (validationReport.getWarningMessages() != null) {
-                edu.mit.ilab.ArrayOfString proxyWarningMessages = new edu.mit.ilab.ArrayOfString();
-                proxyWarningMessages.getString().addAll(Arrays.asList(validationReport.getWarningMessages()));
-                proxyValidationReport.setWarningMessages(proxyWarningMessages);
-            }
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -460,14 +426,20 @@ public class ServiceBrokerServiceBean {
 
     /**
      *
+     * @param sbAuthHeader
      * @param experimentId
      */
-    public void notify(int experimentId) {
+    public void notify(SbAuthHeader sbAuthHeader, int experimentId) {
         final String STR_MethodName = "notify";
         Logfile.WriteCalled(STR_ClassName, STR_MethodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
-        this.retrieveResult(experimentId);
+        if (sbAuthHeader == null) {
+            sbAuthHeader = new SbAuthHeader();
+        }
+        sbAuthHeader.setCouponID(this.configProperties.getCouponId());
+        sbAuthHeader.setCouponPassKey(this.configProperties.getCouponPasskey());
+        this.retrieveResult(sbAuthHeader, experimentId);
 
         Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
     }
@@ -478,25 +450,60 @@ public class ServiceBrokerServiceBean {
      * @param passkey
      * @return boolean
      */
-    public boolean Authenticate(long couponId, String couponPasskey) {
+    private boolean Authenticate(SbAuthHeader sbAuthHeader) {
         /*
-         * Assume this will succeed
+         * Assume this will fail
          */
-        boolean success = true;
+        boolean success = false;
 
         /*
          * Check if authenticating
          */
-        if (this.configProperties.isAuthenticating()) {
-            if (this.configProperties.isLogAuthentication()) {
-                Logfile.Write(String.format(STRLOG_CouponIdPasskey_arg2, couponId, couponPasskey));
+        if (this.configProperties.isAuthenticating() == true) {
+            if (this.configProperties.isLogAuthentication() == true) {
+                if (sbAuthHeader == null) {
+                    Logfile.Write(STRLOG_SbAuthHeaderNull);
+                } else {
+                    Logfile.Write(String.format(STRLOG_CouponIdPasskey_arg2, sbAuthHeader.getCouponID(), sbAuthHeader.getCouponPassKey()));
+                }
             }
+            try {
+                /*
+                 * Check that AuthHeader is specified
+                 */
+                if (sbAuthHeader == null) {
+                    throw new ProtocolException(STRERR_SbAuthHeaderNull);
+                }
 
-            /*
-             * Check the identifier and passkey
-             */
-            success = (couponId == this.configProperties.getCouponId())
-                    && this.configProperties.getCouponPasskey().equalsIgnoreCase(couponPasskey);
+                /*
+                 * Verify the Coupon Id
+                 */
+                if (sbAuthHeader.getCouponID() != this.configProperties.getCouponId()) {
+                    throw new ProtocolException(String.format(STRERR_CouponIdInvalid_arg, sbAuthHeader.getCouponID()));
+                }
+
+                /*
+                 * Verify the Coupon Passkey
+                 */
+                if (sbAuthHeader.getCouponPassKey() == null) {
+                    throw new ProtocolException(STRERR_CouponPasskeyNull);
+                }
+                if (sbAuthHeader.getCouponPassKey().equalsIgnoreCase(this.configProperties.getCouponPasskey()) == false) {
+                    throw new ProtocolException(String.format(STRERR_CouponPasskeyInvalid_arg, sbAuthHeader.getCouponPassKey()));
+                }
+
+                /*
+                 * Successfully authenticated
+                 */
+                success = true;
+
+            } catch (ProtocolException ex) {
+                String message = String.format(STRERR_AccessDenied_arg, ex.getMessage());
+                Logfile.WriteError(message);
+                throw new ProtocolException(message);
+            }
+        } else {
+            success = true;
         }
 
         return success;
@@ -509,23 +516,183 @@ public class ServiceBrokerServiceBean {
      * @throws Exception
      */
     private LabServerAPI GetLabServerAPI(String labServerGuid) throws Exception {
-        LabServerAPI labServerAPI = null;
+        LabServerAPI labServerAPI;
 
         /*
-         * Get LabServer information
+         * Check if the BatchLabServerAPI for this labServerGuid already exists
          */
-        LabServerInfo labServerInfo = this.configProperties.GetLabServerInfo(labServerGuid);
-        if (labServerInfo != null) {
+        if ((labServerAPI = this.mapLabServerAPI.get(labServerGuid)) == null) {
             /*
-             * Create an instance of the LabServer API for this service url
+             * Get LabServer information
              */
-            labServerAPI = new LabServerAPI(labServerInfo.getServiceUrl());
-            labServerAPI.setIdentifier(this.configProperties.getServiceBrokerGuid());
-            labServerAPI.setPasskey(labServerInfo.getOutgoingPasskey());
+            LabServerInfo labServerInfo = this.configProperties.GetLabServerInfo(labServerGuid);
+            if (labServerInfo != null) {
+                /*
+                 * Create an instance of the LabServer API for this service url
+                 */
+                labServerAPI = new LabServerAPI(labServerInfo.getServiceUrl());
+                labServerAPI.setIdentifier(this.configProperties.getServiceBrokerGuid());
+                labServerAPI.setPasskey(labServerInfo.getOutgoingPasskey());
+            }
+
+            /*
+             * Add the BatchLabServerAPI to the map for next time
+             */
+            this.mapLabServerAPI.put(labServerGuid, labServerAPI);
         }
 
         return labServerAPI;
     }
+
+    //<editor-fold defaultstate="collapsed" desc="ConvertType">
+    /**
+     *
+     * @param strings
+     * @return edu.mit.ilab.ArrayOfString
+     */
+    private edu.mit.ilab.ArrayOfString ConvertType(String[] strings) {
+        edu.mit.ilab.ArrayOfString arrayOfString = null;
+
+        if (strings != null) {
+            arrayOfString = new edu.mit.ilab.ArrayOfString();
+            arrayOfString.getString().addAll(Arrays.asList(strings));
+        }
+
+        return arrayOfString;
+    }
+
+    /**
+     *
+     * @param experimentStatus
+     * @return edu.mit.ilab.ExperimentStatus
+     */
+    private edu.mit.ilab.ExperimentStatus ConvertType(ExperimentStatus experimentStatus) {
+        edu.mit.ilab.ExperimentStatus proxyExperimentStatus = null;
+
+        if (experimentStatus != null) {
+            proxyExperimentStatus = new edu.mit.ilab.ExperimentStatus();
+            proxyExperimentStatus.setEstRemainingRuntime(experimentStatus.getEstRemainingRuntime());
+            proxyExperimentStatus.setEstRuntime(experimentStatus.getEstRuntime());
+            proxyExperimentStatus.setStatusCode(experimentStatus.getStatusCode().getValue());
+            proxyExperimentStatus.setWait(this.ConvertType(experimentStatus.getWaitEstimate()));
+        }
+
+        return proxyExperimentStatus;
+    }
+
+    /**
+     *
+     * @param labExperimentStatus
+     * @return edu.mit.ilab.LabExperimentStatus
+     */
+    private edu.mit.ilab.LabExperimentStatus ConvertType(LabExperimentStatus labExperimentStatus) {
+        edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
+
+        if (labExperimentStatus != null) {
+            proxyLabExperimentStatus = new edu.mit.ilab.LabExperimentStatus();
+            proxyLabExperimentStatus.setMinTimetoLive(labExperimentStatus.getMinTimetoLive());
+            proxyLabExperimentStatus.setStatusReport(this.ConvertType(labExperimentStatus.getExperimentStatus()));
+        }
+
+        return proxyLabExperimentStatus;
+    }
+
+    /**
+     *
+     * @param labStatus
+     * @return edu.mit.ilab.LabStatus
+     */
+    private edu.mit.ilab.LabStatus ConvertType(LabStatus labStatus) {
+        edu.mit.ilab.LabStatus proxyLabStatus = null;
+
+        if (labStatus != null) {
+            proxyLabStatus = new edu.mit.ilab.LabStatus();
+            proxyLabStatus.setOnline(labStatus.isOnline());
+            proxyLabStatus.setLabStatusMessage(labStatus.getLabStatusMessage());
+        }
+
+        return proxyLabStatus;
+    }
+
+    /**
+     *
+     * @param resultReport
+     * @return edu.mit.ilab.ResultReport
+     */
+    private edu.mit.ilab.ResultReport ConvertType(ResultReport resultReport) {
+        edu.mit.ilab.ResultReport proxyResultReport = null;
+
+        if (resultReport != null) {
+            proxyResultReport = new edu.mit.ilab.ResultReport();
+            proxyResultReport.setErrorMessage(resultReport.getErrorMessage());
+            proxyResultReport.setExperimentResults(resultReport.getXmlExperimentResults());
+            proxyResultReport.setStatusCode(resultReport.getStatusCode().getValue());
+            proxyResultReport.setWarningMessages(this.ConvertType(resultReport.getWarningMessages()));
+            proxyResultReport.setXmlBlobExtension(resultReport.getXmlBlobExtension());
+            proxyResultReport.setXmlResultExtension(resultReport.getXmlResultExtension());
+        }
+
+        return proxyResultReport;
+    }
+
+    /**
+     *
+     * @param submissionReport
+     * @return edu.mit.ilab.ClientSubmissionReport
+     */
+    private edu.mit.ilab.ClientSubmissionReport ConvertType(SubmissionReport submissionReport) {
+        edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
+
+        if (submissionReport != null) {
+            /*
+             * Convert to the return type
+             */
+            proxyClientSubmissionReport = new edu.mit.ilab.ClientSubmissionReport();
+            proxyClientSubmissionReport.setExperimentID((int) submissionReport.getExperimentId());
+            proxyClientSubmissionReport.setMinTimeToLive(submissionReport.getMinTimeToLive());
+            proxyClientSubmissionReport.setVReport(this.ConvertType(submissionReport.getValidationReport()));
+            proxyClientSubmissionReport.setWait(this.ConvertType(submissionReport.getWaitEstimate()));
+        }
+
+        return proxyClientSubmissionReport;
+    }
+
+    /**
+     *
+     * @param validationReport
+     * @return edu.mit.ilab.ValidationReport
+     */
+    private edu.mit.ilab.ValidationReport ConvertType(ValidationReport validationReport) {
+        edu.mit.ilab.ValidationReport proxyValidationReport = null;
+
+        if (validationReport != null) {
+            proxyValidationReport = new edu.mit.ilab.ValidationReport();
+            proxyValidationReport.setAccepted(validationReport.isAccepted());
+            proxyValidationReport.setErrorMessage(validationReport.getErrorMessage());
+            proxyValidationReport.setEstRuntime(validationReport.getEstRuntime());
+            proxyValidationReport.setWarningMessages(this.ConvertType(validationReport.getWarningMessages()));
+        }
+
+        return proxyValidationReport;
+    }
+
+    /**
+     *
+     * @param waitEstimate
+     * @return edu.mit.ilab.WaitEstimate
+     */
+    private edu.mit.ilab.WaitEstimate ConvertType(WaitEstimate waitEstimate) {
+        edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
+
+        if (waitEstimate != null) {
+            proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
+            proxyWaitEstimate.setEffectiveQueueLength(waitEstimate.getEffectiveQueueLength());
+            proxyWaitEstimate.setEstWait(waitEstimate.getEstWait());
+        }
+
+        return proxyWaitEstimate;
+    }
+    //</editor-fold>
 
     /**
      *

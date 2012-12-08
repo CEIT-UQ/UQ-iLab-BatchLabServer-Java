@@ -32,9 +32,14 @@ CREATE FUNCTION Experiments_GetNextExperimentId
 )
 RETURNS integer AS
 $BODY$
-    SELECT (max(ExperimentId) + 1) FROM Experiments
-$BODY$
-    LANGUAGE sql VOLATILE;
+SELECT
+    CASE
+        WHEN (SELECT count(*) FROM Experiments) = 0 THEN
+            1
+        ELSE
+            (SELECT (max(ExperimentId) + 1) FROM Experiments)
+    END$BODY$
+LANGUAGE sql VOLATILE;
 
 /********************************************************************************************************************
 */
