@@ -8,9 +8,12 @@
             Getting Started with the <i>UQ-iLab-BatchLabServer-Java</i> Project
         </h2>
         <p>
-            [GettingStarted.htm - uqlpayne 5 Dec 2012]
+            [GettingStarted.htm - uqlpayne 12 Dec 2012]
         </p>
         <hr />
+		<p>
+			The files specified here are for the Windows platform but software is also available for the other platforms, e.g., Linux.
+		</p>
 
         <h3>
             Software
@@ -170,19 +173,19 @@
             </li>
             <li>
                 <p>
-                    Create a new group role with the name <i>LabServer</i>.
+                    Create a new group role with the name <i>LabServerGroup</i>.
                 </p>
             </li>
             <li>
                 <p>
                     Create a new login role with the name <i>LabServer</i> and password <i>ilab</i>. Give the <i>LabServer</i> login role
-                    membership to the <i>LabServer</i> group role.
+                    membership to the <i>LabServerGroup</i> group role.
                 </p>
             </li>
             <li>
                 <p>
                     Select <i>Tables</i> in the public schema of the database and use the <i>Grant Wizard</i> to give <i>ALL</i> privileges to
-                    <i>LabServer</i>. Do the same with <i>Functions</i> in the public schema of the database.
+                    the <i>LabServerGroup</i> group role. Do the same with <i>Functions</i> and <i>Sequences</i> in the public schema of the database.
 
                 </p>
             </li>
@@ -216,19 +219,19 @@
             </li>
             <li>
                 <p>
-                    Create a new group role with the name <i>ServiceBroker</i>.
+                    Create a new group role with the name <i>ServiceBrokerGroup</i>.
                 </p>
             </li>
             <li>
                 <p>
                     Create a new login role with the name <i>ServiceBroker</i> and password <i>ilab</i>. Give the <i>ServiceBroker</i> login role
-                    membership to the <i>ServiceBroker</i> group role.
+                    membership to the <i>ServiceBrokerGroup</i> group role.
                 </p>
             </li>
             <li>
                 <p>
                     Select <i>Tables</i> in the public schema of the database and use the <i>Grant Wizard</i> to give <i>ALL</i> privileges to
-                    <i>ServiceBroker</i>. Do the same with <i>Functions</i> in the public schema of the database.
+                    <i>ServiceBrokerGroup</i>. Do the same with <i>Functions</i> and <i>Sequences</i> in the public schema of the database.
 
                 </p>
             </li>
