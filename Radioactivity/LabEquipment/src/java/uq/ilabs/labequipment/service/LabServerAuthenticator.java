@@ -17,10 +17,10 @@ import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
-import javax.xml.ws.ProtocolException;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
+import javax.xml.ws.soap.SOAPFaultException;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labequipment.engine.ConfigProperties;
 import uq.ilabs.library.labequipment.engine.LabConsts;
@@ -87,9 +87,18 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
                 ProcessSoapHeader(messageContext);
 
                 success = true;
+
             } catch (SOAPException | IOException ex) {
-                Logfile.WriteError(ex.toString());
-                throw new ProtocolException(ex);
+                /*
+                 * Create a SOAPFaultException to be thrown back to the caller
+                 */
+                try {
+                    SOAPFault fault = SOAPFactory.newInstance().createFault();
+                    fault.setFaultString(ex.getMessage());
+                    throw new SOAPFaultException(fault);
+                } catch (SOAPException e) {
+                    Logfile.WriteError(e.getMessage());
+                }
             }
         }
 

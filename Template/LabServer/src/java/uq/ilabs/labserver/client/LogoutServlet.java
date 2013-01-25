@@ -5,6 +5,7 @@
 package uq.ilabs.labserver.client;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpSession;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
+import uq.ilabs.library.labserver.client.UserSession;
 
 /**
  *
@@ -22,10 +24,15 @@ public class LogoutServlet extends HttpServlet {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LogoutServlet.class.getName();
+    private static final Level logLevel = Level.FINE;
+    /*
+     * String constants for logfile messages
+     */
+    private static final String STRLOG_LogoutUserGroup_arg2 = "Logout - User: %s  Group: %s";
     //</editor-fold>
 
     /**
-     * 
+     *
      * @param request
      * @param response
      * @throws ServletException
@@ -34,10 +41,10 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String methodName = "doGet";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         /*
-         * Get the ServiceBrokerSession information from the session
+         * Get the LabServerSession information from the session
          */
         HttpSession httpSession = request.getSession();
         LabServerSession labServerSession = (LabServerSession) httpSession.getAttribute(Consts.STRSSN_LabServer);
@@ -46,7 +53,12 @@ public class LogoutServlet extends HttpServlet {
          * Remove the user's session
          */
         if (labServerSession != null) {
-            labServerSession.setUserSession(null);
+            UserSession userSession = labServerSession.getUserSession();
+            if (userSession != null) {
+                Logfile.Write(Level.INFO, String.format(STRLOG_LogoutUserGroup_arg2, userSession.getUsername(), userSession.getGroupname()));
+
+                labServerSession.setUserSession(null);
+            }
         }
 
         /*
@@ -54,6 +66,6 @@ public class LogoutServlet extends HttpServlet {
          */
         response.sendRedirect(getServletContext().getContextPath() + Consts.STRURL_Faces + Consts.STRURL_Home);
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 }

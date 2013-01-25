@@ -9,10 +9,10 @@ import uq.ilabs.library.lab.types.StatusCodes;
 import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.utilities.Delay;
 import uq.ilabs.library.lab.utilities.Logfile;
+import uq.ilabs.library.labequipment.LabEquipmentAPI;
 import uq.ilabs.library.labserver.engine.LabConfiguration;
 import uq.ilabs.library.labserver.engine.LabExperimentResult;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
-import uq.ilabs.library.labserver.labequipment.LabEquipmentAPI;
 
 /**
  *
@@ -23,6 +23,7 @@ public class DriverEquipmentGeneric extends DriverGeneric {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = DriverEquipmentGeneric.class.getName();
     private static final Level logLevel = Level.FINER;
+    private static final boolean debugTrace = false;
     /*
      * String constants for logfile messages
      */
@@ -53,31 +54,31 @@ public class DriverEquipmentGeneric extends DriverGeneric {
         final String methodName = "DriverEquipmentGeneric";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that parameters are valid
-         */
-        if (labEquipmentServiceInfo == null) {
-            throw new NullPointerException(LabEquipmentServiceInfo.class.getSimpleName());
+        try {
+            /*
+             * Check that parameters are valid
+             */
+            if (labEquipmentServiceInfo == null) {
+                throw new NullPointerException(LabEquipmentServiceInfo.class.getSimpleName());
+            }
+
+            /*
+             * Create an instance of the lab equipment API for the specified service url
+             */
+            this.labEquipmentAPI = labEquipmentServiceInfo.getLabEquipmentAPI();
+            if (this.labEquipmentAPI == null) {
+                throw new NullPointerException(LabEquipmentAPI.class.getSimpleName());
+            }
+
+            /*
+             * Initialise locals
+             */
+            this.driverName = this.getClass().getSimpleName();
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
-
-        /*
-         * Create an instance of the lab equipment API for the specified service url
-         */
-        this.labEquipmentAPI = new LabEquipmentAPI(labEquipmentServiceInfo.getServiceUrl());
-        if (this.labEquipmentAPI == null) {
-            throw new NullPointerException(LabEquipmentAPI.class.getSimpleName());
-        }
-
-        /*
-         * Set identifier and passkey
-         */
-        labEquipmentAPI.setIdentifier(labEquipmentServiceInfo.getIdentifier());
-        labEquipmentAPI.setPasskey(labEquipmentServiceInfo.getPasskey());
-
-        /*
-         * Initialise locals
-         */
-        this.driverName = this.getClass().getSimpleName();
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -117,7 +118,7 @@ public class DriverEquipmentGeneric extends DriverGeneric {
     }
 
     /**
-     * 
+     *
      * @param xmlSpecification
      * @return
      * @throws Exception
@@ -168,11 +169,9 @@ public class DriverEquipmentGeneric extends DriverGeneric {
             }
 
             /*
-             * Set the start and completion times
+             * Set the start time
              */
             this.timeStarted = Calendar.getInstance();
-            this.timeCompleted = Calendar.getInstance();
-//            this.timeCompleted.setTimeInMillis(this.timeStarted.getTimeInMillis() + (int) validationReport.getEstRuntime() * 1000);
 
             /*
              * Start execution of the lab experiment specification
@@ -188,6 +187,12 @@ public class DriverEquipmentGeneric extends DriverGeneric {
             }
 
             /*
+             * Set the expected completion time
+             */
+            this.timeCompleted = Calendar.getInstance();
+            this.timeCompleted.setTimeInMillis(this.timeStarted.getTimeInMillis() + executionStatus.getTimeRemaining() * 1000);
+
+            /*
              * Get the execution Id for further communication with the LabEquipment
              */
             int executionId = executionStatus.getExecutionId();
@@ -195,7 +200,7 @@ public class DriverEquipmentGeneric extends DriverGeneric {
             /*
              * Set a timeout so that we don't wait forever for the experiment to complete
              */
-            int timeout = executionStatus.getTimeRemaining() + 10;
+            int timeout = executionStatus.getTimeRemaining() + 60;
             while (timeout > 0) {
                 /*
                  * Check if execution has completed
@@ -213,6 +218,11 @@ public class DriverEquipmentGeneric extends DriverGeneric {
                         executionStatus.getExecuteStatus().toString(), executionStatus.getTimeRemaining()));
 
                 /*
+                 * Update the expected completion time
+                 */
+                this.timeCompleted.setTimeInMillis(this.timeStarted.getTimeInMillis() + executionTimeRemaining * 1000);
+
+                /*
                  * Wait a bit and then check again
                  */
                 int secondsToWait;
@@ -225,7 +235,9 @@ public class DriverEquipmentGeneric extends DriverGeneric {
                 }
 
                 for (int i = 0; i < secondsToWait; i++) {
-                    System.out.println("E");
+                    if (debugTrace == true) {
+                        System.out.println("[E]");
+                    }
                     Delay.MilliSeconds(1000);
 
                     /*

@@ -33,9 +33,16 @@ public class DeviceGeneric {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     protected int initialiseDelay;
+    protected String lastError;
 
     public int getInitialiseDelay() {
         return initialiseDelay;
+    }
+
+    public String getLastError() {
+        String error = lastError;
+        lastError = null;
+        return error;
     }
     //</editor-fold>
 
@@ -44,7 +51,7 @@ public class DeviceGeneric {
      * @param labEquipmentConfiguration
      * @throws Exception
      */
-    public DeviceGeneric(LabEquipmentConfiguration labEquipmentConfiguration) throws Exception {
+    public DeviceGeneric(LabEquipmentConfiguration labEquipmentConfiguration, String deviceName) throws Exception {
         final String methodName = "DeviceGeneric";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
@@ -59,7 +66,7 @@ public class DeviceGeneric {
             /*
              * Get the device configuration from the XML string
              */
-            Document xmlDocument = XmlUtilities.GetDocumentFromString(labEquipmentConfiguration.GetXmlDeviceConfiguration(this.getClass().getSimpleName()));
+            Document xmlDocument = XmlUtilities.GetDocumentFromString(labEquipmentConfiguration.GetXmlDeviceConfiguration(deviceName));
             this.xmlNodeDevice = XmlUtilities.GetRootNode(xmlDocument, LabConsts.STRXML_Device);
 
             /*

@@ -53,4 +53,6 @@ public class Consts extends LabConsts {
     public static final String STRXML_FieldVector = "fieldVector";
     public static final String STRXML_VoltageVector = "voltageVector";
     public static final String STRXML_LoadVector = "loadVector";
+    public static final String STRXML_ATTR_Name = "name";
+    public static final String STRXML_ATTR_Units = "units";
 }

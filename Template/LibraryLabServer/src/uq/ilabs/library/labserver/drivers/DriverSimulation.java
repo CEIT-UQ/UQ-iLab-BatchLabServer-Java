@@ -32,12 +32,7 @@ public class DriverSimulation extends DriverGeneric {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = DriverSimulation.class.getName();
     private static final Level logLevel = Level.FINER;
-    /*
-     * String constants for exception messages
-     */
-    private static final String STRERR_SomeParameter = "SomeParameter";
-    private static final String STRERR_ValueLessThanMinimum_arg2 = "%s: Less than minimum (%d)!";
-    private static final String STRERR_ValueGreaterThanMaximum_arg2 = "%s: Greater than maximum (%d)!";
+    private static final boolean debugTrace = false;
     /*
      * Constants
      */
@@ -52,11 +47,11 @@ public class DriverSimulation extends DriverGeneric {
             + "</" + Consts.STRXML_ExperimentResults + ">";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private ExperimentValidation experimentValidation;
     //</editor-fold>
 
     /**
      *
+     * @param configuration
      * @throws Exception
      */
     public DriverSimulation(Configuration configuration) throws Exception {
@@ -69,8 +64,8 @@ public class DriverSimulation extends DriverGeneric {
             /*
              * Create an instance of ExperimentValidation
              */
-            this.experimentValidation = new ExperimentValidation(configuration.getXmlValidation());
-            if (this.experimentValidation == null) {
+            this.labExperimentValidation = new ExperimentValidation(configuration.getXmlValidation());
+            if (this.labExperimentValidation == null) {
                 throw new NullPointerException(ExperimentValidation.class.getSimpleName());
             }
 
@@ -119,20 +114,18 @@ public class DriverSimulation extends DriverGeneric {
              * Check the setup Id
              */
             String setupId = experimentSpecification.getSetupId();
-            if (setupId.equals(Consts.STRXML_SetupId_Simulation) == false) {
-                throw new RuntimeException(String.format(STRERR_InvalidSetupId_arg, setupId));
+            switch (setupId) {
+                case Consts.STRXML_SetupId_Simulation:
+                    break;
+                default:
+                    throw new RuntimeException(String.format(STRERR_InvalidSetupId_arg, setupId));
             }
 
             /*
-             * Check 'someParameter' is valid
+             * Validate the experiment specification parameters
              */
-            int someParameter = experimentSpecification.getSomeParameter();
-            if (someParameter < this.experimentValidation.getSomeParameterMin()) {
-                throw new RuntimeException(String.format(STRERR_ValueLessThanMinimum_arg2, STRERR_SomeParameter, this.experimentValidation.getSomeParameterMin()));
-            }
-            if (someParameter > this.experimentValidation.getSomeParameterMax()) {
-                throw new RuntimeException(String.format(STRERR_ValueGreaterThanMaximum_arg2, STRERR_SomeParameter, this.experimentValidation.getSomeParameterMax()));
-            }
+            ExperimentValidation experimentValidation = (ExperimentValidation) this.labExperimentValidation;
+            experimentValidation.ValidateSomeParameter(experimentSpecification.getSomeParameter());
 
             /*
              * Specification is valid, set the execution time
@@ -205,7 +198,9 @@ public class DriverSimulation extends DriverGeneric {
                  * Delay for the full execution time, unless cancelled
                  */
                 for (int i = 0; i < INT_ExecutionTimeSecs; i++) {
-                    System.out.println('*');
+                    if (debugTrace == true) {
+                        System.out.println("[*]");
+                    }
                     Delay.MilliSeconds(1000);
 
                     /*

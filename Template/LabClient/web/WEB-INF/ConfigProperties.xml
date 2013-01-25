@@ -10,19 +10,19 @@
     <entry key="LabServerId">2CD01113C51C4ca997B059531CD9469D</entry>
 
     <!-- MultiSubmit: If true, allows the client to submit further experiments before previously submitted experiments have completed -->
-    <entry key="MultiSubmit">False</entry>
+    <entry key="MultiSubmit">true</entry>
 
-    <!-- FeedbackEmail: Email address of administrator for feedback and can be empty -->
+    <!-- FeedbackEmail: Email address of administrator for feedback link on webpage, can be empty -->
     <entry key="FeedbackEmail"></entry>
 
     <!--
 
-    NOTE: The LabClient can be launched with URL request parameters for ServiceUrl, LabServerId and MultiSubmit. This
+    NOTE: The LabClient can be launched with URL request parameters for LabServerId, ServiceUrl and MultiSubmit. This
     allows the one deployment of the LabClient web application to be used with multiple ServiceBrokers and LabServers.
 
     An example URL that uses the Microsoft Visual Studio development .NET C# code is:
 
-    /LabClient.do?LabServerId=8C0BA543419E4d4ab340d449acd3e057&ServiceUrl=http://localhost:8081/ServiceBrokerService.asmx
+    /LabClient.do?ServiceUrl=http://localhost:8081/ServiceBrokerService.asmx&LabServerId=8C0BA543419E4d4ab340d449acd3e057&MultiSubmit=true
 
     Also Note: During development in the NetBeans IDE, the run properties of the LabClient web application must specify
     the following request parameters to communicate with the Dummy ServiceBroker:

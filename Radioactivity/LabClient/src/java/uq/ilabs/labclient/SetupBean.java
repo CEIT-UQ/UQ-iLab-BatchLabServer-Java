@@ -4,6 +4,7 @@
  */
 package uq.ilabs.labclient;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ import uq.ilabs.library.labclient.engine.types.SetupInfo;
  */
 @ManagedBean
 @SessionScoped
-public class SetupBean {
+public class SetupBean implements Serializable {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = SetupBean.class.getName();
@@ -221,7 +222,7 @@ public class SetupBean {
                 Node nodeSource = (Node) nodeList.get(i);
                 this.allSources[i] = XmlUtilities.GetChildValue(nodeSource, Consts.STRXML_Name);
             }
-            this.defaultSource = XmlUtilities.GetAttribute(node, Consts.STRXML_ATTR_Default, false);
+            this.defaultSource = XmlUtilities.GetAttributeValue(node, Consts.STRXML_ATTR_Default, false);
 
             /*
              * Get all absorbers
@@ -236,7 +237,7 @@ public class SetupBean {
                 Node nodeAbsorber = (Node) nodeList.get(i);
                 this.allAbsorbers[i] = XmlUtilities.GetChildValue(nodeAbsorber, Consts.STRXML_Name);
             }
-            this.defaultAbsorber = XmlUtilities.GetAttribute(node, Consts.STRXML_ATTR_Default, false);
+            this.defaultAbsorber = XmlUtilities.GetAttributeValue(node, Consts.STRXML_ATTR_Default, false);
 
             /*
              * Get all distances

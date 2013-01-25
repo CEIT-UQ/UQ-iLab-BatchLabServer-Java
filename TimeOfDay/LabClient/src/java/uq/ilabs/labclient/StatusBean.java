@@ -35,7 +35,8 @@ public class StatusBean implements Serializable {
     private static final String STR_ExperimentStatus_arg2 = "Experiment %d - %s";
     private static final String STR_MinutesAnd_arg2 = "%d minute%s and ";
     private static final String STR_Seconds_arg2 = "%d second%s";
-    private static final String STR_StatusMessageQueueLengthWaitTime_arg3 = "%s - Queue length is %d and wait time is %s";
+    private static final String STR_QueueStatusMessage_arg2 = "Queue length is %d and wait time is %s.";
+    private static final String STR_QueueStatusNotAvailable = "Queue status not available.";
     private static final String STR_TimeRemainingIs = " Time remaining is %s";
     private static final String STR_QueuePositionRunIn_arg2 = "Queue position is %d and it will run in %s";
     private static final String STR_ExperimentCancelled_arg = "Experiment %d has been cancelled.";
@@ -53,6 +54,7 @@ public class StatusBean implements Serializable {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private boolean holOnline;
+    private String holQueueStatusMessage;
     private String holLabStatusMessage;
     private String hitExperimentId;
     private String hsomSelectedExperimentId;
@@ -63,6 +65,10 @@ public class StatusBean implements Serializable {
 
     public boolean isHolOnline() {
         return holOnline;
+    }
+
+    public String getHolQueueStatusMessage() {
+        return holQueueStatusMessage;
     }
 
     public String getHolLabStatusMessage() {
@@ -336,22 +342,24 @@ public class StatusBean implements Serializable {
 
         try {
             /*
-             * Get the LabServer's status
+             * Get the LabServer's status and display
              */
             LabStatus labStatus = this.labClientSession.getServiceBrokerAPI().GetLabStatus();
+            this.holLabStatusMessage = labStatus.getLabStatusMessage();
+
+            /*
+             * Check if the LabServer is online
+             */
             this.holOnline = labStatus.isOnline();
             if (this.holOnline == true) {
                 /*
                  * Get the queue length and wait time
                  */
                 WaitEstimate waitEstimate = this.labClientSession.getServiceBrokerAPI().GetEffectiveQueueLength();
-                this.holLabStatusMessage = String.format(STR_StatusMessageQueueLengthWaitTime_arg3,
-                        labStatus.getLabStatusMessage(), waitEstimate.getEffectiveQueueLength(), FormatTimeMessage((int) waitEstimate.getEstWait()));
+                this.holQueueStatusMessage = String.format(STR_QueueStatusMessage_arg2,
+                        waitEstimate.getEffectiveQueueLength(), FormatTimeMessage((int) waitEstimate.getEstWait()));
             } else {
-                /*
-                 * Display lab status and message
-                 */
-                this.holLabStatusMessage = labStatus.getLabStatusMessage();
+                this.holQueueStatusMessage = STR_QueueStatusNotAvailable;
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

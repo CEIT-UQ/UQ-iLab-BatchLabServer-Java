@@ -175,13 +175,27 @@ public class XmlUtilities {
      *
      * @param node The node containing the attribute.
      * @param attributeName The name of the attribute.
+     * @return The value of the attribute.
+     * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>node</code> is null</li>
+     * <li><code>attributeName</code> is null or an empty string</li> <li>The attribute does not exist or does not have
+     * a value</li> </ul>
+     */
+    public static String GetAttributeValue(Node node, String attributeName) throws XmlUtilitiesException {
+        return GetAttributeValue(node, attributeName, true);
+    }
+
+    /**
+     * Get the attribute with the specified name from the given node.
+     *
+     * @param node The node containing the attribute.
+     * @param attributeName The name of the attribute.
      * @param mustExist If true, the attribute must exist.
      * @return The value of the attribute.
      * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>node</code> is null</li>
      * <li><code>attributeName</code> is null or an empty string</li> <li>The attribute does not exist or does not have
      * a value and <code>mustExist</code> is true</li> </ul>
      */
-    public static String GetAttribute(Node node, String attributeName, boolean mustExist) throws XmlUtilitiesException {
+    public static String GetAttributeValue(Node node, String attributeName, boolean mustExist) throws XmlUtilitiesException {
         /*
          * Check that the node exists
          */
@@ -215,6 +229,20 @@ public class XmlUtilities {
         }
 
         return value;
+    }
+
+    /**
+     * Get the child node with the specified name from the given parent node.
+     *
+     * @param parentNode The parent node.
+     * @param childName The name of the child node to match.
+     * @return The Node object containing the child node.
+     * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
+     * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
+     * string</li> <li>The child node does not exist</li> <li>The child node is not unique</li> </ul>
+     */
+    public static Node GetChildNode(Node parentNode, String childName) throws XmlUtilitiesException {
+        return GetChildNode(parentNode, childName, true);
     }
 
     /**
@@ -277,20 +305,6 @@ public class XmlUtilities {
         }
 
         return nodeList.item(0);
-    }
-
-    /**
-     * Get the child node with the specified name from the given parent node.
-     *
-     * @param parentNode The parent node.
-     * @param childName The name of the child node to match.
-     * @return The Node object containing the child node.
-     * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
-     * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> <li>The child node is not unique</li> </ul>
-     */
-    public static Node GetChildNode(Node parentNode, String childName) throws XmlUtilitiesException {
-        return GetChildNode(parentNode, childName, true);
     }
 
     /**
@@ -368,11 +382,21 @@ public class XmlUtilities {
     /**
      *
      * @param node
-     * @param allowEmpty
      * @return
      * @throws XmlUtilitiesException
      */
-    public static String GetValue(Node node, boolean allowEmpty) throws XmlUtilitiesException {
+    public static String GetValue(Node node) throws XmlUtilitiesException {
+        return GetValue(node, true);
+    }
+
+    /**
+     *
+     * @param node
+     * @param mustExist
+     * @return
+     * @throws XmlUtilitiesException
+     */
+    public static String GetValue(Node node, boolean mustExist) throws XmlUtilitiesException {
         /*
          * Check that the node is an ELEMENT node
          */
@@ -396,7 +420,7 @@ public class XmlUtilities {
         /*
          * Check that the text node has a value
          */
-        if (allowEmpty == false && (value == null || value.isEmpty())) {
+        if (mustExist == true && (value == null || value.isEmpty())) {
             throw new XmlUtilitiesException(STRERR_NodeValueDoesNotExist_Arg);
         }
 
@@ -404,13 +428,18 @@ public class XmlUtilities {
     }
 
     /**
+     * Get the value of the child node with the specified name from the given parent node. The value may be an empty
+     * string.
      *
-     * @param node
-     * @return
-     * @throws XmlUtilitiesException
+     * @param parentNode The parent node.
+     * @param childName The name of the child node.
+     * @return The value of the child node as a string.
+     * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
+     * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
+     * string</li> <li>The child node does not exist</li> </ul>
      */
-    public static String GetValue(Node node) throws XmlUtilitiesException {
-        return GetValue(node, true);
+    public static String GetChildValue(Node parentNode, String childName) throws XmlUtilitiesException {
+        return GetChildValue(parentNode, childName, true);
     }
 
     /**
@@ -422,9 +451,10 @@ public class XmlUtilities {
      * @return The value of the child node as a string.
      * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
      * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a value * * * *      * and <code>allowEmpty</code> is false</li> </ul>
+     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a value * * * * * * * *
+     * and <code>allowEmpty</code> is false</li> </ul>
      */
-    public static String GetChildValue(Node parentNode, String childName, boolean allowEmpty) throws XmlUtilitiesException {
+    public static String GetChildValue(Node parentNode, String childName, boolean mustExist) throws XmlUtilitiesException {
         /*
          * Get the child node with the specified name
          */
@@ -453,26 +483,11 @@ public class XmlUtilities {
         /*
          * Check that the text node has a value
          */
-        if (allowEmpty == false && (value == null || value.isEmpty())) {
+        if (mustExist == true && (value == null || value.isEmpty())) {
             throw new XmlUtilitiesException(STRERR_NodeValueDoesNotExist_Arg + childName);
         }
 
         return value;
-    }
-
-    /**
-     * Get the value of the child node with the specified name from the given parent node. The value may be an empty
-     * string.
-     *
-     * @param parentNode The parent node.
-     * @param childName The name of the child node.
-     * @return The value of the child node as a string.
-     * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
-     * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> </ul>
-     */
-    public static String GetChildValue(Node parentNode, String childName) throws XmlUtilitiesException {
-        return GetChildValue(parentNode, childName, true);
     }
 
     /**
@@ -487,9 +502,9 @@ public class XmlUtilities {
      */
     public static boolean GetChildValueAsBoolean(Node parentNode, String childName) throws XmlUtilitiesException {
         /*
-         * Get the child node's value which must not be empty
+         * Get the child node's value which must exist
          */
-        String value = GetChildValue(parentNode, childName, false);
+        String value = GetChildValue(parentNode, childName, true);
 
         /*
          * Convert the string to a boolean value
@@ -519,9 +534,9 @@ public class XmlUtilities {
      */
     public static char GetChildValueAsChar(Node parentNode, String childName) throws XmlUtilitiesException {
         /*
-         * Get the child node's value which must not be empty
+         * Get the child node's value which must exist
          */
-        String value = GetChildValue(parentNode, childName, false);
+        String value = GetChildValue(parentNode, childName, true);
 
         /*
          * Convert the string to a char value
@@ -549,9 +564,9 @@ public class XmlUtilities {
      */
     public static int GetChildValueAsInt(Node parentNode, String childName) throws XmlUtilitiesException {
         /*
-         * Get the child node's value which must not be empty
+         * Get the child node's value which must exist
          */
-        String value = GetChildValue(parentNode, childName, false);
+        String value = GetChildValue(parentNode, childName, true);
 
         /*
          * Convert the string to an integer value
@@ -572,9 +587,9 @@ public class XmlUtilities {
      */
     public static double GetChildValueAsDouble(Node parentNode, String childName) throws XmlUtilitiesException {
         /*
-         * Get the child node's value which must not be empty
+         * Get the child node's value which must exist
          */
-        String value = GetChildValue(parentNode, childName, false);
+        String value = GetChildValue(parentNode, childName, true);
 
         /*
          * Convert the string to a double value
@@ -586,15 +601,26 @@ public class XmlUtilities {
      *
      * @param parentNode
      * @param childName
-     * @param allowEmpty
      * @return
      * @throws XmlUtilitiesException
      */
-    public static String[] GetChildValues(Node parentNode, String childNames, boolean allowEmpty) throws XmlUtilitiesException {
+    public static String[] GetChildValues(Node parentNode, String childNames) throws XmlUtilitiesException {
+        return GetChildValues(parentNode, childNames, true);
+    }
+
+    /**
+     *
+     * @param parentNode
+     * @param childName
+     * @param mustExist
+     * @return
+     * @throws XmlUtilitiesException
+     */
+    public static String[] GetChildValues(Node parentNode, String childNames, boolean mustExist) throws XmlUtilitiesException {
         /*
          * Get the child node array list with the specified name
          */
-        ArrayList<Node> nodeArrayList = GetChildNodeList(parentNode, childNames);
+        ArrayList<Node> nodeArrayList = GetChildNodeList(parentNode, childNames, mustExist);
 
         /*
          * Get the text value of each node in the array list and place in the string array
@@ -635,7 +661,7 @@ public class XmlUtilities {
      * @param value The string value for the attribute.
      * @throws XmlUtilitiesException
      */
-    public static void SetAttribute(Node node, String attributeName, String value) throws XmlUtilitiesException {
+    public static void SetAttributeValue(Node node, String attributeName, String value) throws XmlUtilitiesException {
         /*
          * Check that the node exists
          */
@@ -790,11 +816,22 @@ public class XmlUtilities {
         return ToXmlString((Node) document);
     }
 
+    /**
+     *
+     * @param fragment The DOM document fragment object.
+     * @return A string representation of the document fragment.
+     * @throws XmlUtilitiesException
+     */
     public static String ToXmlString(DocumentFragment fragment) throws XmlUtilitiesException {
         return ToXmlString((Node) fragment);
     }
 
-    public static String ToXmlString(Node node) {
+    /**
+     *
+     * @param node The DOM node object.
+     * @return A string representation of the node.
+     */
+    public static String ToXmlString(Node node) throws XmlUtilitiesException {
         String xmlString = null;
 
         try {
@@ -814,6 +851,7 @@ public class XmlUtilities {
             xmlString = result.getWriter().toString();
         } catch (TransformerFactoryConfigurationError | IllegalArgumentException | TransformerException ex) {
             Logfile.WriteError(ex.toString());
+            throw new XmlUtilitiesException(ex.getMessage());
         }
 
         return xmlString;

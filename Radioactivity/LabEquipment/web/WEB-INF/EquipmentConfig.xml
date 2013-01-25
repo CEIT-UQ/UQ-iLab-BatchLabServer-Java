@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<equipmentConfig title="Radioactivity" version="4.0">
+    <powerupDelay>3</powerupDelay>
+    <powerdownTimeout>10</powerdownTimeout>
+
+    <devices>
+        <device name="DeviceFlexMotion">
+            <!-- Device type to use and can be any of: Simulation -->
+            <type>Simulation</type>
+            <simulation />
+            <hardware>
+                <boardId>1</boardId>
+            </hardware>
+            <tube>
+                <axisId>1</axisId>
+                <offsetDistance>14</offsetDistance>
+                <homeDistance>25</homeDistance>
+                <moveRate>0.530</moveRate>
+                <initAxis>true</initAxis>
+            </tube>
+            <sources>
+                <axisId>2</axisId>
+                <encoderPositions>75200,100,10900,32450,43100,59150</encoderPositions>
+                <selectTimes>13.3,4.1,5.6,8.2,9.5,11.5</selectTimes>
+                <returnTimes>9.5,18.5,17.2,14.6,13.3,11.4</returnTimes>
+                <firstLocation>A</firstLocation>
+                <homeLocation>F</homeLocation>
+                <source>
+                    <name>None</name>
+                    <location>F</location>
+                </source>
+                <source>
+                    <name>Strontium-90</name>
+                    <location>A</location>
+                </source>
+            </sources>
+            <absorbers>
+                <absorber>
+                    <name>None</name>
+                    <location>A</location>
+                </absorber>
+            </absorbers>
+            <initialiseDelay>0</initialiseDelay>
+        </device>
+        <device name="DeviceST360Counter">
+            <!-- Device type to use and can be any of: Simulation -->
+            <type>Simulation</type>
+            <simulation>
+                <distance>15</distance>
+                <duration>10</duration>
+                <mean>1023</mean>
+                <power>1.8</power>
+                <deviation>29</deviation>
+            </simulation>
+            <network>
+                <ipaddr>10.0.3.3</ipaddr>
+                <port>10001</port>
+            </network>
+            <voltage>400</voltage>
+            <volume>2</volume>
+            <timeAdjustment>
+                <capture>1.0625,0.175</capture>
+            </timeAdjustment>
+            <initialiseDelay>0</initialiseDelay>
+        </device>
+        <device name="DeviceSerialLcd">
+            <!-- Device type to use and can be any of: None, Simulation -->
+            <type>Simulation</type>
+            <writeLineTime>0.22</writeLineTime>
+            <initialiseDelay>2</initialiseDelay>
+        </device>
+    </devices>
+
+    <drivers>
+        <driver name="DriverRadioactivity">
+            <executionTimes>
+                <initialise>0</initialise>
+                <start>0</start>
+                <run>0</run>
+                <stop>0</stop>
+                <finalise>0</finalise>
+            </executionTimes>
+            <experimentResults>
+                <sourceName />
+                <absorberName />
+                <distance />
+                <duration />
+                <repeat />
+                <dataType>Real</dataType>
+                <dataVector distance="" />
+            </experimentResults>
+        </driver>
+        <driver name="DriverSimActivity">
+            <executionTimes>
+                <initialise>0</initialise>
+                <start>0</start>
+                <run>0</run>
+                <stop>0</stop>
+                <finalise>0</finalise>
+            </executionTimes>
+            <experimentResults>
+                <sourceName />
+                <absorberName />
+                <distance />
+                <duration />
+                <repeat />
+                <dataType>Simulated</dataType>
+                <dataVector distance="" />
+            </experimentResults>
+        </driver>
+        <driver name="DriverSimActivityNoDelay">
+            <executionTimes>
+                <initialise>0</initialise>
+                <start>0</start>
+                <run>0</run>
+                <stop>0</stop>
+                <finalise>0</finalise>
+            </executionTimes>
+            <experimentResults>
+                <sourceName />
+                <absorberName />
+                <distance />
+                <duration />
+                <repeat />
+                <dataType>Calculated</dataType>
+                <dataVector distance="" />
+            </experimentResults>
+        </driver>
+    </drivers>
+
+    <validation>
+        <distance>
+            <minimum>14</minimum>
+            <maximum>95</maximum>
+        </distance>
+        <duration>
+            <minimum>1</minimum>
+            <maximum>10</maximum>
+        </duration>
+        <repeat>
+            <minimum>1</minimum>
+            <maximum>10</maximum>
+        </repeat>
+        <totaltime>
+            <minimum>1</minimum>
+            <maximum>900</maximum>
+        </totaltime>
+    </validation>
+
+    <setups>
+        <setup id="RadioactivityVsTime">
+            <driver>DriverRadioactivity</driver>
+        </setup>
+        <setup id="RadioactivityVsDistance">
+            <driver>DriverRadioactivity</driver>
+        </setup>
+        <setup id="SimActivityVsTime">
+            <driver>DriverSimActivity</driver>
+        </setup>
+        <setup id="SimActivityVsDistance">
+            <driver>DriverSimActivity</driver>
+        </setup>
+        <setup id="SimActivityVsTimeNoDelay">
+            <driver>DriverSimActivityNoDelay</driver>
+        </setup>
+        <setup id="SimActivityVsDistanceNoDelay">
+            <driver>DriverSimActivityNoDelay</driver>
+        </setup>
+    </setups>
+</equipmentConfig>

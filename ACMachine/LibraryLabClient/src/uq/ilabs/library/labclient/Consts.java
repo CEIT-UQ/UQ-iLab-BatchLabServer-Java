@@ -26,4 +26,6 @@ public class Consts extends LabConsts {
     public static final String STRXML_Current = "current";
     public static final String STRXML_PowerFactor = "powerFactor";
     public static final String STRXML_Speed = "speed";
+    public static final String STRXML_ATTR_Name = "name";
+    public static final String STRXML_ATTR_Units = "units";
 }

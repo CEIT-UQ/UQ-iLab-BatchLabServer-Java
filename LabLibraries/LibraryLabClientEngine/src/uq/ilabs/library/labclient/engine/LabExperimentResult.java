@@ -100,7 +100,7 @@ public class LabExperimentResult {
      *
      * @param xmlExperimentResult
      */
-    public LabExperimentResult(String xmlExperimentResult) {
+    public LabExperimentResult(String xmlExperimentResult) throws Exception {
         final String methodName = "LabExperimentResult";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
@@ -114,15 +114,17 @@ public class LabExperimentResult {
             /*
              * Parse the experiment result
              */
-            this.timestamp = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_Timestamp, true);
-            this.title = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_Title, true);
-            this.version = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_Version, true);
+            this.timestamp = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_Timestamp);
+            this.title = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_Title);
+            this.version = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_Version);
             this.experimentId = XmlUtilities.GetChildValueAsInt(nodeExperimentResult, LabConsts.STRXML_ExperimentId);
             this.unitId = XmlUtilities.GetChildValueAsInt(nodeExperimentResult, LabConsts.STRXML_UnitId);
-            this.setupId = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_SetupId, true);
-            this.setupName = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_SetupName, true);
+            this.setupId = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_SetupId);
+            this.setupName = XmlUtilities.GetChildValue(nodeExperimentResult, LabConsts.STRXML_SetupName);
+
         } catch (Exception ex) {
-            Logfile.WriteError(ex.getMessage());
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);

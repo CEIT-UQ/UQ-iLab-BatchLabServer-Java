@@ -6,6 +6,7 @@ package uq.ilabs.library.labserver;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import uq.ilabs.library.lab.utilities.Logfile;
@@ -20,6 +21,7 @@ public class Configuration extends LabConfiguration {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = Configuration.class.getName();
+    private static final Level logLevel = Level.FINE;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     //</editor-fold>
@@ -38,35 +40,15 @@ public class Configuration extends LabConfiguration {
 
     /**
      *
-     * @param xmlLabConfiguration
-     * @throws Exception
-     */
-    public Configuration(String xmlLabConfiguration) throws Exception {
-        this(null, null, xmlLabConfiguration);
-    }
-
-    /**
-     *
      * @param filepath
      * @param filename
      * @throws Exception
      */
     public Configuration(String filepath, String filename) throws Exception {
-        this(filepath, filename, null);
-    }
-
-    /**
-     *
-     * @param filepath
-     * @param filename
-     * @param xmlLabConfiguration
-     * @throws Exception
-     */
-    private Configuration(String filepath, String filename, String xmlLabConfiguration) throws Exception {
-        super(filepath, filename, xmlLabConfiguration);
+        super(filepath, filename);
 
         final String methodName = "Configuration";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         try {
             /*
@@ -111,6 +93,6 @@ public class Configuration extends LabConfiguration {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 }

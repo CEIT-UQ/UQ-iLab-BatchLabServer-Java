@@ -17,7 +17,7 @@ import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
 import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
 import uq.ilabs.library.labclient.engine.types.SetupInfo;
-import uq.ilabs.library.labclient.servicebroker.ServiceBrokerAPI;
+import uq.ilabs.library.servicebroker.ServiceBrokerAPI;
 
 /**
  *
@@ -153,30 +153,36 @@ public class LabClientSession implements Serializable {
             /*
              * Get information from the lab configuration node
              */
-            this.title = XmlUtilities.GetAttribute(nodeLabConfiguration, LabConsts.STRXML_ATTR_Title, false);
-            this.version = XmlUtilities.GetAttribute(nodeLabConfiguration, LabConsts.STRXML_ATTR_Version, false);
+            this.title = XmlUtilities.GetAttributeValue(nodeLabConfiguration, LabConsts.STRXML_ATTR_Title);
+            this.version = XmlUtilities.GetAttributeValue(nodeLabConfiguration, LabConsts.STRXML_ATTR_Version);
             logMessage += String.format(STRLOG_TitleVersion_arg2, this.title, this.version) + Logfile.STRLOG_Newline;
 
-            Node nodeNavmenuPhoto = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_NavmenuPhoto, false);
-            this.navmenuPhotoUrl = XmlUtilities.GetChildValue(nodeNavmenuPhoto, LabConsts.STRXML_Image, true);
+            Node nodeNavmenuPhoto = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_NavmenuPhoto);
+            this.navmenuPhotoUrl = XmlUtilities.GetChildValue(nodeNavmenuPhoto, LabConsts.STRXML_Image);
             logMessage += String.format(STRLOG_PhotoUrl_arg, this.navmenuPhotoUrl) + Logfile.STRLOG_Newline;
 
             Node nodeLabCamera = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_LabCamera, false);
-            try {
-                this.labCameraUrl = XmlUtilities.GetChildValue(nodeLabCamera, LabConsts.STRXML_Url, false);
-            } catch (XmlUtilitiesException ex) {
-                /* No url specified */
+            if (nodeLabCamera != null) {
+                String url = XmlUtilities.GetChildValue(nodeLabCamera, LabConsts.STRXML_Url, false);
+                if (url != null && url.isEmpty() == false) {
+                    this.labCameraUrl = url;
+                }
             }
             logMessage += String.format(STRLOG_LabCameraUrl_arg, this.labCameraUrl) + Logfile.STRLOG_Newline;
 
             Node nodeLabInfo = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_LabInfo, false);
-            this.labInfoUrl = XmlUtilities.GetChildValue(nodeLabInfo, LabConsts.STRXML_Url, true);
+            if (nodeLabInfo != null) {
+                String url = XmlUtilities.GetChildValue(nodeLabInfo, LabConsts.STRXML_Url, false);
+                if (url != null && url.isEmpty() == false) {
+                    this.labInfoUrl = url;
+                }
+            }
             logMessage += String.format(STRLOG_LabInfoUrl_arg, this.labInfoUrl) + Logfile.STRLOG_Newline;
 
             /*
              * Get the configuration node and save as an XML string
              */
-            Node nodeConfiguration = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_Configuration, false);
+            Node nodeConfiguration = XmlUtilities.GetChildNode(nodeLabConfiguration, LabConsts.STRXML_Configuration);
             DocumentFragment documentFragment = document.createDocumentFragment();
             documentFragment.appendChild(nodeConfiguration.cloneNode(true));
             this.xmlConfiguration = XmlUtilities.ToXmlString(documentFragment);
@@ -194,13 +200,13 @@ public class LabClientSession implements Serializable {
                 /*
                  * Get the setup Id and name
                  */
-                String setupId = XmlUtilities.GetAttribute(nodeSetup, LabConsts.STRXML_ATTR_Id, false);
-                String setupName = XmlUtilities.GetChildValue(nodeSetup, LabConsts.STRXML_Name, false);
+                String setupId = XmlUtilities.GetAttributeValue(nodeSetup, LabConsts.STRXML_ATTR_Id);
+                String setupName = XmlUtilities.GetChildValue(nodeSetup, LabConsts.STRXML_Name);
 
                 /*
                  * Get the setup description
                  */
-                Node nodeDescription = XmlUtilities.GetChildNode(nodeSetup, LabConsts.STRXML_Description, false);
+                Node nodeDescription = XmlUtilities.GetChildNode(nodeSetup, LabConsts.STRXML_Description);
                 documentFragment = document.createDocumentFragment();
                 documentFragment.appendChild(nodeDescription.cloneNode(true));
                 String setupDescription = XmlUtilities.ToXmlString(documentFragment);

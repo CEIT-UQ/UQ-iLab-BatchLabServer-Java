@@ -1,8 +1,10 @@
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Queue_Add
 (
-    integer, varchar, varchar, integer, varchar, integer, varchar
+    integer, varchar, varchar, integer, varchar,
+    integer, varchar
 );
 
 CREATE FUNCTION Queue_Add
@@ -12,6 +14,7 @@ CREATE FUNCTION Queue_Add
     UserGroup varchar,
     PriorityHint integer,
     XmlSpecification varchar,
+
     EstExecutionTime integer,
     StatusCode varchar
 )
@@ -23,6 +26,7 @@ $BODY$
         UserGroup,
         PriorityHint,
         XmlSpecification,
+
         EstExecutionTime,
         StatusCode,
         DateCreated
@@ -34,7 +38,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Queue_GetCountBy
 (
@@ -60,7 +65,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Queue_RetrieveBy
 (
@@ -104,7 +110,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Queue_UpdateStatus
 (
@@ -123,7 +130,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Queue_UpdateStatusUnitId
 (
@@ -143,11 +151,13 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Statistics_Add
 (
-    integer, varchar, varchar, integer, integer, integer, integer
+    integer, varchar, varchar, integer, integer,
+    integer, integer
 );
 
 CREATE FUNCTION Statistics_Add
@@ -157,6 +167,7 @@ CREATE FUNCTION Statistics_Add
     UserGroup varchar,
     PriorityHint integer,
     EstimatedExecTime integer,
+
     QueueLength integer,
     EstimatedWaitTime integer
 )
@@ -168,6 +179,7 @@ $BODY$
         UserGroup,
         PriorityHint,
         EstimatedExecTime,
+
         QueueLength,
         EstimatedWaitTime,
         TimeSubmitted
@@ -179,7 +191,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Statistics_Delete
 (
@@ -198,7 +211,8 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Statistics_RetrieveBy
 (
@@ -244,7 +258,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Statistics_UpdateCancelled
 (
@@ -264,7 +279,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Statistics_UpdateCompleted
 (
@@ -284,7 +300,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Statistics_UpdateStarted
 (
@@ -305,11 +322,13 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Results_Add
 (
-    integer, varchar, varchar, int, varchar, varchar, varchar, varchar, varchar, varchar
+    integer, varchar, varchar, int, varchar,
+    varchar, varchar, varchar, varchar, varchar
 );
 
 CREATE FUNCTION Results_Add
@@ -319,6 +338,7 @@ CREATE FUNCTION Results_Add
     UserGroup varchar,
     PriorityHint int,
     StatusCode varchar,
+
     XmlExperimentResult varchar,
     XmlResultExtension varchar,
     XmlBlobExtension varchar,
@@ -334,11 +354,13 @@ $BODY$
         UserGroup,
         PriorityHint,
         StatusCode,
+
         XmlExperimentResult,
         XmlResultExtension,
         XmlBlobExtension,
         WarningMessages,
         ErrorMessage,
+
         DateCreated
     )
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, current_timestamp)
@@ -346,7 +368,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Results_Delete
 (
@@ -365,7 +388,8 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Results_RetrieveBy
 (
@@ -409,7 +433,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Results_RetrieveAllNotNotified
 (
@@ -429,7 +454,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Results_UpdateNotified
 (
@@ -448,11 +474,13 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS ServiceBrokers_Add
 (
-    varchar, varchar, varchar, varchar, varchar, boolean
+    varchar, varchar, varchar, varchar, varchar,
+    boolean
 );
 
 CREATE FUNCTION ServiceBrokers_Add
@@ -462,6 +490,7 @@ CREATE FUNCTION ServiceBrokers_Add
     OutPasskey varchar,
     InPasskey varchar,
     ServiceUrl varchar,
+
     Permitted boolean
 )
 RETURNS integer AS
@@ -472,6 +501,7 @@ $BODY$
         OutPasskey,
         InPasskey,
         ServiceUrl,
+
         Permitted,
         DateCreated
     )
@@ -482,7 +512,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS ServiceBrokers_Delete
 (
@@ -501,7 +532,8 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS ServiceBrokers_GetList
 (
@@ -533,7 +565,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS ServiceBrokers_RetrieveBy
 (
@@ -575,11 +608,13 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS ServiceBrokers_Update
 (
-    integer, varchar, varchar, varchar, varchar, varchar, boolean
+    integer, varchar, varchar, varchar, varchar,
+    varchar, boolean
 );
 
 CREATE FUNCTION ServiceBrokers_Update
@@ -589,19 +624,21 @@ CREATE FUNCTION ServiceBrokers_Update
     Guid varchar,
     OutPasskey varchar,
     InPasskey varchar,
+
     ServiceUrl varchar,
     Permitted boolean
 )
 RETURNS integer AS
 $BODY$
     UPDATE ServiceBrokers SET (
-    Name,
-    Guid,
-    OutPasskey,
-    InPasskey,
-    ServiceUrl,
-    Permitted,
-    DateModified
+        Name,
+        Guid,
+        OutPasskey,
+        InPasskey,
+        ServiceUrl,
+
+        Permitted,
+        DateModified
     )
     = ($2, $3, $4, $5, $6, $7, current_timestamp)
     WHERE Id = $1
@@ -609,21 +646,24 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Users_Add
 (
-    varchar, varchar, varchar, varchar, varchar, varchar
+    varchar, varchar, varchar, varchar, varchar,
+    varchar
 );
 
 CREATE FUNCTION Users_Add
 (
-    Username varchar(32),
-    FirstName varchar(64),
-    LastName varchar(64),
-    ContactEmail varchar(128),
-    UserGroup varchar(32),
-    Password varchar(40)
+    Username varchar,
+    FirstName varchar,
+    LastName varchar,
+    ContactEmail varchar,
+    UserGroup varchar,
+
+    Password varchar
 )
 RETURNS integer AS
 $BODY$
@@ -633,6 +673,7 @@ $BODY$
         LastName,
         ContactEmail,
         UserGroup,
+
         Password
     )
     VALUES (
@@ -642,7 +683,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Users_Delete
 (
@@ -661,7 +703,8 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Users_GetList
 (
@@ -690,7 +733,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Users_GetRecordCount
 (
@@ -705,7 +749,8 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Users_RetrieveBy
 (
@@ -746,21 +791,24 @@ $BODY$
 $BODY$
     LANGUAGE sql VOLATILE;
 
-/*********************************************************************************************************************/
+/********************************************************************************************************************
+*/
 
 DROP FUNCTION IF EXISTS Users_Update
 (
-    integer, varchar, varchar, varchar, varchar, varchar, boolean
+    integer, varchar, varchar, varchar, varchar,
+    varchar, boolean
 );
 
 CREATE FUNCTION Users_Update
 (
     UserId integer,
-    FirstName varchar(64),
-    LastName varchar(64),
-    ContactEmail varchar(128),
-    UserGroup varchar(32),
-    Password varchar(40),
+    FirstName varchar,
+    LastName varchar,
+    ContactEmail varchar,
+    UserGroup varchar,
+
+    Password varchar,
     Locked boolean
 )
 RETURNS integer AS
@@ -771,11 +819,298 @@ $BODY$
         ContactEmail,
         UserGroup,
         Password,
+
         AccountLocked,
         DateModified
     )
     = ($2, $3, $4, $5, $6, $7, current_timestamp)
     WHERE UserId = $1
     RETURNING UserId;
+$BODY$
+    LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabServer_Add
+(
+    varchar, varchar, varchar, varchar, varchar,
+    varchar, boolean
+);
+
+CREATE FUNCTION LabServer_Add
+(
+    Name varchar,
+    Guid varchar,
+    ServiceUrl varchar,
+    ContactEmail varchar,
+    CompletedEmail varchar,
+
+    FailedEmail varchar,
+    Authenticate boolean
+)
+RETURNS integer AS
+$BODY$
+    INSERT INTO LabServer (
+        Name,
+        Guid,
+        ServiceUrl,
+        ContactEmail,
+        CompletedEmail,
+
+        FailedEmail,
+        Authenticate
+    )
+    VALUES (
+        $1, $2, $3, $4, $5, $6, $7
+    )
+    RETURNING Id;
+$BODY$
+    LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabServer_Delete
+(
+    integer
+);
+
+CREATE FUNCTION LabServer_Delete
+(
+    Id integer
+)
+RETURNS integer AS
+$BODY$
+    DELETE FROM LabServer
+    WHERE Id = $1
+    RETURNING Id;
+$BODY$
+  LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabServer_GetList
+(
+    varchar, varchar
+);
+
+CREATE FUNCTION LabServer_GetList
+(
+    ColumnName varchar,
+    StrValue varchar
+)
+RETURNS TABLE
+(
+    Name varchar
+) AS
+$BODY$
+    SELECT Name FROM LabServer
+    WHERE
+        CASE
+            WHEN $1 = 'name' THEN
+                TRUE
+            WHEN $1 = 'guid' THEN
+                Guid = $2
+        END
+    ORDER BY Name ASC
+$BODY$
+    LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabServer_RetrieveBy
+(
+    varchar, integer, varchar
+);
+
+CREATE FUNCTION LabServer_RetrieveBy
+(
+    ColumnName varchar,
+    IntValue integer,
+    StrValue varchar
+)
+RETURNS TABLE
+(
+    Id integer,
+    Name varchar,
+    Guid varchar,
+    ServiceUrl varchar,
+    ContactEmail varchar,
+    CompletedEmail varchar,
+    FailedEmail varchar,
+    Authenticate boolean,
+    DateCreated timestamp,
+    DateModified timestamp
+) AS
+$BODY$
+    SELECT * FROM LabServer
+    WHERE
+        CASE
+            WHEN $1 IS NULL THEN
+                TRUE
+            WHEN $1 = 'id' THEN
+                Id = $2
+            WHEN $1 = 'name' THEN
+                Name = $3
+        END
+    ORDER BY Id ASC
+$BODY$
+    LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabServer_Update
+(
+    integer, varchar, varchar, varchar, varchar,
+    varchar, varchar, boolean
+);
+
+CREATE FUNCTION LabServer_Update
+(
+    Id integer,
+    Name varchar,
+    Guid varchar,
+    ServiceUrl varchar,
+    ContactEmail varchar,
+
+    CompletedEmail varchar,
+    FailedEmail varchar,
+    Authenticate boolean
+)
+RETURNS integer AS
+$BODY$
+    UPDATE LabServer SET (
+        Name,
+        Guid,
+        ServiceUrl,
+        ContactEmail,
+        CompletedEmail,
+
+        FailedEmail,
+        Authenticate,
+        DateModified
+    )
+    = ($2, $3, $4, $5, $6, $7, $8, current_timestamp)
+    WHERE Id = $1
+    RETURNING Id;
+$BODY$
+    LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabEquipment_Add
+(
+    varchar, varchar, boolean
+);
+
+CREATE FUNCTION LabEquipment_Add
+(
+    ServiceUrl varchar,
+    Passkey varchar,
+    Enabled boolean
+)
+RETURNS integer AS
+$BODY$
+    INSERT INTO LabEquipment (
+        ServiceUrl,
+        Passkey,
+        Enabled
+    )
+    VALUES (
+        $1, $2, $3
+    )
+    RETURNING Id;
+$BODY$
+    LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabEquipment_Delete
+(
+    integer
+);
+
+CREATE FUNCTION LabEquipment_Delete
+(
+    Id integer
+)
+RETURNS integer AS
+$BODY$
+    DELETE FROM LabEquipment
+    WHERE Id = $1
+    RETURNING Id;
+$BODY$
+  LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabEquipment_RetrieveBy
+(
+    varchar, integer, varchar
+);
+
+CREATE FUNCTION LabEquipment_RetrieveBy
+(
+    ColumnName varchar,
+    IntValue integer,
+    StrValue varchar
+)
+RETURNS TABLE
+(
+    Id integer,
+    ServiceUrl varchar,
+    Passkey varchar,
+    Enabled boolean,
+    DateCreated timestamp,
+    DateModified timestamp
+) AS
+$BODY$
+    SELECT * FROM LabEquipment
+    WHERE
+        CASE
+            WHEN $1 IS NULL THEN
+                TRUE
+            WHEN $1 = 'id' THEN
+                Id = $2
+            WHEN $1 = 'serviceurl' THEN
+                ServiceUrl = $3
+        END
+    ORDER BY Id ASC
+$BODY$
+    LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS LabEquipment_Update
+(
+    integer, varchar, varchar, boolean
+);
+
+CREATE FUNCTION LabEquipment_Update
+(
+    Id integer,
+    ServiceUrl varchar,
+    Passkey varchar,
+    Enabled boolean
+)
+RETURNS integer AS
+$BODY$
+    UPDATE LabEquipment SET (
+        ServiceUrl,
+        Passkey,
+        Enabled,
+        DateModified
+    )
+    = ($2, $3, $4, current_timestamp)
+    WHERE Id = $1
+    RETURNING Id;
 $BODY$
     LANGUAGE sql VOLATILE;

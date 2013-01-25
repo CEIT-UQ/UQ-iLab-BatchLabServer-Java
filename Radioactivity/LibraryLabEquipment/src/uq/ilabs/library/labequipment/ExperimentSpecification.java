@@ -4,6 +4,7 @@
  */
 package uq.ilabs.library.labequipment;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
@@ -19,39 +20,44 @@ public class ExperimentSpecification extends LabExperimentSpecification {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentSpecification.class.getName();
     private static final Level logLevel = Level.FINE;
-    /*
-     * String constants for exception messages
-     */
-    private static final String STRERR_SomeParameter = "SomeParameter";
-    private static final String STRERR_ValueNotSpecified_arg = "%s: Not specified!";
-    private static final String STRERR_ValueNotNumber_arg = "%s: Not a number!";
-    private static final String STRERR_ValueNotInteger_arg = "%s: Not an integer!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private char sourceLocation;
-    private char[] absorberLocations;
+
+    public static String ClassName() {
+        return ExperimentSpecification.class.getSimpleName();
+    }
+    private String sourceName;
+    private String[] absorberNames;
     private int[] distances;
     private int duration;
-    private int trials;
+    private int repeat;
 
-    public char getSourceLocation() {
-        return sourceLocation;
+    public String getSourceName() {
+        return sourceName;
     }
 
-    public char[] getAbsorberLocations() {
-        return absorberLocations;
+    public String[] getAbsorberNames() {
+        return absorberNames;
+    }
+
+    public String getCsvAbsorberNames() {
+        return this.GetCsvString(absorberNames);
     }
 
     public int[] getDistances() {
         return distances;
     }
 
+    public String getCsvDistances() {
+        return this.GetCsvString(distances);
+    }
+
     public int getDuration() {
         return duration;
     }
 
-    public int getTrials() {
-        return trials;
+    public int getRepeat() {
+        return repeat;
     }
     //</editor-fold>
 
@@ -71,19 +77,18 @@ public class ExperimentSpecification extends LabExperimentSpecification {
          */
         try {
             /*
-             * Get the source location
+             * Get the source name
              */
-            String source = XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_SourceName);
-            this.sourceLocation = source.trim().charAt(0);
+            this.sourceName = XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_SourceName);
 
             /*
-             * Get the list of absorber locations
+             * Get the list of absorber names
              */
-            String csvAbsorberLocations = XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_AbsorberName);
-            String[] csvAbsorbersSplit = csvAbsorberLocations.split(Consts.STRCSV_SplitterChar);
-            this.absorberLocations = new char[csvAbsorbersSplit.length];
-            for (int i = 0; i < csvAbsorbersSplit.length; i++) {
-                this.absorberLocations[i] = csvAbsorbersSplit[i].trim().charAt(0);
+            String csvAbsorberNames = XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_AbsorberName);
+            String[] csvAbsorberNamesSplit = csvAbsorberNames.split(Consts.STRCSV_SplitterChar);
+            this.absorberNames = new String[csvAbsorberNamesSplit.length];
+            for (int i = 0; i < csvAbsorberNamesSplit.length; i++) {
+                this.absorberNames[i] = csvAbsorberNamesSplit[i].trim();
             }
 
             /*
@@ -97,19 +102,55 @@ public class ExperimentSpecification extends LabExperimentSpecification {
             }
 
             /*
+             * Sort the list of distances with smallest distance first keeping duplicates
+             */
+            Arrays.sort(this.distances);
+
+            /*
              * Get the duration
              */
             this.duration = XmlUtilities.GetChildValueAsInt(this.nodeSpecification, Consts.STRXML_Duration);
 
             /*
-             * Get the number of trials (repeat count)
+             * Get the repeat count
              */
-            this.trials = XmlUtilities.GetChildValueAsInt(this.nodeSpecification, Consts.STRXML_Repeat);
+            this.repeat = XmlUtilities.GetChildValueAsInt(this.nodeSpecification, Consts.STRXML_Repeat);
 
-        } catch (XmlUtilitiesException ex) {
-            throw new RuntimeException(ex.getMessage());
+        } catch (XmlUtilitiesException | NumberFormatException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+    }
+
+    /**
+     *
+     * @param stringArray
+     * @return String
+     */
+    private String GetCsvString(String[] stringArray) {
+        String csvString = "";
+
+        for (int i = 0; i < stringArray.length; i++) {
+            csvString += String.format("%s%s", (!csvString.isEmpty()) ? Consts.STRCSV_SplitterChar : "", stringArray[i]);
+        }
+
+        return csvString;
+    }
+
+    /**
+     *
+     * @param intArray
+     * @return String
+     */
+    private String GetCsvString(int[] intArray) {
+        String csvString = "";
+
+        for (int i = 0; i < intArray.length; i++) {
+            csvString += String.format("%s%d", (!csvString.isEmpty()) ? Consts.STRCSV_SplitterChar : "", intArray[i]);
+        }
+
+        return csvString;
     }
 }

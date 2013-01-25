@@ -9,6 +9,7 @@
         <param-value>/LogFiles/LabClient.log</param-value>
     </context-param>
     <context-param>
+        <!-- Logging level to use and can be any of: ALL, FINEST, FINER, FINE, INFO, CONFIG, WARNING, SEVERE, OFF -->
         <param-name>LogLevel</param-name>
         <param-value>INFO</param-value>
     </context-param>

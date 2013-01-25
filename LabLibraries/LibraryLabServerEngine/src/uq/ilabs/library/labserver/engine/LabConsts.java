@@ -58,4 +58,6 @@ public class LabConsts {
      * String constants
      */
     public static final String STR_CsvSplitter = ",";
+    public static final String STR_EmailSplitter = ";";
+    public static final String STR_SbNameLocalHost = "localhost";
 }

@@ -26,6 +26,7 @@ public class LabExperimentManager implements Runnable {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabExperimentManager.class.getName();
     private static final Level logLevel = Level.FINE;
+    private static final boolean debugTrace = false;
     /*
      * String constants for logfile messages
      */
@@ -48,6 +49,9 @@ public class LabExperimentManager implements Runnable {
     private static final String STRERR_LabExperimentEngines = "LabExperimentEngine[]";
     private static final String STRERR_LabExperimentEngineUnitId_arg = "LabExperimentEngine[%d]";
     private static final String STRERR_FailedToEnqueueExperiment = "Failed to enqueue experiment!";
+    private static final String STRERR_InvalidExperimentId_arg = "Invalid ExperimentId: %d";
+    private static final String STRERR_SbName = "sbName";
+    private static final String STRERR_UnknownExperimentSbNameExperimentId_arg2 = "Unknown Experiment - %s:%d";
     /*
      * Constants
      */
@@ -58,18 +62,12 @@ public class LabExperimentManager implements Runnable {
     private boolean stopRunning;
     //
     protected LabManagement labManagement;
-    protected int farmSize;
     protected LabExperimentEngine[] labExperimentEngines;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private String labServerGuid;
     private boolean online;
     private String labStatusMessage;
     private boolean running;
-
-    public String getLabServerGuid() {
-        return labServerGuid;
-    }
 
     public boolean isOnline() {
         return online;
@@ -117,7 +115,6 @@ public class LabExperimentManager implements Runnable {
              * Initialise locals
              */
             this.stopRunning = false;
-            this.farmSize = this.labManagement.getFarmSize();
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -148,8 +145,8 @@ public class LabExperimentManager implements Runnable {
             /*
              * Create instances of the experiment engines
              */
-            this.labExperimentEngines = new LabExperimentEngine[this.farmSize];
-            for (int unitId = 0; unitId < this.farmSize; unitId++) {
+            this.labExperimentEngines = new LabExperimentEngine[this.labManagement.getFarmSize()];
+            for (int unitId = 0; unitId < this.labManagement.getFarmSize(); unitId++) {
                 this.labExperimentEngines[unitId] = new LabExperimentEngine(unitId, labManagement);
                 if (this.labExperimentEngines[unitId] == null) {
                     throw new NullPointerException(LabExperimentEngine.class.getSimpleName());
@@ -234,7 +231,7 @@ public class LabExperimentManager implements Runnable {
                 /*
                  * Experiment may be currently running, find the engine it might be running on and cancel it there
                  */
-                for (int unitId = 0; unitId < this.farmSize; unitId++) {
+                for (int unitId = 0; unitId < this.labManagement.getFarmSize(); unitId++) {
                     /*
                      * Get the lab experiment engine
                      */
@@ -281,8 +278,8 @@ public class LabExperimentManager implements Runnable {
         /*
          * Add in the time remaining before the next experiment can run
          */
-        LabExperimentStatus labExperimentStatus = this.GetLabExperimentStatus(0, null);
-        waitEstimate.setEstWait(waitEstimate.getEstWait() + labExperimentStatus.getExperimentStatus().getEstRemainingRuntime());
+//        LabExperimentStatus labExperimentStatus = this.GetLabExperimentStatus(0, null);
+//        waitEstimate.setEstWait(waitEstimate.getEstWait() + labExperimentStatus.getExperimentStatus().getEstRemainingRuntime());
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
@@ -297,87 +294,72 @@ public class LabExperimentManager implements Runnable {
      */
     public synchronized LabExperimentStatus GetLabExperimentStatus(int experimentId, String sbName) {
         final String methodName = "GetLabExperimentStatus";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
+        Logfile.WriteCalled(Level.INFO, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
 
         LabExperimentStatus labExperimentStatus = new LabExperimentStatus();
 
         try {
             /*
+             * Check that parameters are valid
+             */
+            if (experimentId <= 0) {
+                throw new RuntimeException(String.format(STRERR_InvalidExperimentId_arg, experimentId));
+            }
+            if (sbName == null) {
+                throw new NullPointerException(STRERR_SbName);
+            }
+
+            /*
              * Get the status of the experiment from the queue
              */
-            StatusCodes statusCode = this.labManagement.getExperimentQueueDB().GetStatus(experimentId, sbName);
-            switch (statusCode) {
-                case Unknown:
-                    /*
-                     * The experiment never existed
-                     */
-                    labExperimentStatus.setExperimentStatus(new ExperimentStatus(StatusCodes.Unknown));
-                    break;
+            LabExperimentInfo labExperimentInfo = this.labManagement.getExperimentQueueDB().RetrieveByExperimentId(experimentId, sbName);
+            if (labExperimentInfo == null) {
+                throw new RuntimeException(String.format(STRERR_UnknownExperimentSbNameExperimentId_arg2, sbName, experimentId));
+            }
 
+            System.out.println(String.format("StatusCode: %s", labExperimentInfo.getStatusCode()));
+
+            /*
+             * Experiment exists, check status
+             */
+            switch (labExperimentInfo.getStatusCode()) {
                 case Waiting:
                     /*
-                     * Experiment is waiting on the queue
+                     * Experiment is waiting on the queue, get the queue position and wait time
                      */
                     QueuedExperimentInfo queuedExperimentInfo = this.labManagement.getExperimentQueueDB().GetQueuedExperimentInfo(experimentId, sbName);
-                    LabExperimentInfo labExperimentInfo = queuedExperimentInfo.getLabExperimentInfo();
-                    if (labExperimentInfo != null) {
-                        /*
-                         * Get the queue position and wait time and add in the time for any currently running experiment
-                         * ????
-                         */
-                        WaitEstimate waitEstimate = new WaitEstimate();
-                        waitEstimate.setEffectiveQueueLength(queuedExperimentInfo.getPosition());
-                        waitEstimate.setEstWait(queuedExperimentInfo.getWaitTime() + this.GetMinRemainingRuntime());
+                    WaitEstimate waitEstimate = new WaitEstimate();
+                    waitEstimate.setEffectiveQueueLength(queuedExperimentInfo.getPosition());
+                    waitEstimate.setEstWait(queuedExperimentInfo.getWaitTime() + this.GetMinRemainingRuntime());
 
-                        /*
-                         * Set the experiment status and time it takes to run the experiment
-                         */
-                        ExperimentStatus experimentStatus = new ExperimentStatus(labExperimentInfo.getStatusCode());
-                        experimentStatus.setEstRuntime(labExperimentInfo.getEstExecutionTime());
-                        experimentStatus.setEstRemainingRuntime(labExperimentInfo.getEstExecutionTime());
-                        experimentStatus.setWaitEstimate(waitEstimate);
+                    System.out.println(String.format("WaitEstimate: QueueLength=%d  WaitTime=%f01", waitEstimate.getEffectiveQueueLength(), waitEstimate.getEstWait()));
 
-                        labExperimentStatus = new LabExperimentStatus(experimentStatus);
+                    /*
+                     * Set the experiment status and time it takes to run the experiment
+                     */
+                    ExperimentStatus experimentStatus = new ExperimentStatus(labExperimentInfo.getStatusCode());
+                    experimentStatus.setEstRuntime(labExperimentInfo.getEstExecutionTime());
+                    experimentStatus.setEstRemainingRuntime(labExperimentInfo.getEstExecutionTime());
+                    experimentStatus.setWaitEstimate(waitEstimate);
 
-                        Logfile.Write(logLevel, String.format(STRLOG_ExperimentStatus_arg4,
-                                waitEstimate.getEffectiveQueueLength(), waitEstimate.getEstWait(),
-                                experimentStatus.getEstRuntime(), experimentStatus.getEstRemainingRuntime()));
-                    }
+                    labExperimentStatus = new LabExperimentStatus(experimentStatus);
+
+                    Logfile.Write(logLevel, String.format(STRLOG_ExperimentStatus_arg4,
+                            waitEstimate.getEffectiveQueueLength(), waitEstimate.getEstWait(),
+                            experimentStatus.getEstRuntime(), experimentStatus.getEstRemainingRuntime()));
+
+                    System.out.println(String.format(STRLOG_ExperimentStatus_arg4,
+                            waitEstimate.getEffectiveQueueLength(), waitEstimate.getEstWait(),
+                            experimentStatus.getEstRuntime(), experimentStatus.getEstRemainingRuntime()));
                     break;
 
                 case Running:
                     /*
-                     * Check each experiment engine in the farm looking for the specified experiment
+                     * Get the experiment status from the lab experiment engine
                      */
-                    for (int unitId = 0; unitId < this.farmSize; unitId++) {
-                        /*
-                         * Get the lab experiment engine
-                         */
-                        LabExperimentEngine labExperimentEngine = this.labExperimentEngines[unitId];
-                        if (labExperimentEngine == null) {
-                            throw new NullPointerException(String.format(STRERR_LabExperimentEngineUnitId_arg, unitId));
-                        }
-
-                        /*
-                         * Check if the lab experiment engine is running this experiment
-                         */
-                        ExperimentStatus experimentStatus = labExperimentEngine.GetExperimentStatus(experimentId, sbName);
-                        if (experimentStatus.getStatusCode() != StatusCodes.Unknown) {
-                            /*
-                             * This engine is running the experiment
-                             */
-                            labExperimentStatus.setExperimentStatus(experimentStatus);
-                            break;
-                        }
-                    }
-
-                    /*
-                     * Check if an engine was found to be running this experiment
-                     */
-                    if (labExperimentStatus.getExperimentStatus() == null) {
-                        labExperimentStatus.setExperimentStatus(new ExperimentStatus(StatusCodes.Unknown));
-                    }
+                    LabExperimentEngine labExperimentEngine = this.labExperimentEngines[labExperimentInfo.getUnitId()];
+                    labExperimentStatus.setExperimentStatus(labExperimentEngine.GetExperimentStatus(experimentId, sbName));
                     break;
 
                 case Cancelled:
@@ -402,7 +384,7 @@ public class LabExperimentManager implements Runnable {
 
         ExperimentStatus experimentStatus = labExperimentStatus.getExperimentStatus();
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+        Logfile.WriteCompleted(Level.INFO, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentStatus_arg3,
                 experimentStatus.getStatusCode(), experimentStatus.getEstRuntime(), experimentStatus.getEstRemainingRuntime()));
 
@@ -469,19 +451,21 @@ public class LabExperimentManager implements Runnable {
             /*
              * Check lab status of each experiment engine
              */
-            for (int unitId = 0; unitId < this.farmSize; unitId++) {
+            for (int unitId = 0; unitId < this.labManagement.getFarmSize(); unitId++) {
                 LabExperimentEngine labExperimentEngine = this.labExperimentEngines[unitId];
                 if (labExperimentEngine == null) {
                     throw new NullPointerException(String.format(STRERR_LabExperimentEngineUnitId_arg, unitId));
                 }
 
                 /*
-                 * Keep a tally
+                 * Keep a tally, add the LabStatusMessage only if the engine is online
                  */
                 LabStatus engineLabStatus = labExperimentEngine.GetLabStatus();
                 labStatus.setOnline(labStatus.isOnline() || engineLabStatus.isOnline());
-                String message = String.format(STRLOG_UnitIdLabStatusMessage_arg2, unitId, engineLabStatus.getLabStatusMessage());
-                labStatus.setLabStatusMessage(labStatus.getLabStatusMessage() + message);
+                if (engineLabStatus.isOnline() == true) {
+                    String message = String.format(STRLOG_UnitIdLabStatusMessage_arg2, unitId, engineLabStatus.getLabStatusMessage());
+                    labStatus.setLabStatusMessage(labStatus.getLabStatusMessage() + message);
+                }
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -609,7 +593,7 @@ public class LabExperimentManager implements Runnable {
         final String methodName = "Validate";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        ValidationReport validationReport;
+        ValidationReport validationReport = null;
 
         try {
             if (this.labExperimentEngines == null) {
@@ -617,17 +601,31 @@ public class LabExperimentManager implements Runnable {
             }
 
             /*
-             * Pass to the first experiment engine to validate
+             * Pass to the each experiment engine in turn to validate until validation is successful.
+             * It may be possible that the LabEquipment for a particular LabExperimentEngine may be offline.
              */
-            LabExperimentEngine labExperimentEngine = this.labExperimentEngines[0];
-            if (labExperimentEngine == null) {
-                throw new NullPointerException(String.format(STRERR_LabExperimentEngineUnitId_arg, 0));
-            }
+            for (int i = 0; i < this.labExperimentEngines.length; i++) {
+                LabExperimentEngine labExperimentEngine = this.labExperimentEngines[i];
+                if (labExperimentEngine == null) {
+                    throw new NullPointerException(String.format(STRERR_LabExperimentEngineUnitId_arg, 0));
+                }
 
-            /*
-             * Validate the specification
-             */
-            validationReport = labExperimentEngine.Validate(xmlSpecification);
+                /*
+                 * Check if the LabExperimentEngine is online before trying to use it to validate
+                 */
+                LabStatus labStatus = labExperimentEngine.GetLabStatus();
+                if (labStatus.isOnline() == false) {
+                    continue;
+                }
+
+                /*
+                 * Validate the specification
+                 */
+                validationReport = labExperimentEngine.Validate(xmlSpecification);
+                if (validationReport.isAccepted() == true) {
+                    break;
+                }
+            }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
             validationReport = new ValidationReport(ex.toString());
@@ -654,7 +652,7 @@ public class LabExperimentManager implements Runnable {
             /*
              * Check each experiment engine to see if it is running an experiment
              */
-            for (int unitId = 0; unitId < this.farmSize; unitId++) {
+            for (int unitId = 0; unitId < this.labManagement.getFarmSize(); unitId++) {
                 /*
                  * Get the experiment engine
                  */
@@ -696,6 +694,9 @@ public class LabExperimentManager implements Runnable {
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
+    /**
+     *
+     */
     @Override
     public void run() {
         final String methodName = "run";
@@ -706,7 +707,7 @@ public class LabExperimentManager implements Runnable {
          */
         States lastState = States.Done;
         States thisState = States.Init;
-        int nextUnit = 0;
+        int nextUnit = this.labManagement.getFarmSize() - 1;
         this.running = true;
 
         /*
@@ -726,7 +727,9 @@ public class LabExperimentManager implements Runnable {
                  */
                 if (thisState != lastState) {
                     String logMessage = String.format(STRLOG_StateChange_arg2, lastState.toString(), thisState.toString());
-                    System.out.println(logMessage);
+                    if (debugTrace == true) {
+                        System.out.println(logMessage);
+                    }
 //                    Logfile.Write(logLevel, logMessage);
 
                     lastState = thisState;
@@ -825,18 +828,34 @@ public class LabExperimentManager implements Runnable {
 
                     case StartEngine:
                         /*
-                         * Find an available experiment engine to run a waiting experiment
+                         * Find the available experiment engine to run a waiting experiment
                          */
                         boolean foundAvailable = false;
-                        for (int i = 0; i < this.farmSize; i++) {
+                        for (int i = 0; i < this.labManagement.getFarmSize(); i++) {
                             /*
-                             * Get the experiment engine
+                             * Determine the next experiment engine for running the experiment
+                             */
+                            if (++nextUnit == this.labManagement.getFarmSize()) {
+                                nextUnit = 0;
+                            }
+                            if (debugTrace == true) {
+                                System.out.println(String.format("[nextUnit: %s]", nextUnit));
+                            }
+
+                            /*
+                             * Get the experiment engine and check to see if it is online
                              */
                             LabExperimentEngine labExperimentEngine = this.labExperimentEngines[nextUnit];
-
-                            String logMessage = String.format("%d: UnitId: %d  Running: %s",
-                                    i, labExperimentEngine.getUnitId(), labExperimentEngine.isRunning());
-                            System.out.println(logMessage);
+                            LabStatus labStatus = labExperimentEngine.GetLabStatus();
+                            if (labStatus.isOnline() == false) {
+                                /*
+                                 * This one is not online
+                                 */
+                                if (debugTrace == true) {
+                                    System.out.println(String.format("[nextUnit: %s is Offline]", nextUnit));
+                                }
+                                continue;
+                            }
 
                             /*
                              * Determine if this experiment engine is currently running
@@ -855,12 +874,6 @@ public class LabExperimentManager implements Runnable {
                                 }
                             }
 
-                            /*
-                             * Determine which engine to try starting next
-                             */
-                            if (++nextUnit == this.farmSize) {
-                                nextUnit = 0;
-                            }
                         }
 
                         /*
@@ -934,7 +947,7 @@ public class LabExperimentManager implements Runnable {
             /*
              * Get the remaining runtime for each experiment engine
              */
-            for (int unitId = 0; unitId < this.farmSize; unitId++) {
+            for (int unitId = 0; unitId < this.labManagement.getFarmSize(); unitId++) {
                 /*
                  * Get the experiment engine
                  */

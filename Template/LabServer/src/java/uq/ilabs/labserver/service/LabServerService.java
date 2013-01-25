@@ -13,8 +13,9 @@ import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBElement;
 import javax.xml.ws.WebServiceContext;
+import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
 import uq.ilabs.library.labserver.engine.ConfigProperties;
-import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
+import uq.ilabs.library.labserver.engine.LabManagement;
 
 /**
  *
@@ -27,10 +28,6 @@ public class LabServerService {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabServerService.class.getName();
-    /*
-     * String constants
-     */
-    private static final String STR_AccessDenied = "LabServerService - Access Denied!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     @Resource
@@ -43,6 +40,7 @@ public class LabServerService {
     private static boolean initialised = false;
     private static boolean loggerCreated = false;
     private static ConfigProperties configProperties;
+    private static LabManagement labManagement;
     private static HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo;
 
     public static boolean isInitialised() {
@@ -67,6 +65,14 @@ public class LabServerService {
 
     public static void setConfigProperties(ConfigProperties configProperties) {
         LabServerService.configProperties = configProperties;
+    }
+
+    public static LabManagement getLabManagement() {
+        return labManagement;
+    }
+
+    public static void setLabManagement(LabManagement labManagement) {
+        LabServerService.labManagement = labManagement;
     }
 
     public static HashMap<String, ServiceBrokerInfo> getMapServiceBrokerInfo() {

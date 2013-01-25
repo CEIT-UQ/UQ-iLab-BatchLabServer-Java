@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
 
 /**
@@ -18,6 +19,7 @@ public class DBConnection {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     public static final String STR_ClassName = DBConnection.class.getName();
+    private static final Level logLevel = Level.FINEST;
     /*
      * String constants
      */
@@ -91,7 +93,7 @@ public class DBConnection {
      */
     public DBConnection(String database) throws Exception {
         final String methodName = "DBConnection";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         /*
          * Initial local variables
@@ -113,7 +115,7 @@ public class DBConnection {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
@@ -122,7 +124,7 @@ public class DBConnection {
      */
     public Connection getConnection() throws SQLException {
         final String methodName = "getConnection";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         Connection sqlConnection;
         try {
@@ -132,7 +134,7 @@ public class DBConnection {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
         return sqlConnection;
     }

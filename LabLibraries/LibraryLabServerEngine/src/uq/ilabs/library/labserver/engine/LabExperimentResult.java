@@ -46,17 +46,17 @@ public class LabExperimentResult {
     protected Node nodeExperimentResult;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private String title;
-    private String version;
-    private int queueId;
-    private int experimentId;
-    private String sbName;
-    private String setupId;
-    private String userGroup;
-    private int priorityHint;
-    private int unitId;
-    private Calendar timeCompleted;
-    private int executionTime;
+    protected String title;
+    protected String version;
+    protected int queueId;
+    protected int experimentId;
+    protected String sbName;
+    protected String setupId;
+    protected String userGroup;
+    protected int priorityHint;
+    protected int unitId;
+    protected Calendar timeCompleted;
+    protected int executionTime;
     protected ResultReport resultReport;
 
     public String getTitle() {
@@ -152,14 +152,14 @@ public class LabExperimentResult {
             /*
              * Check that all required XML nodes exist
              */
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_Title);
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_Version);
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_ExperimentId);
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_SbName);
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_UnitId);
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_SetupId);
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_SetupName);
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_Timestamp);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_Title);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_Version);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_ExperimentId);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_SbName);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_UnitId);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_SetupId);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_SetupName);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_Timestamp);
 
             /*
              * Save to local variables

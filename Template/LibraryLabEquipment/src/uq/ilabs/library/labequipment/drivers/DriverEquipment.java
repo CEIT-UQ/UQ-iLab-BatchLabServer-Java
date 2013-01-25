@@ -4,7 +4,6 @@
  */
 package uq.ilabs.library.labequipment.drivers;
 
-import java.util.Random;
 import java.util.logging.Level;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -14,6 +13,8 @@ import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
 import uq.ilabs.library.labequipment.Consts;
 import uq.ilabs.library.labequipment.ExperimentSpecification;
+import uq.ilabs.library.labequipment.ExperimentValidation;
+import uq.ilabs.library.labequipment.devices.DeviceEquipment;
 import uq.ilabs.library.labequipment.engine.LabEquipmentConfiguration;
 import uq.ilabs.library.labequipment.engine.drivers.DriverGeneric;
 
@@ -26,18 +27,23 @@ public class DriverEquipment extends DriverGeneric {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = DriverEquipment.class.getName();
     private static final Level logLevel = Level.FINER;
-    /*
-     * String constants for exception messages
-     */
-    private static final String STRERR_SomeParameter = "SomeParameter";
-    private static final String STRERR_ValueLessThanMinimum_arg2 = "%s: Less than minimum (%d)!";
-    private static final String STRERR_ValueGreaterThanMaximum_arg2 = "%s: Greater than maximum (%d)!";
+    private static final boolean debugTrace = false;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private int someParameterMin;
-    private int someParameterMax;
     private int someResult;
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Properties">
+    private DeviceEquipment deviceEquipment;
+
+    public void setDeviceEquipment(DeviceEquipment deviceEquipment) {
+        this.deviceEquipment = deviceEquipment;
+    }
+    //</editor-fold>
+
+    private enum States {
+
+        Done, RunningDelay, TakeMeasurements
+    }
 
     /**
      *
@@ -50,13 +56,18 @@ public class DriverEquipment extends DriverGeneric {
         final String methodName = "DriverEquipment";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Get the minimum and maximum values allowed for 'SomeParameter'
-         */
-        Node xmlNodeValidation = XmlUtilities.GetChildNode(this.nodeDriver, Consts.STRXML_Validation);
-        Node xmlNode = XmlUtilities.GetChildNode(xmlNodeValidation, Consts.STRXML_SomeParameter);
-        this.someParameterMin = XmlUtilities.GetChildValueAsInt(xmlNode, Consts.STRXML_Min);
-        this.someParameterMax = XmlUtilities.GetChildValueAsInt(xmlNode, Consts.STRXML_Max);
+        try {
+            /*
+             * Create an instance of ExperimentValidation
+             */
+            this.labExperimentValidation = new ExperimentValidation(labEquipmentConfiguration.getXmlValidation());
+            if (this.labExperimentValidation == null) {
+                throw new NullPointerException(ExperimentValidation.class.getSimpleName());
+            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -81,6 +92,13 @@ public class DriverEquipment extends DriverGeneric {
 
         try {
             /*
+             * Check that the devices have been set
+             */
+            if (this.deviceEquipment == null) {
+                throw new NullPointerException(DeviceEquipment.class.getSimpleName());
+            }
+
+            /*
              * Create an instance of ExperimentSpecification
              */
             ExperimentSpecification experimentSpecification = new ExperimentSpecification(xmlSpecification);
@@ -92,29 +110,23 @@ public class DriverEquipment extends DriverGeneric {
              * Check the setup Id
              */
             String setupId = experimentSpecification.getSetupId();
-            if (setupId.equals(Consts.STRXML_SetupId_Equipment) == false) {
-                throw new RuntimeException(String.format(STRERR_InvalidSetupId_arg, setupId));
+            switch (setupId) {
+                case Consts.STRXML_SetupId_Equipment:
+                    break;
+                default:
+                    throw new RuntimeException(String.format(STRERR_InvalidSetupId_arg, setupId));
             }
 
             /*
-             * Check 'someParameter' is valid
+             * Validate the experiment specification parameters
              */
-            int someParameter = experimentSpecification.getSomeParameter();
-            if (someParameter < this.someParameterMin) {
-                throw new RuntimeException(String.format(STRERR_ValueLessThanMinimum_arg2, STRERR_SomeParameter, this.someParameterMin));
-            }
-            if (someParameter > this.someParameterMax) {
-                throw new RuntimeException(String.format(STRERR_ValueGreaterThanMaximum_arg2, STRERR_SomeParameter, this.someParameterMax));
-            }
+            ExperimentValidation experimentValidation = (ExperimentValidation) this.labExperimentValidation;
+            experimentValidation.ValidateSomeParameter(experimentSpecification.getSomeParameter());
 
             /*
              * Calculate the execution time
              */
-            int executionTime = this.executionTimes.getInitialise()
-                    + this.executionTimes.getStart()
-                    + this.executionTimes.getRun()
-                    + this.executionTimes.getStop()
-                    + this.executionTimes.getFinalise();
+            int executionTime = this.executionTimes.getTotalExecutionTime();
 
             /*
              * Specification is valid
@@ -140,7 +152,43 @@ public class DriverEquipment extends DriverGeneric {
      */
     @Override
     public String GetExperimentResults() {
-        return super.GetExperimentResults();
+        final String methodName = "GetExperimentResults";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+
+        String xmlExperimentResults = null;
+
+        try {
+            /*
+             * Get the experiment specification
+             */
+            ExperimentSpecification experimentSpecification = (ExperimentSpecification) this.labExperimentSpecification;
+
+            /*
+             * Load the experiment results template XML document from the string
+             */
+            Document document = XmlUtilities.GetDocumentFromString(this.xmlExperimentResultsTemplate);
+            Node nodeRoot = XmlUtilities.GetRootNode(document, Consts.STRXML_ExperimentResults);
+
+            /*
+             * Add the experiment specification information to the XML document
+             */
+            XmlUtilities.SetChildValue(nodeRoot, Consts.STRXML_SomeParameter, experimentSpecification.getSomeParameter());
+
+            /*
+             * Add the experiment result information to the XML document
+             */
+            XmlUtilities.SetChildValue(nodeRoot, Consts.STRXML_SomeResult, this.someResult);
+
+            /*
+             * Save the experiment results information to an XML string
+             */
+            xmlExperimentResults = XmlUtilities.ToXmlString(document);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+        }
+
+        return xmlExperimentResults;
     }
 
     /**
@@ -174,52 +222,61 @@ public class DriverEquipment extends DriverGeneric {
 
         try {
             /*
-             * Run for the specified execution time and check if cancelled
+             * Get the experiment specification
              */
-            for (int i = 0; i < this.executionTimes.getRun(); i++) {
-                System.out.println("[R]");
-                Delay.MilliSeconds(1000);
+            ExperimentSpecification experimentSpecification = (ExperimentSpecification) this.labExperimentSpecification;
 
+            /*
+             * Initialise state machine
+             */
+            int runningTime = this.executionTimes.getRun();
+            States thisState = States.RunningDelay;
+
+            /*
+             * State machine loop
+             */
+            while (thisState != States.Done) {
+                switch (thisState) {
+                    case RunningDelay:
+                        /*
+                         * Delay added for realism
+                         */
+                        if (debugTrace == true) {
+                            System.out.println("[R]");
+                        }
+                        Delay.MilliSeconds(1000);
+
+                        /*
+                         * Check if running delay has completed
+                         */
+                        if (--runningTime == 0) {
+                            thisState = States.TakeMeasurements;
+                        }
+                        break;
+
+                    case TakeMeasurements:
+                        /*
+                         * Get a random number in the range 0 to 'someParameter' from the device
+                         */
+                        int[] intValue = new int[1];
+                        if (this.deviceEquipment.GetRandom(experimentSpecification.getSomeParameter(), intValue) == false) {
+                            throw new RuntimeException(this.deviceEquipment.getLastError());
+                        }
+                        this.someResult = intValue[0];
+
+                        thisState = States.Done;
+                        break;
+                }
+
+                /*
+                 * Check if the experiment has been cancelled
+                 */
                 if (this.cancelled == true) {
-                    break;
+                    thisState = States.Done;
                 }
             }
 
-            if (this.cancelled == false) {
-                /*
-                 * Get the experiment specification
-                 */
-                ExperimentSpecification experimentSpecification = (ExperimentSpecification) this.labExperimentSpecification;
-
-                /*
-                 * Generate a random number in the range 0 to 'someParameter'
-                 */
-                Random random = new Random();
-                this.someResult = random.nextInt(experimentSpecification.getSomeParameter());
-
-                /*
-                 * Load the experiment results XML document from the string
-                 */
-                Document document = XmlUtilities.GetDocumentFromString(this.xmlExperimentResults);
-                Node nodeRoot = XmlUtilities.GetRootNode(document, Consts.STRXML_ExperimentResults);
-
-                /*
-                 * Add the experiment specification information to the XML document
-                 */
-                XmlUtilities.SetChildValue(nodeRoot, Consts.STRXML_SomeParameter, experimentSpecification.getSomeParameter());
-
-                /*
-                 * Add the experiment result information to the XML document
-                 */
-                XmlUtilities.SetChildValue(nodeRoot, Consts.STRXML_SomeResult, this.someResult);
-
-                /*
-                 * Save the experiment results information to an XML string
-                 */
-                this.xmlExperimentResults = XmlUtilities.ToXmlString(document);
-
-                success = true;
-            }
+            success = (this.cancelled == false);
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
             this.executionStatus.setErrorMessage(ex.getMessage());

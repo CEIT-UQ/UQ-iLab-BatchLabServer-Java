@@ -4,9 +4,9 @@
  */
 package uq.ilabs.library.labserver;
 
+import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.drivers.DriverEquipment;
-import uq.ilabs.library.labserver.drivers.DriverSimulation;
 import uq.ilabs.library.labserver.engine.LabExperimentEngine;
 import uq.ilabs.library.labserver.engine.LabManagement;
 import uq.ilabs.library.labserver.engine.drivers.DriverGeneric;
@@ -19,6 +19,7 @@ public class ExperimentEngine extends LabExperimentEngine {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentEngine.class.getName();
+    private static final Level logLevel = Level.FINE;
     //</editor-fold>
 
     /**
@@ -31,13 +32,18 @@ public class ExperimentEngine extends LabExperimentEngine {
         super(unitId, labManagement);
 
         final String methodName = "ExperimentEngine";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Nothing to do here
-         */
+        try {
+            /*
+             * Nothing to do here
+             */
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
@@ -57,20 +63,12 @@ public class ExperimentEngine extends LabExperimentEngine {
         switch (setupId) {
             case Consts.STRXML_SetupId_RadioactivityVsTime:
             case Consts.STRXML_SetupId_RadioactivityVsDistance:
-                driverGeneric = new DriverEquipment((Configuration) this.labManagement.getLabConfiguration(),
-                        this.labManagement.getLabEquipmentServiceInfo()[this.unitId]);
-                break;
-
             case Consts.STRXML_SetupId_SimActivityVsTime:
             case Consts.STRXML_SetupId_SimActivityVsDistance:
-                driverGeneric = new DriverSimulation((Configuration) this.labManagement.getLabConfiguration(),
-                        this.labManagement.getConfigProperties().getXmlSimulationConfigPath());
-                break;
-
             case Consts.STRXML_SetupId_SimActivityVsTimeNoDelay:
             case Consts.STRXML_SetupId_SimActivityVsDistanceNoDelay:
-                driverGeneric = new DriverSimulation((Configuration) this.labManagement.getLabConfiguration(),
-                        this.labManagement.getConfigProperties().getXmlSimulationConfigPath(), false);
+                driverGeneric = new DriverEquipment((Configuration) this.labManagement.getLabConfiguration(),
+                        this.labManagement.getLabEquipmentServiceInfoList().get(this.unitId));
                 break;
 
             default:

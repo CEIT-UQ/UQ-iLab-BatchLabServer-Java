@@ -87,7 +87,7 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
 
                 success = true;
             } catch (SOAPException | IOException ex) {
-                Logfile.WriteError(ex.getMessage());
+                Logfile.WriteError(ex.toString());
             }
         }
 

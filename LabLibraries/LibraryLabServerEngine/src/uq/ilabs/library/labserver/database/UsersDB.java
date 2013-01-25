@@ -6,9 +6,11 @@ package uq.ilabs.library.labserver.database;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.logging.Level;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labserver.engine.types.UserInfo;
+import uq.ilabs.library.labserver.database.types.UserInfo;
 
 /**
  *
@@ -18,33 +20,26 @@ public class UsersDB {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = UsersDB.class.getName();
+    private static final Level logLevel = Level.FINEST;
     /*
      * String constants for logfile messages
      */
     private static final String STRLOG_UserId_arg = "UserId: %d";
-    private static final String STRLOG_Username_arg = "Username: '%s'";
     private static final String STRLOG_Count_arg = "Count: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
     /*
-     * String constants for exception messages
+     * Database column names
      */
-    private static final String STRERR_DBConnection = "dBConnection";
-    private static final String STRERR_UserInfo = "userInfo";
-    private static final String STRERR_Username = "username";
-    private static final String STRERR_Password = "password";
-    /*
-     * Database column names - must be lowercase
-     */
-    private static final String STRCOL_UserId = "userid";
-    private static final String STRCOL_Username = "username";
-    private static final String STRCOL_FirstName = "firstname";
-    private static final String STRCOL_LastName = "lastname";
-    private static final String STRCOL_ContactEmail = "contactemail";
-    private static final String STRCOL_UserGroup = "usergroup";
-    private static final String STRCOL_Password = "password";
-    private static final String STRCOL_Locked = "locked";
-    private static final String STRCOL_DateCreated = "datecreated";
-    private static final String STRCOL_LastModified = "lastmodified";
+    private static final String STRCOL_UserId = "UserId";
+    private static final String STRCOL_Username = "Username";
+    private static final String STRCOL_FirstName = "FirstName";
+    private static final String STRCOL_LastName = "LastName";
+    private static final String STRCOL_ContactEmail = "ContactEmail";
+    private static final String STRCOL_UserGroup = "UserGroup";
+    private static final String STRCOL_Password = "Password";
+    private static final String STRCOL_AccountLocked = "AccountLocked";
+    private static final String STRCOL_DateCreated = "DateCreated";
+    private static final String STRCOL_DateModified = "DateModified";
     /*
      * String constants for SQL processing
      */
@@ -54,19 +49,6 @@ public class UsersDB {
     private static final String STRSQLCMD_GetRecordCount = "{ ? = call Users_GetRecordCount() }";
     private static final String STRSQLCMD_RetrieveBy = "{ call Users_RetrieveBy(?,?,?) }";
     private static final String STRSQLCMD_Update = "{ ? = call Users_Update(?,?,?,?,?,?,?) }";
-    /*
-     * String constants for SQL result sets
-     */
-    private static final String STRSQL_UserId = "UserId";
-    private static final String STRSQL_Username = "Username";
-    private static final String STRSQL_FirstName = "FirstName";
-    private static final String STRSQL_LastName = "LastName";
-    private static final String STRSQL_ContactEmail = "ContactEmail";
-    private static final String STRSQL_UserGroup = "UserGroup";
-    private static final String STRSQL_Password = "Password";
-    private static final String STRSQL_AccountLocked = "AccountLocked";
-    private static final String STRSQL_DateCreated = "DateCreated";
-    private static final String STRSQL_DateModified = "DateModified";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Connection sqlConnection;
@@ -79,21 +61,27 @@ public class UsersDB {
      */
     public UsersDB(DBConnection dbConnection) throws Exception {
         final String methodName = "UsersDB";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that parameters are valid
-         */
-        if (dbConnection == null) {
-            throw new NullPointerException(STRERR_DBConnection);
+        try {
+            /*
+             * Check that parameters are valid
+             */
+            if (dbConnection == null) {
+                throw new NullPointerException(DBConnection.class.getSimpleName());
+            }
+
+            /*
+             * Initialise locals
+             */
+            this.sqlConnection = dbConnection.getConnection();
+
+        } catch (NullPointerException | SQLException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
-        /*
-         * Initialise locals
-         */
-        this.sqlConnection = dbConnection.getConnection();
-
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
@@ -104,11 +92,18 @@ public class UsersDB {
      */
     public int Add(UserInfo userInfo) throws Exception {
         final String methodName = "Add";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         int userId = -1;
 
         try {
+            /*
+             * Check that parameters are valid
+             */
+            if (userInfo == null) {
+                throw new NullPointerException(UserInfo.class.getSimpleName());
+            }
+
             CallableStatement sqlStatement = null;
 
             try {
@@ -147,7 +142,7 @@ public class UsersDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_UserId_arg, userId));
 
         return userId;
@@ -161,7 +156,7 @@ public class UsersDB {
      */
     public boolean Delete(int userId) throws Exception {
         final String methodName = "Delete";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = false;
 
@@ -199,7 +194,7 @@ public class UsersDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Success_arg, success));
 
         return success;
@@ -230,7 +225,7 @@ public class UsersDB {
      */
     public int GetRecordCount() throws Exception {
         final String methodName = "GetRecordCount";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         int count = -1;
 
@@ -267,7 +262,7 @@ public class UsersDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Count_arg, count));
 
         return count;
@@ -301,7 +296,7 @@ public class UsersDB {
      */
     public boolean Update(UserInfo userInfo) throws Exception {
         final String methodName = "Update";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = false;
 
@@ -310,7 +305,7 @@ public class UsersDB {
              * Check that parameters are valid
              */
             if (userInfo == null) {
-                throw new NullPointerException(STRERR_UserInfo);
+                throw new NullPointerException(UserInfo.class.getSimpleName());
             }
 
             CallableStatement sqlStatement = null;
@@ -352,7 +347,7 @@ public class UsersDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Success_arg, success));
 
         return success;
@@ -368,7 +363,7 @@ public class UsersDB {
      */
     private String[] GetList(String columnName, String strval) throws Exception {
         final String methodName = "GetList";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         String[] listArray = null;
 
@@ -381,7 +376,7 @@ public class UsersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = sqlConnection.prepareCall(STRSQLCMD_GetList);
-                sqlStatement.setString(1, columnName);
+                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
                 sqlStatement.setString(2, strval);
 
                 /*
@@ -393,7 +388,7 @@ public class UsersDB {
                  * Add result to the list
                  */
                 while (resultSet.next() == true) {
-                    list.add(resultSet.getString(STRSQL_Username));
+                    list.add(resultSet.getString(STRCOL_Username));
                 }
             } catch (Exception ex) {
                 throw ex;
@@ -416,7 +411,7 @@ public class UsersDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Count_arg, (listArray != null) ? listArray.length : 0));
 
         return listArray;
@@ -432,7 +427,7 @@ public class UsersDB {
      */
     private UserInfo RetrieveBy(String columnName, int intval, String strval) throws Exception {
         final String methodName = "RetrieveBy";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         UserInfo userInfo = null;
 
@@ -444,7 +439,7 @@ public class UsersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, columnName);
+                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -458,16 +453,27 @@ public class UsersDB {
                  */
                 if (resultSet.next() == true) {
                     userInfo = new UserInfo();
-                    userInfo.setUserId(resultSet.getInt(STRSQL_UserId));
-                    userInfo.setUsername(resultSet.getString(STRSQL_Username));
-                    userInfo.setFirstName(resultSet.getString(STRSQL_FirstName));
-                    userInfo.setLastName(resultSet.getString(STRSQL_LastName));
-                    userInfo.setContactEmail(resultSet.getString(STRSQL_ContactEmail));
-                    userInfo.setUserGroup(resultSet.getString(STRSQL_UserGroup));
-                    userInfo.setPassword(resultSet.getString(STRSQL_Password));
-                    userInfo.setAccountLocked(resultSet.getBoolean(STRSQL_AccountLocked));
-                    userInfo.setDateCreated(resultSet.getTimestamp(STRSQL_DateCreated));
-                    userInfo.setDateModified(resultSet.getTimestamp(STRSQL_DateModified));
+                    userInfo.setUserId(resultSet.getInt(STRCOL_UserId));
+                    userInfo.setUsername(resultSet.getString(STRCOL_Username));
+                    userInfo.setFirstName(resultSet.getString(STRCOL_FirstName));
+                    userInfo.setLastName(resultSet.getString(STRCOL_LastName));
+                    userInfo.setContactEmail(resultSet.getString(STRCOL_ContactEmail));
+                    userInfo.setUserGroup(resultSet.getString(STRCOL_UserGroup));
+                    userInfo.setPassword(resultSet.getString(STRCOL_Password));
+                    userInfo.setAccountLocked(resultSet.getBoolean(STRCOL_AccountLocked));
+
+                    Calendar calendar;
+                    Timestamp timestamp;
+                    if ((timestamp = resultSet.getTimestamp(STRCOL_DateCreated)) != null) {
+                        calendar = Calendar.getInstance();
+                        calendar.setTime(timestamp);
+                        userInfo.setDateCreated(calendar);
+                    }
+                    if ((timestamp = resultSet.getTimestamp(STRCOL_DateModified)) != null) {
+                        calendar = Calendar.getInstance();
+                        calendar.setTime(timestamp);
+                        userInfo.setDateModified(calendar);
+                    }
                 }
             } catch (Exception ex) {
                 throw ex;
@@ -483,7 +489,7 @@ public class UsersDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
         return userInfo;
     }

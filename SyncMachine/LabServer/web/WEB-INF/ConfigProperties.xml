@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>SyncMachine LabServer</comment>
+
+    <!-- DBHost: Database host -->
+    <entry key="DBHost">localhost</entry>
+    <!-- DBDatabase: Database name -->
+    <entry key="DBDatabase">SyncMachine_LabServer</entry>
+    <!-- DBUser: Database user name, privileges need to be granted for this user to use the database -->
+    <entry key="DBUser">LabServer</entry>
+    <!-- DBPassword: Database user's password -->
+    <entry key="DBPassword">ilab</entry>
+
+    <!-- LogAuthentication: If true, log the ServiceBroker's guid and passkey -->
+    <entry key="LogAuthentication">false</entry>
+
+</properties>

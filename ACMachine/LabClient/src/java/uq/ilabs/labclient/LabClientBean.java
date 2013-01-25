@@ -26,6 +26,10 @@ public class LabClientBean implements Serializable {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabClientBean.class.getName();
     private static final Level logLevel = Level.FINE;
+    /*
+     * String constants
+     */
+    private static final String STR_DefaultNavMenuPhotoUrl = "./resources/img/generic_content32.jpg";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabClientSession labClientSession;
@@ -38,6 +42,17 @@ public class LabClientBean implements Serializable {
 
     public String getVersion() {
         return labClientSession.getVersion();
+    }
+
+    public String getNavmenuPhotoUrl() {
+        String url = STR_DefaultNavMenuPhotoUrl;
+        if (this.labClientSession != null) {
+            url = this.labClientSession.getNavmenuPhotoUrl();
+            if (url == null || url.trim().length() == 0) {
+                url = STR_DefaultNavMenuPhotoUrl;
+            }
+        }
+        return url;
     }
 
     public String getLabCameraUrl() {

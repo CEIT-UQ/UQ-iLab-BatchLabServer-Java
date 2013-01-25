@@ -53,7 +53,7 @@
                     <table id="navmenu" cellpadding="0">
                         <tr>
                             <td>
-                                <img src="./resources/img/generic_content32.jpg" width="200" alt="generic_content32"/>
+                                <img src="#{labServerBean.navmenuPhotoUrl}" width="200" alt="&nbsp;Image&nbsp;not&nbsp;available!&nbsp;"/>
                             </td>
                         </tr>
                         <tr>
@@ -66,7 +66,10 @@
                                 <ul>
                                     <li><a href="Home.xhtml">&#187;&nbsp;Home</a></li>
                                     <h:panelGroup rendered="#{labServerBean.loggedIn}">
+                                        <li><a href="SelfRegistration.xhtml">&#187;&nbsp;Self Registration</a></li>
+                                        <li><a href="LabEquipment.xhtml">&#187;&nbsp;Lab Equipment</a></li>
                                         <li><a href="ServiceBrokers.xhtml">&#187;&nbsp;ServiceBrokers</a></li>
+                                        <li><a href="MyAccount.xhtml">&#187;&nbsp;My Account</a></li>
                                         <li><a href="Logout.xhtml">&#187;&nbsp;Logout</a></li>
                                     </h:panelGroup>
                                 </ul>

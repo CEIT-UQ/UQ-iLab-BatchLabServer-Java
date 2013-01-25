@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="./LabServer.xhtml">
+
+            <ui:define name="stylesheet">
+            </ui:define>
+
+            <ui:define name="title">
+                Home
+            </ui:define>
+
+            <ui:define name="content">
+                <h:form>
+                    <script type="text/javascript">
+                        var visitortime = new Date();
+                        var timeoffset;
+                        if (visitortime) {
+                            timeoffset = -visitortime.getTimezoneOffset();
+                        } else {
+                            timeoffset = 'JavaScript not Date() enabled';
+                        }
+                        document.write('<input type="hidden" name="Timezone" id="Timezone" value="' + timeoffset + '" />');
+                    </script>
+                    <h:panelGroup rendered="#{!labServerBean.loggedIn}">
+                        <table>
+                            <tr>
+                                <td class="label">
+                                    Username:
+                                </td>
+                                <td>
+                                    <h:inputText styleClass="hinputText" value="#{loginBean.hitUsername}" style="width: 120px"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label">
+                                    Password:
+                                </td>
+                                <td>
+                                    <h:inputSecret styleClass="hinputText" value="#{loginBean.hisPassword}" style="width: 120px"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label">
+                                    &nbsp;
+                                </td>
+                                <td>
+                                    <h:commandButton styleClass="hcommandButton" value="Login" action="#{loginBean.actionLogin()}"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <p>
+                            <br />
+                            <h:outputLabel styleClass="#{loginBean.holMessageClass}" value="#{loginBean.holMessage}" rendered="#{!empty(loginBean.holMessage)}" />
+                        </p>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -5,6 +5,7 @@
 package uq.ilabs.library.labserver.client;
 
 import uq.ilabs.library.lab.database.DBConnection;
+import uq.ilabs.library.labserver.database.types.LabServerInfo;
 
 /**
  *
@@ -14,35 +15,43 @@ public class LabServerSession {
 
     private String title;
     private String version;
-    private String photoUrl;
-    private String cameraUrl;
+    private String navmenuPhotoUrl;
+    private String labCameraUrl;
     private String labInfoUrl;
-    private String contactEmail;
+    private LabServerInfo labServerInfo;
     private UserSession userSession;
     private DBConnection dbConnection;
 
-    public String getCameraUrl() {
-        return cameraUrl;
+    public String getTitle() {
+        return title;
     }
 
-    public void setCameraUrl(String cameraUrl) {
-        this.cameraUrl = cameraUrl;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getContactEmail() {
-        return contactEmail;
+    public String getVersion() {
+        return version;
     }
 
-    public void setContactEmail(String contactEmail) {
-        this.contactEmail = contactEmail;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
-    public DBConnection getDbConnection() {
-        return dbConnection;
+    public String getNavmenuPhotoUrl() {
+        return navmenuPhotoUrl;
     }
 
-    public void setDbConnection(DBConnection dbConnection) {
-        this.dbConnection = dbConnection;
+    public void setNavmenuPhotoUrl(String navmenuPhotoUrl) {
+        this.navmenuPhotoUrl = navmenuPhotoUrl;
+    }
+
+    public String getLabCameraUrl() {
+        return labCameraUrl;
+    }
+
+    public void setLabCameraUrl(String labCameraUrl) {
+        this.labCameraUrl = labCameraUrl;
     }
 
     public String getLabInfoUrl() {
@@ -53,20 +62,12 @@ public class LabServerSession {
         this.labInfoUrl = labInfoUrl;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public LabServerInfo getLabServerInfo() {
+        return labServerInfo;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
+    public void setLabServerInfo(LabServerInfo labServerInfo) {
+        this.labServerInfo = labServerInfo;
     }
 
     public UserSession getUserSession() {
@@ -77,11 +78,11 @@ public class LabServerSession {
         this.userSession = userSession;
     }
 
-    public String getVersion() {
-        return version;
+    public DBConnection getDbConnection() {
+        return dbConnection;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public void setDbConnection(DBConnection dbConnection) {
+        this.dbConnection = dbConnection;
     }
 }

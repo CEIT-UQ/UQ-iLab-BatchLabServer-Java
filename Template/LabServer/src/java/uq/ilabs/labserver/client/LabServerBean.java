@@ -4,6 +4,7 @@
  */
 package uq.ilabs.labserver.client;
 
+import java.io.Serializable;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.faces.application.ViewExpiredException;
@@ -15,6 +16,7 @@ import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
 import uq.ilabs.library.labserver.client.UserSession;
+import uq.ilabs.library.labserver.database.types.LabServerInfo;
 
 /**
  *
@@ -22,7 +24,7 @@ import uq.ilabs.library.labserver.client.UserSession;
  */
 @ManagedBean
 @SessionScoped
-public class LabServerBean {
+public class LabServerBean implements Serializable {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabServerBean.class.getName();
@@ -32,6 +34,7 @@ public class LabServerBean {
      */
     private static final String STR_User_arg = "User: %s";
     private static final String STR_Group_arg = "Group: %s";
+    private static final String STR_DefaultNavMenuPhotoUrl = "./resources/img/generic_content32.jpg";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabServerSession labServerSession;
@@ -46,8 +49,28 @@ public class LabServerBean {
         return (this.labServerSession != null) ? this.labServerSession.getVersion() : "";
     }
 
+    public String getNavmenuPhotoUrl() {
+        String url = STR_DefaultNavMenuPhotoUrl;
+        if (this.labServerSession != null) {
+            url = this.labServerSession.getNavmenuPhotoUrl();
+            if (url == null || url.trim().length() == 0) {
+                url = STR_DefaultNavMenuPhotoUrl;
+            }
+        }
+        return url;
+    }
+
     public String getContactEmail() {
-        return (this.labServerSession != null) ? this.labServerSession.getContactEmail() : "";
+        String contactEmail = "";
+
+        if (this.labServerSession != null) {
+            LabServerInfo labServerInfo = this.labServerSession.getLabServerInfo();
+            if (labServerInfo != null && labServerInfo.getContactEmail() != null) {
+                contactEmail = labServerInfo.getContactEmail();
+            }
+        }
+
+        return contactEmail;
     }
 
     public String getUsername() {

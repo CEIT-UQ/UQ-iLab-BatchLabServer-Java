@@ -4,13 +4,18 @@
  */
 package uq.ilabs.library.labserver.engine;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.database.ExperimentQueueDB;
 import uq.ilabs.library.labserver.database.ExperimentResultsDB;
 import uq.ilabs.library.labserver.database.ExperimentStatisticsDB;
+import uq.ilabs.library.labserver.database.LabEquipmentDB;
+import uq.ilabs.library.labserver.database.LabServerDB;
 import uq.ilabs.library.labserver.database.ServiceBrokersDB;
+import uq.ilabs.library.labserver.database.types.LabEquipmentInfo;
+import uq.ilabs.library.labserver.database.types.LabServerInfo;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
 
 /**
@@ -26,17 +31,21 @@ public class LabManagement {
      * String constants for logfile messages
      */
     private static final String STRLOG_LabServerGuid_arg = "LabServerGuid: %s";
+    /*
+     * String constants for exception messages
+     */
+    private static final String STRERR_LabServerNotRegistered = "LabServer is not registered!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private ConfigProperties configProperties;
     private LabConfiguration labConfiguration;
+    private LabServerInfo labServerInfo;
     private ServiceBrokersDB serviceBrokersDB;
     private ExperimentQueueDB experimentQueueDB;
     private ExperimentResultsDB experimentResultsDB;
     private ExperimentStatisticsDB experimentStatisticsDB;
     private WaitNotify signalSubmitted;
-    private int farmSize;
-    private LabEquipmentServiceInfo[] labEquipmentServiceInfo;
+    private ArrayList<LabEquipmentServiceInfo> labEquipmentServiceInfoList;
 
     public ConfigProperties getConfigProperties() {
         return configProperties;
@@ -44,6 +53,10 @@ public class LabManagement {
 
     public LabConfiguration getLabConfiguration() {
         return labConfiguration;
+    }
+
+    public LabServerInfo getLabServerInfo() {
+        return labServerInfo;
     }
 
     public ServiceBrokersDB getServiceBrokersDB() {
@@ -67,11 +80,11 @@ public class LabManagement {
     }
 
     public int getFarmSize() {
-        return farmSize;
+        return (labEquipmentServiceInfoList != null) ? labEquipmentServiceInfoList.size() : 0;
     }
 
-    public LabEquipmentServiceInfo[] getLabEquipmentServiceInfo() {
-        return labEquipmentServiceInfo;
+    public ArrayList<LabEquipmentServiceInfo> getLabEquipmentServiceInfoList() {
+        return labEquipmentServiceInfoList;
     }
     //</editor-fold>
 
@@ -100,28 +113,38 @@ public class LabManagement {
             this.configProperties = configProperties;
             this.labConfiguration = labConfiguration;
 
-            Logfile.Write(logLevel, String.format(STRLOG_LabServerGuid_arg, this.configProperties.getLabServerGuid()));
-
             /*
-             * Create an instance of the database connection
+             * Create an instance of LabServerDB
              */
-            DBConnection dbConnection = new DBConnection(this.configProperties.getDbDatabase());
-            if (dbConnection == null) {
-                throw new NullPointerException(DBConnection.class.getSimpleName());
+            DBConnection dbConnection = this.configProperties.getDbConnection();
+            LabServerDB labServerDB = new LabServerDB(dbConnection);
+            if (labServerDB == null) {
+                throw new NullPointerException(LabServerDB.class.getSimpleName());
             }
-            dbConnection.setHost(this.configProperties.getDbHost());
-            dbConnection.setUser(this.configProperties.getDbUser());
-            dbConnection.setPassword(this.configProperties.getDbPassword());
 
             /*
-             * Create an instance of ServiceBrokers for authentication and name access
+             * Get the LabServer information
+             */
+            String[] names = labServerDB.GetListName();
+            if (names == null || names.length == 0) {
+                throw new RuntimeException(STRERR_LabServerNotRegistered);
+            }
+            this.labServerInfo = labServerDB.RetrieveByName(names[0]);
+            if (this.labServerInfo == null || this.labServerInfo.getGuid() == null) {
+                throw new RuntimeException(STRERR_LabServerNotRegistered);
+            }
+
+            this.configProperties.setAuthenticating(this.labServerInfo.isAuthenticate());
+
+            Logfile.Write(logLevel, String.format(STRLOG_LabServerGuid_arg, this.labServerInfo.getGuid()));
+
+            /*
+             * Create an instance of ServiceBrokersDB for authentication and name access
              */
             this.serviceBrokersDB = new ServiceBrokersDB(dbConnection);
             if (this.serviceBrokersDB == null) {
                 throw new NullPointerException(ServiceBrokersDB.class.getSimpleName());
             }
-            this.serviceBrokersDB.setAuthenticating(this.configProperties.isAuthenticating());
-            this.serviceBrokersDB.setLogAuthentication(this.configProperties.isLogAuthentication());
 
             /*
              * Initialise local variables
@@ -147,15 +170,48 @@ public class LabManagement {
             }
 
             /*
-             * Get the lab equipment service information for the farm units
+             * Get the LabEquipment service information
              */
-            this.farmSize = configProperties.getFarmSize();
-            this.labEquipmentServiceInfo = configProperties.getLabEquipmentServiceInfo();
+            LabEquipmentDB labEquipmentDB = new LabEquipmentDB(dbConnection);
+            ArrayList<LabEquipmentInfo> labEquipmentInfoList = labEquipmentDB.RetrieveAll();
+
+            /*
+             * Get the LabEquipmentServiceInfo for each of the LabEquipment units
+             */
+            this.labEquipmentServiceInfoList = new ArrayList<>();
+            for (int i = 0; i < labEquipmentInfoList.size(); i++) {
+                LabEquipmentServiceInfo labEquipmentServiceInfo = new LabEquipmentServiceInfo(this.labServerInfo.getGuid(), labEquipmentInfoList.get(i));
+                if (labEquipmentServiceInfo == null) {
+                    throw new NullPointerException(LabEquipmentServiceInfo.class.getSimpleName());
+                }
+                this.labEquipmentServiceInfoList.add(labEquipmentServiceInfo);
+            }
+
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+    }
+
+    /**
+     *
+     * @param infoId
+     * @return LabEquipmentServiceInfo
+     */
+    public LabEquipmentServiceInfo GetLabEquipmentServiceInfo(int infoId) {
+        LabEquipmentServiceInfo labEquipmentServiceInfo = null;
+
+        if (this.labEquipmentServiceInfoList != null) {
+            for (int i = 0; i < this.labEquipmentServiceInfoList.size(); i++) {
+                LabEquipmentServiceInfo info = this.labEquipmentServiceInfoList.get(i);
+                if (info.getLabEquipmentInfo() != null && info.getLabEquipmentInfo().getId() == infoId) {
+                    labEquipmentServiceInfo = info;
+                    break;
+                }
+            }
+        }
+        return labEquipmentServiceInfo;
     }
 }

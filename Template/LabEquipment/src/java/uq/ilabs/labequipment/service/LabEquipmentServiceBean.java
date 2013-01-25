@@ -9,7 +9,10 @@ import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
-import javax.xml.ws.ProtocolException;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPFault;
+import javax.xml.ws.soap.SOAPFaultException;
 import uq.ilabs.library.lab.types.ExecutionStatus;
 import uq.ilabs.library.lab.types.LabEquipmentStatus;
 import uq.ilabs.library.lab.types.Validation;
@@ -44,7 +47,12 @@ public class LabEquipmentServiceBean {
      */
     private static final String STRERR_EquipmentManagerCreateFailed = "EquipmentManager.Create() failed!";
     private static final String STRERR_EquipmentManagerStartFailed = "EquipmentManager.Start() failed!";
-    private static final String STRERR_AccessDenied = "LabEquipmentService - Access Denied!";
+    private static final String STRERR_AccessDenied_arg = "LabEquipment Access Denied - %s";
+    private static final String STRERR_AuthHeader = "AuthHeader";
+    private static final String STRERR_LabServerGuid = "LabServer Guid";
+    private static final String STRERR_Passkey = "Passkey";
+    private static final String STRERR_NotSpecified_arg = "%s: Not specified!";
+    private static final String STRERR_Invalid_arg = "%s: Invalid!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private ConfigProperties configProperties;
@@ -113,7 +121,7 @@ public class LabEquipmentServiceBean {
             /*
              * Pass on to the Equipment Manager
              */
-            LabEquipmentStatus labEquipmentStatus = equipmentManager.GetLabEquipmentStatus();
+            LabEquipmentStatus labEquipmentStatus = this.equipmentManager.GetLabEquipmentStatus();
             proxyLabEquipmentStatus = this.ConvertType(labEquipmentStatus);
 
         } catch (Exception ex) {
@@ -148,7 +156,7 @@ public class LabEquipmentServiceBean {
             /*
              * Pass on to the Equipment Manager
              */
-            timeUntilReady = equipmentManager.GetTimeUntilReady();
+            timeUntilReady = this.equipmentManager.GetTimeUntilReady();
 
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
@@ -179,7 +187,7 @@ public class LabEquipmentServiceBean {
             /*
              * Pass on to the Equipment Manager
              */
-            Validation validation = equipmentManager.Validate(xmlSpecification);
+            Validation validation = this.equipmentManager.Validate(xmlSpecification);
             proxyValidation = this.ConvertType(validation);
 
         } catch (Exception ex) {
@@ -191,8 +199,8 @@ public class LabEquipmentServiceBean {
             message = String.format(STRLOG_Validation_arg3,
                     proxyValidation.isAccepted(), proxyValidation.getExecutionTime(), proxyValidation.getErrorMessage());
         }
+        
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName, message);
-
 
         return proxyValidation;
     }
@@ -216,7 +224,7 @@ public class LabEquipmentServiceBean {
             /*
              * Pass on to the Equipment Manager
              */
-            ExecutionStatus executionStatus = equipmentManager.StartLabExecution(xmlSpecification);
+            ExecutionStatus executionStatus = this.equipmentManager.StartLabExecution(xmlSpecification);
             proxyExecutionStatus = this.ConvertType(executionStatus);
 
         } catch (Exception ex) {
@@ -252,7 +260,7 @@ public class LabEquipmentServiceBean {
             /*
              * Pass on to the Equipment Manager
              */
-            ExecutionStatus executionStatus = equipmentManager.GetLabExecutionStatus(executionId);
+            ExecutionStatus executionStatus = this.equipmentManager.GetLabExecutionStatus(executionId);
             proxyExecutionStatus = this.ConvertType(executionStatus);
 
         } catch (Exception ex) {
@@ -288,7 +296,7 @@ public class LabEquipmentServiceBean {
             /*
              * Pass on to the Equipment Manager
              */
-            labExecutionResults = equipmentManager.GetLabExecutionResults(executionId);
+            labExecutionResults = this.equipmentManager.GetLabExecutionResults(executionId);
 
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
@@ -319,7 +327,7 @@ public class LabEquipmentServiceBean {
             /*
              * Pass on to the Equipment Manager
              */
-            success = equipmentManager.CancelLabExecution(executionId);
+            success = this.equipmentManager.CancelLabExecution(executionId);
 
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
@@ -345,30 +353,64 @@ public class LabEquipmentServiceBean {
         boolean success = false;
 
         /*
-         * Check if authenticating
+         * Check if logging authentication information
          */
-        if (this.configProperties.isAuthenticating()) {
-            if (this.configProperties.isLogAuthentication()) {
+        if (this.configProperties.isLogAuthentication()) {
+            if (authHeader == null) {
+                Logfile.Write(STRLOG_AuthHeaderNull);
+            } else {
+                Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, authHeader.getIdentifier(), authHeader.getPassKey()));
+            }
+        }
+
+        try {
+            if (this.configProperties.isAuthenticating() == true) {
+                /*
+                 * Check that the AuthHeader is specified
+                 */
                 if (authHeader == null) {
-                    Logfile.Write(STRLOG_AuthHeaderNull);
-                } else {
-                    Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, authHeader.getIdentifier(), authHeader.getPassKey()));
+                    throw new NullPointerException(String.format(STRERR_NotSpecified_arg, STRERR_AuthHeader));
+                }
+
+                /*
+                 * Verify the LabServer Guid
+                 */
+                if (authHeader.getIdentifier() == null) {
+                    throw new NullPointerException(String.format(STRERR_NotSpecified_arg, STRERR_LabServerGuid));
+                }
+                if (this.configProperties.getLabServerGuid().equalsIgnoreCase(authHeader.getIdentifier()) == false) {
+                    throw new IllegalArgumentException(String.format(STRERR_Invalid_arg, STRERR_LabServerGuid));
+                }
+
+                /*
+                 * Verify the passkey
+                 */
+                if (authHeader.getPassKey() == null) {
+                    throw new NullPointerException(String.format(STRERR_NotSpecified_arg, STRERR_Passkey));
+                }
+                if (this.configProperties.getLabServerPasskey().equalsIgnoreCase(authHeader.getPassKey()) == false) {
+                    throw new IllegalArgumentException(String.format(STRERR_Invalid_arg, STRERR_Passkey));
                 }
             }
 
             /*
-             * Check the identifier and passkey
+             * Successfully authenticated
              */
-            if (authHeader == null
-                    || this.configProperties.getLabServerGuid().equalsIgnoreCase(authHeader.getIdentifier()) == false
-                    || this.configProperties.getLabServerPasskey().equalsIgnoreCase(authHeader.getPassKey()) == false) {
-                /*
-                 * Identifier or passkey not valid
-                 */
-                throw new ProtocolException(STRERR_AccessDenied);
-            }
-
             success = true;
+
+        } catch (NullPointerException | IllegalArgumentException ex) {
+            String message = String.format(STRERR_AccessDenied_arg, ex.getMessage());
+            Logfile.WriteError(message);
+
+            /*
+             * Create a SOAPFaultException to be thrown all the way back to the caller
+             */
+            try {
+                SOAPFault fault = SOAPFactory.newInstance().createFault();
+                fault.setFaultString(message);
+                throw new SOAPFaultException(fault);
+            } catch (SOAPException e) {
+            }
         }
 
         return success;

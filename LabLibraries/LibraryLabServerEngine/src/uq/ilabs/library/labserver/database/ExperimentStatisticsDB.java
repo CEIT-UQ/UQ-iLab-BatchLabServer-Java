@@ -23,24 +23,36 @@ public class ExperimentStatisticsDB {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentStatisticsDB.class.getName();
-    private static final Level logLevel = Level.FINER;
+    private static final Level logLevel = Level.FINEST;
     /*
      * String constants for logfile messages
      */
     private static final String STRLOG_Id_arg = "Id: %d";
-    private static final String STRLOG_ExperimentId_arg = "ExperimentId: %d";
-    private static final String STRLOG_SbName_arg = "SbName: '%s'";
     private static final String STRLOG_ExperimentIdSbName_arg2 = "ExperimentId: %d  SbName: '%s'";
     private static final String STRLOG_ExperimentIdSbNameUnitId_arg3 = "ExperimentId: %d  SbName: '%s'  UnitId: %d";
-    private static final String STRLOG_UnitId_arg = "UnitId: %d";
     private static final String STRLOG_Count_arg = "Count: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
     /*
      * String constants for exception messages
      */
-    private static final String STRERR_DBConnection = "dBConnection";
     private static final String STRERR_QueuedExperimentInfo = "queuedExperimentInfo";
     private static final String STRERR_StatisticsInfoList = "statisticsInfoList";
+    /*
+     * Database column names
+     */
+    private static final String STRCOL_Id = "Id";
+    private static final String STRCOL_ExperimentId = "ExperimentId";
+    private static final String STRCOL_SbName = "SbName";
+    private static final String STRCOL_UserGroup = "UserGroup";
+    private static final String STRCOL_PriorityHint = "PriorityHint";
+    private static final String STRCOL_EstimatedExecTime = "EstimatedExecTime";
+    private static final String STRCOL_TimeSubmitted = "TimeSubmitted";
+    private static final String STRCOL_QueueLength = "QueueLength";
+    private static final String STRCOL_EstimatedWaitTime = "EstimatedWaittime";
+    private static final String STRCOL_TimeStarted = "TimeStarted";
+    private static final String STRCOL_UnitId = "UnitId";
+    private static final String STRCOL_TimeCompleted = "TimeCompleted";
+    private static final String STRCOL_Cancelled = "Cancelled";
     /*
      * String constants for SQL processing
      */
@@ -51,61 +63,45 @@ public class ExperimentStatisticsDB {
     private static final String STRSQLCMD_UpdateCompleted = "{ call Statistics_UpdateCompleted(?,?) }";
     private static final String STRSQLCMD_UpdateStarted = "{ call Statistics_UpdateStarted(?,?,?) }";
     /*
-     * Database column names - must be lowercase
-     */
-    private static final String STRCOL_Id = "id";
-    private static final String STRCOL_ExperimentId = "experimentid";
-    private static final String STRCOL_SbName = "sbname";
-    private static final String STRCOL_UserGroup = "usergroup";
-    private static final String STRCOL_PriorityHint = "priorityhint";
-    private static final String STRCOL_EstimatedExecTime = "estimatedexecTime";
-    private static final String STRCOL_TimeSubmitted = "timesubmitted";
-    private static final String STRCOL_QueueLength = "queuelength";
-    private static final String STRCOL_EstimatedWaitTime = "estimatedwaittime";
-    private static final String STRCOL_TimeStarted = "timestarted";
-    private static final String STRCOL_UnitId = "unitid";
-    private static final String STRCOL_TimeCompleted = "timecompleted";
-    private static final String STRCOL_Cancelled = "cancelled";
-    /*
      * String constants for XML elements
      */
-    private static final String STRXML_statistics = "statistics";
-    private static final String STRXML_experiment = "experiment";
-    private static final String STRXML_experimentId = "experimentId";
-    private static final String STRXML_sbName = "sbName";
-    private static final String STRXML_userGroup = "userGroup";
-    private static final String STRXML_priorityHint = "priorityHint";
-    private static final String STRXML_estimatedExecTime = "estimatedExecTime";
-    private static final String STRXML_timeSubmitted = "timeSubmitted";
-    private static final String STRXML_queueLength = "queueLength";
-    private static final String STRXML_estimatedWaitTime = "estimatedWaitTime";
-    private static final String STRXML_timeStarted = "timeStarted";
-    private static final String STRXML_unitId = "unitId";
-    private static final String STRXML_timeCompleted = "timeCompleted";
-    private static final String STRXML_actualExecTime = "actualExecTime";
-    private static final String STRXML_cancelled = "cancelled";
+    private static final String STRXML_Statistics = "statistics";
+    private static final String STRXML_Experiment = "experiment";
+    private static final String STRXML_ExperimentId = "experimentId";
+    private static final String STRXML_SbName = "sbName";
+    private static final String STRXML_UserGroup = "userGroup";
+    private static final String STRXML_PriorityHint = "priorityHint";
+    private static final String STRXML_EstimatedExecTime = "estimatedExecTime";
+    private static final String STRXML_TimeSubmitted = "timeSubmitted";
+    private static final String STRXML_QueueLength = "queueLength";
+    private static final String STRXML_EstimatedWaitTime = "estimatedWaitTime";
+    private static final String STRXML_TimeStarted = "timeStarted";
+    private static final String STRXML_UnitId = "unitId";
+    private static final String STRXML_TimeCompleted = "timeCompleted";
+    private static final String STRXML_ActualExecTime = "actualExecTime";
+    private static final String STRXML_Cancelled = "cancelled";
     /*
      * XML experiment statistics template
      */
     private static final String STRXMLDOC_ExperimentStatisticsTemplate =
             "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-            + "<statistics>"
-            + " <experiment>"
-            + "  <experimentId />"
-            + "  <sbName />"
-            + "  <userGroup />"
-            + "  <priorityHint />"
-            + "  <estimatedExecTime />"
-            + "  <timeSubmitted />"
-            + "  <queueLength />"
-            + "  <estimatedWaitTime />"
-            + "  <timeStarted />"
-            + "  <unitId />"
-            + "  <timeCompleted />"
-            + "  <actualExecTime />"
-            + "  <cancelled />"
-            + " </experiment>"
-            + "</statistics>";
+            + "<" + STRXML_Statistics + ">"
+            + " <" + STRXML_Experiment + ">"
+            + "  <" + STRXML_ExperimentId + " />"
+            + "  <" + STRXML_SbName + " />"
+            + "  <" + STRXML_UserGroup + " />"
+            + "  <" + STRXML_PriorityHint + " />"
+            + "  <" + STRXML_EstimatedExecTime + " />"
+            + "  <" + STRXML_TimeSubmitted + " />"
+            + "  <" + STRXML_QueueLength + " />"
+            + "  <" + STRXML_EstimatedWaitTime + " />"
+            + "  <" + STRXML_TimeStarted + " />"
+            + "  <" + STRXML_UnitId + " />"
+            + "  <" + STRXML_TimeCompleted + " />"
+            + "  <" + STRXML_ActualExecTime + " />"
+            + "  <" + STRXML_Cancelled + " />"
+            + " </" + STRXML_Experiment + ">"
+            + "</" + STRXML_Statistics + ">";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Connection sqlConnection;
@@ -115,17 +111,23 @@ public class ExperimentStatisticsDB {
         final String methodName = "ExperimentStatisticsDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that all parameters are valid
-         */
-        if (dbConnection == null) {
-            throw new NullPointerException(STRERR_DBConnection);
-        }
+        try {
+            /*
+             * Check that all parameters are valid
+             */
+            if (dbConnection == null) {
+                throw new NullPointerException(DBConnection.class.getSimpleName());
+            }
 
-        /*
-         * Initialise local variables
-         */
-        this.sqlConnection = dbConnection.getConnection();
+            /*
+             * Initialise local variables
+             */
+            this.sqlConnection = dbConnection.getConnection();
+
+        } catch (NullPointerException | SQLException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -148,6 +150,7 @@ public class ExperimentStatisticsDB {
             if (queuedExperimentInfo == null) {
                 throw new NullPointerException(STRERR_QueuedExperimentInfo);
             }
+
             LabExperimentInfo labExperimentInfo = queuedExperimentInfo.getLabExperimentInfo();
             Logfile.Write(String.format(STRLOG_ExperimentIdSbName_arg2, labExperimentInfo.getExperimentId(), labExperimentInfo.getSbName()));
 
@@ -476,7 +479,7 @@ public class ExperimentStatisticsDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, columnName);
+                sqlStatement.setString(1, (columnName != null) ? columnName.toLowerCase() : null);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -562,8 +565,8 @@ public class ExperimentStatisticsDB {
              * Load the experiment queue XML template string into a document
              */
             Document document = XmlUtilities.GetDocumentFromString(STRXMLDOC_ExperimentStatisticsTemplate);
-            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_statistics);
-            Node experimentNode = XmlUtilities.GetChildNode(rootNode, STRXML_experiment);
+            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_Statistics);
+            Node experimentNode = XmlUtilities.GetChildNode(rootNode, STRXML_Experiment);
 
             /*
              * Make a copy of the experiment node and remove it
@@ -582,19 +585,19 @@ public class ExperimentStatisticsDB {
                  * Make a copy of the experiment node copy and fill it with values from the experiment information
                  */
                 Node node = experimentNodeCopy.cloneNode(true);
-                XmlUtilities.SetChildValue(node, STRXML_experimentId, info.getExperimentId());
-                XmlUtilities.SetChildValue(node, STRXML_sbName, info.getSbName());
-                XmlUtilities.SetChildValue(node, STRXML_userGroup, info.getUserGroup());
-                XmlUtilities.SetChildValue(node, STRXML_priorityHint, info.getPriorityHint());
-                XmlUtilities.SetChildValue(node, STRXML_estimatedExecTime, info.getEstimatedExecTime());
-                XmlUtilities.SetChildValue(node, STRXML_timeSubmitted, info.getTimeSubmitted().toString());
-                XmlUtilities.SetChildValue(node, STRXML_queueLength, info.getQueueLength());
-                XmlUtilities.SetChildValue(node, STRXML_estimatedWaitTime, info.getEstimatedWaitTime());
-                XmlUtilities.SetChildValue(node, STRXML_timeStarted, info.getTimeStarted().toString());
-                XmlUtilities.SetChildValue(node, STRXML_unitId, info.getUnitId());
-                XmlUtilities.SetChildValue(node, STRXML_timeCompleted, info.getTimeCompleted().toString());
-                XmlUtilities.SetChildValue(node, STRXML_actualExecTime, info.getActualExecTime());
-                XmlUtilities.SetChildValue(node, STRXML_cancelled, info.isCancelled());
+                XmlUtilities.SetChildValue(node, STRXML_ExperimentId, info.getExperimentId());
+                XmlUtilities.SetChildValue(node, STRXML_SbName, info.getSbName());
+                XmlUtilities.SetChildValue(node, STRXML_UserGroup, info.getUserGroup());
+                XmlUtilities.SetChildValue(node, STRXML_PriorityHint, info.getPriorityHint());
+                XmlUtilities.SetChildValue(node, STRXML_EstimatedExecTime, info.getEstimatedExecTime());
+                XmlUtilities.SetChildValue(node, STRXML_TimeSubmitted, info.getTimeSubmitted().toString());
+                XmlUtilities.SetChildValue(node, STRXML_QueueLength, info.getQueueLength());
+                XmlUtilities.SetChildValue(node, STRXML_EstimatedWaitTime, info.getEstimatedWaitTime());
+                XmlUtilities.SetChildValue(node, STRXML_TimeStarted, info.getTimeStarted().toString());
+                XmlUtilities.SetChildValue(node, STRXML_UnitId, info.getUnitId());
+                XmlUtilities.SetChildValue(node, STRXML_TimeCompleted, info.getTimeCompleted().toString());
+                XmlUtilities.SetChildValue(node, STRXML_ActualExecTime, info.getActualExecTime());
+                XmlUtilities.SetChildValue(node, STRXML_Cancelled, info.isCancelled());
 
                 /*
                  * Add the experiment node to the document

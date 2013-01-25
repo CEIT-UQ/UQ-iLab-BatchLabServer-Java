@@ -7,6 +7,7 @@
             <initialiseDelay>3</initialiseDelay>
         </device>
     </devices>
+
     <drivers>
         <driver name="DriverEquipment">
             <executionTimes>
@@ -16,18 +17,20 @@
                 <stop>3</stop>
                 <finalise>1</finalise>
             </executionTimes>
-            <validation>
-                <someParameter>
-                    <min>1</min>
-                    <max>1000</max>
-                </someParameter>
-            </validation>
             <experimentResults>
                 <someParameter />
                 <someResult />
             </experimentResults>
         </driver>
     </drivers>
+
+    <validation>
+        <someParameter>
+            <minimum>10</minimum>
+            <maximum>900</maximum>
+        </someParameter>
+    </validation>
+
     <setups>
         <setup id="Equipment">
             <driver>DriverEquipment</driver>

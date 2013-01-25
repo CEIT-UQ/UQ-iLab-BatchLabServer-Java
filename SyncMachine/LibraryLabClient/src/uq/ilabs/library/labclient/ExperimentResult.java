@@ -89,7 +89,7 @@ public class ExperimentResult extends LabExperimentResult {
      *
      * @param xmlExperimentResult
      */
-    public ExperimentResult(String xmlExperimentResult) {
+    public ExperimentResult(String xmlExperimentResult) throws Exception {
         super(xmlExperimentResult);
 
         final String methodName = "ExperimentResult";
@@ -145,8 +145,9 @@ public class ExperimentResult extends LabExperimentResult {
                     this.phaseCurrent = GetMeasurement(this.nodeExperimentResult, Consts.STRXML_PhaseCurrent);
                     break;
             }
-
-        } catch (XmlUtilitiesException ex) {
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
@@ -163,8 +164,8 @@ public class ExperimentResult extends LabExperimentResult {
         Measurement measurement = new Measurement();
 
         Node node = XmlUtilities.GetChildNode(parentNode, childName);
-        measurement.setName(XmlUtilities.GetAttribute(node, Consts.STRXML_ATTR_Name, false));
-        measurement.setUnits(XmlUtilities.GetAttribute(node, Consts.STRXML_ATTR_Units, false));
+        measurement.setName(XmlUtilities.GetAttributeValue(node, Consts.STRXML_ATTR_Name, false));
+        measurement.setUnits(XmlUtilities.GetAttributeValue(node, Consts.STRXML_ATTR_Units, false));
         measurement.setValues(XmlUtilities.GetChildValue(parentNode, childName));
 
         return measurement;

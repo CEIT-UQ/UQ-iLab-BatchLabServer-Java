@@ -24,8 +24,8 @@ public class Consts extends LabConsts {
     /*
      * XML elements in the validation
      */
-    public static final String STRXML_Min = "min";
-    public static final String STRXML_Max = "max";
+    public static final String STRXML_Minimum = "minimum";
+    public static final String STRXML_Maximum = "maximum";
     /*
      * XML elements in the results
      */

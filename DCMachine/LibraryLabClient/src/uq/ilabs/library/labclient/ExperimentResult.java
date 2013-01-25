@@ -9,7 +9,6 @@ import java.io.StringWriter;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
-import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
 import uq.ilabs.library.labclient.engine.LabExperimentResult;
 
 /**
@@ -52,7 +51,7 @@ public class ExperimentResult extends LabExperimentResult {
      *
      * @param xmlExperimentResult
      */
-    public ExperimentResult(String xmlExperimentResult) {
+    public ExperimentResult(String xmlExperimentResult) throws Exception {
         super(xmlExperimentResult);
 
         final String methodName = "ExperimentResult";
@@ -85,12 +84,34 @@ public class ExperimentResult extends LabExperimentResult {
             /*
              * Get result information
              */
-            this.speedVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_SpeedVector);
-            this.fieldVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_FieldVector);
-            this.voltageVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_VoltageVector);
-            this.loadVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_LoadVector);
+            switch (this.setupId) {
+                case Consts.STRXML_SetupId_VoltageVsSpeed:
+                    this.speedVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_SpeedVector);
+                    this.voltageVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_VoltageVector);
+                    break;
+                case Consts.STRXML_SetupId_SpeedVsVoltage:
+                    this.voltageVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_VoltageVector);
+                    this.speedVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_SpeedVector);
+                    break;
+                case Consts.STRXML_SetupId_VoltageVsField:
+                    this.fieldVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_FieldVector);
+                    this.voltageVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_VoltageVector);
+                    break;
+                case Consts.STRXML_SetupId_SpeedVsField:
+                    this.fieldVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_FieldVector);
+                    this.speedVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_SpeedVector);
+                    this.voltageVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_VoltageVector);
+                    break;
+                case Consts.STRXML_SetupId_VoltageVsLoad:
+                    this.loadVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_LoadVector);
+                    this.voltageVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_VoltageVector);
+                    this.speedVector = XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_SpeedVector);
+                    break;
+            }
 
-        } catch (XmlUtilitiesException ex) {
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);

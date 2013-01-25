@@ -3,28 +3,28 @@
 <properties>
     <comment>Dummy ServiceBroker</comment>
 
-	<!-- ServiceBrokerGuid: ServiceBroker's Globally Unique Identifer maximum 40 characters -->
+    <!-- ServiceBrokerGuid: ServiceBroker's Globally Unique Identifer maximum 40 characters -->
     <entry key="ServiceBrokerGuid">196495303F294B13856D7E48872E51CC</entry>
-	
-	<!-- DBHost: Database host -->
+
+    <!-- DBHost: Database host -->
     <entry key="DBHost">localhost</entry>
-	<!-- DBDatabase: Database name -->
+    <!-- DBDatabase: Database name -->
     <entry key="DBDatabase">Dummy_ServiceBroker</entry>
-	<!-- DBUser: Database user name, privileges need to be granted for this user to use the database -->
+    <!-- DBUser: Database user name, privileges need to be granted for this user to use the database -->
     <entry key="DBUser">ServiceBroker</entry>
-	<!-- DBPassword: Database user's password -->
+    <!-- DBPassword: Database user's password -->
     <entry key="DBPassword">ilab</entry>
-	
-	<!-- Authenticating: If true, deny access if the LabClient's coupon Id and coupon passkey are not valid -->
+
+    <!-- Authenticating: If true, deny access if the LabClient's coupon Id and coupon passkey are not valid -->
     <entry key="Authenticating">true</entry>
-	<!-- LogAuthentication: If true, log the ServiceBroker's guid and passkey -->
+    <!-- LogAuthentication: If true, log the ServiceBroker's guid and passkey -->
     <entry key="LogAuthentication">false</entry>
-	<!-- CouponId: Coupon Id to receive from the LabClient (development use only) -->
+    <!-- CouponId: Coupon Id to receive from the LabClient (development use only) -->
     <entry key="CouponId">12345</entry>
-	<!-- CouponPasskey: Coupon passkey to receive from the LabClient (development use only) -->
+    <!-- CouponPasskey: Coupon passkey to receive from the LabClient (development use only) -->
     <entry key="CouponPasskey">qwerty</entry>
 
-	<!-- LabServer?: Starting at zero, comma-seperated LabServer's guid, LabServer's web serviceURL, LabServer's passkey and ServiceBroker's incoming passkey (not used) -->
+    <!-- LabServer?: Starting at zero, comma-seperated LabServer's guid, LabServer's web serviceURL, LabServer's passkey and ServiceBroker's incoming passkey (not used) -->
     <entry key="LabServer0">8C0BA543419E4d4ab340d449acd3e057, http://localhost:8083/LabServerWebService.asmx, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
     <entry key="LabServer1">2CD01113C51C4ca997B059531CD9469D, http://localhost:8080/TemplateLabServer/LabServerWebService, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
     <entry key="LabServer2">FF464E3507564f28A64F156282BB912E, http://localhost:8080/RadioactivityLabServer/LabServerWebService, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>

@@ -4,6 +4,7 @@
  */
 package uq.ilabs.labclient;
 
+import java.io.Serializable;
 import java.io.Writer;
 import java.util.logging.Level;
 import javax.faces.bean.ManagedBean;
@@ -23,7 +24,7 @@ import uq.ilabs.library.labclient.engine.LabClientSession;
  */
 @ManagedBean
 @SessionScoped
-public class ResultsBean {
+public class ResultsBean implements Serializable {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ResultsBean.class.getName();

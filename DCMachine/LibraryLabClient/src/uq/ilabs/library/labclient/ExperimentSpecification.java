@@ -60,18 +60,24 @@ public class ExperimentSpecification extends LabExperimentSpecification {
         final String methodName = "ExperimentSpecification";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that all required XML nodes exist
-         */
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_SpeedMin);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_SpeedMax);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_SpeedStep);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_FieldMin);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_FieldMax);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_FieldStep);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_LoadMin);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_LoadMax);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_LoadStep);
+        try {
+            /*
+             * Check that all required XML nodes exist
+             */
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_SpeedMin);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_SpeedMax);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_SpeedStep);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_FieldMin);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_FieldMax);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_FieldStep);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_LoadMin);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_LoadMax);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_LoadStep);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }

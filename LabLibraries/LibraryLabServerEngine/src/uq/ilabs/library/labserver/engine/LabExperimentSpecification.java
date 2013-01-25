@@ -67,7 +67,7 @@ public class LabExperimentSpecification {
             /*
              * Get the setup Id and check that it exists - search is case-sensitive
              */
-            this.setupId = XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_SetupId, false);
+            this.setupId = XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_SetupId);
 
             /*
              * Save a copy of the experiment specification for the derived class
@@ -88,6 +88,13 @@ public class LabExperimentSpecification {
      */
     @Override
     public String toString() {
-        return XmlUtilities.ToXmlString(this.nodeSpecification);
+        String xmlString = null;
+
+        try {
+            xmlString = XmlUtilities.ToXmlString(this.nodeSpecification);
+        } catch (XmlUtilitiesException ex) {
+        }
+
+        return xmlString;
     }
 }

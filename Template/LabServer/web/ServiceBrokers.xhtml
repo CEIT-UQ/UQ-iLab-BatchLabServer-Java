@@ -25,7 +25,7 @@
                     Select a ServiceBroker:
                 </h4>
                 <h:form>
-                    <h:selectOneMenu styleClass="hselectOneMenu" style="width: 503px;" value="#{serviceBrokersBean.hsomServiceBroker}">
+                    <h:selectOneMenu styleClass="hselectOneMenu" style="width: 403px;" value="#{serviceBrokersBean.hsomServiceBroker}">
                         <f:selectItems value="#{serviceBrokersBean.serviceBrokers}" />
                     </h:selectOneMenu>
                     &nbsp;
@@ -63,10 +63,12 @@
                                     </tr>
                                     <tr>
                                         <td class="label">
-                                            <nobr>Outgoing Passkey<sup>1</sup>:</nobr>
+                                            Outgoing Passkey<small><sup>1</sup></small>:
                                         </td>
                                         <td class="information">
-                                            <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitOutgoingPasskey}" />
+                                            <h:inputText styleClass="hinputText" style="width: 403px;" value="#{serviceBrokersBean.hitOutgoingPasskey}" />
+                                            &nbsp;
+                                            <h:commandButton styleClass="hcommandButton" value="Create" action="#{serviceBrokersBean.actionCreateGuid()}"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -89,7 +91,7 @@
                                     </tr>
                                     <tr>
                                         <td class="label">
-                                            <nobr>Service Url:</nobr>
+                                            Service Url:
                                         </td>
                                         <td class="information">
                                             <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitServiceUrl}" />
@@ -97,7 +99,7 @@
                                     </tr>
                                     <tr>
                                         <td class="label">
-                                            <nobr>Incoming Passkey<sup>2</sup>:</nobr>
+                                            Incoming Passkey<small><sup>2</sup></small>:
                                         </td>
                                         <td class="information">
                                             <h:inputText styleClass="hinputText" value="#{serviceBrokersBean.hitIncomingPasskey}" />

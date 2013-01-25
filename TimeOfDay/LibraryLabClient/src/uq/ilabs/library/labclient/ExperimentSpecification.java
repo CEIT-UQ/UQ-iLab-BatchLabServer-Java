@@ -51,11 +51,16 @@ public class ExperimentSpecification extends LabExperimentSpecification {
         final String methodName = "ExperimentSpecification";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that all required XML nodes exist
-         */
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_ServerUrl);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_FormatName);
+        try {
+            /*
+             * Check that all required XML nodes exist
+             */
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_ServerUrl);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_FormatName);
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }

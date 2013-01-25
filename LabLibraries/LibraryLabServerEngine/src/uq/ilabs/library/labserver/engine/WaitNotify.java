@@ -4,6 +4,7 @@
  */
 package uq.ilabs.library.labserver.engine;
 
+import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
 
 /**
@@ -14,33 +15,34 @@ public class WaitNotify {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = WaitNotify.class.getName();
+    private static final Level logLevel = Level.FINEST;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private boolean signal;
     //</editor-fold>
 
     /**
-     * 
+     *
      */
     public WaitNotify() {
         final String methodName = "WaitNotify";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         /*
          * Initialise local variables
          */
         this.signal = false;
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
      * Wait the specified number of milliseconds with 1000 millisecond resolution
-     * @param milliseconds 
+     * @param milliseconds
      */
     public synchronized boolean Wait(int milliseconds) {
         int seconds = (milliseconds + 500) / 1000;
-        
+
         try {
             do {
                 wait(1000);
@@ -52,7 +54,7 @@ public class WaitNotify {
     }
 
     /**
-     * 
+     *
      */
     public synchronized void Notify() {
         this.signal = true;
@@ -60,7 +62,7 @@ public class WaitNotify {
     }
 
     /**
-     * 
+     *
      */
     public synchronized void Reset() {
         this.signal = false;

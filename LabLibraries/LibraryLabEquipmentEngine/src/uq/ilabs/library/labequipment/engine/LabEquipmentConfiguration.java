@@ -29,8 +29,7 @@ public class LabEquipmentConfiguration {
      */
     private static final String STRLOG_Filename_arg = "Filename: '%s'";
     private static final String STRLOG_ParsingEquipmentConfiguration = "Parsing equipment configuration...";
-    private static final String STRLOG_Title_arg = "Title: '%s'";
-    private static final String STRLOG_Version_arg = "Version: '%s'";
+    private static final String STRLOG_TitleVersion_arg2 = "Title: '%s'  Version: '%s'";
     private static final String STRLOG_PowerupDelay_arg = "Powerup Delay: %d secs";
     private static final String STRLOG_PowerdownTimeout_arg = "Powerdown Timeout: %d secs";
     private static final String STRLOG_PoweroffDelay_arg = "Poweroff Delay: %d secs";
@@ -44,6 +43,9 @@ public class LabEquipmentConfiguration {
      */
     private static final String STRERR_Filename = "filename";
     private static final String STRERR_NumberIsNegative = "Number cannot be negative!";
+    private static final String STRERR_XmlDeviceConfigurationNotFound_arg = "XmlDeviceConfiguration mapping not found: %s";
+    private static final String STRERR_XmlDriverConfigurationNotFound_arg = "XmlDriverConfiguration mapping not found: %s";
+    private static final String STRERR_DriverNameNotFound_arg = "DriverName mapping not found: %s";
     /*
      * Constants
      */
@@ -70,9 +72,7 @@ public class LabEquipmentConfiguration {
     private int poweroffDelay;
     private boolean powerdownEnabled;
     private int initialiseDelay;
-    protected String xmlStringDevices;
-    protected String xmlStringDrivers;
-    protected String xmlStringSetups;
+    private String xmlValidation;
 
     public String getFilename() {
         return filename;
@@ -106,18 +106,11 @@ public class LabEquipmentConfiguration {
         return initialiseDelay;
     }
 
-    public String getXmlStringDevices() {
-        return xmlStringDevices;
+    public String getXmlValidation() {
+        return xmlValidation;
     }
-
-//    public String getXmlStringDrivers() {
-//        return xmlStringDrivers;
-//    }
-//
-//    public String getXmlStringSetups() {
-//        return xmlStringSetups;
-//    }
     //</editor-fold>
+
     /**
      * Constructor - Parse the equipment configuration XML string for information specific to the LabEquipment.
      *
@@ -195,10 +188,9 @@ public class LabEquipmentConfiguration {
             /*
              * Get information from the equipment configuration node
              */
-            this.title = XmlUtilities.GetAttribute(xmlNodeEquipmentConfiguration, LabConsts.STRXML_ATTR_Title, false);
-            this.version = XmlUtilities.GetAttribute(xmlNodeEquipmentConfiguration, LabConsts.STRXML_ATTR_Version, false);
-            logMessage += String.format(STRLOG_Title_arg, this.title) + Logfile.STRLOG_Newline
-                    + String.format(STRLOG_Version_arg, this.version) + Logfile.STRLOG_Newline;
+            this.title = XmlUtilities.GetAttributeValue(xmlNodeEquipmentConfiguration, LabConsts.STRXML_ATTR_Title, false);
+            this.version = XmlUtilities.GetAttributeValue(xmlNodeEquipmentConfiguration, LabConsts.STRXML_ATTR_Version, false);
+            logMessage += String.format(STRLOG_TitleVersion_arg2, this.title, this.version) + Logfile.STRLOG_Newline;
 
             /*
              * Get powerup delay, may not be specified
@@ -255,15 +247,14 @@ public class LabEquipmentConfiguration {
             this.initialiseDelay = 0;
             this.mapDevices = new HashMap<>();
             Node xmlNodeDevices = XmlUtilities.GetChildNode(xmlNodeEquipmentConfiguration, LabConsts.STRXML_Devices);
-            this.xmlStringDevices = XmlUtilities.ToXmlString(xmlNodeDevices);
-            ArrayList xmlNodeList = XmlUtilities.GetChildNodeList(xmlNodeDevices, LabConsts.STRXML_Device, false);
+            ArrayList xmlNodeList = XmlUtilities.GetChildNodeList(xmlNodeDevices, LabConsts.STRXML_Device);
             for (int i = 0; i < xmlNodeList.size(); i++) {
                 Node xmlNodeDevice = (Node) xmlNodeList.get(i);
 
                 /*
                  * Check that the required device information exists
                  */
-                String name = XmlUtilities.GetAttribute(xmlNodeDevice, LabConsts.STRXML_ATTR_Name, false);
+                String name = XmlUtilities.GetAttributeValue(xmlNodeDevice, LabConsts.STRXML_ATTR_Name, false);
                 logMessage += String.format(STRLOG_DeviceName_arg, name) + Logfile.STRLOG_Spacer;
 
                 /*
@@ -285,15 +276,14 @@ public class LabEquipmentConfiguration {
              */
             this.mapDrivers = new HashMap<>();
             Node xmlNodeDrivers = XmlUtilities.GetChildNode(xmlNodeEquipmentConfiguration, LabConsts.STRXML_Drivers);
-            this.xmlStringDrivers = XmlUtilities.ToXmlString(xmlNodeDrivers);
-            xmlNodeList = XmlUtilities.GetChildNodeList(xmlNodeDrivers, LabConsts.STRXML_Driver, false);
+            xmlNodeList = XmlUtilities.GetChildNodeList(xmlNodeDrivers, LabConsts.STRXML_Driver);
             for (int i = 0; i < xmlNodeList.size(); i++) {
                 Node xmlNodeDriver = (Node) xmlNodeList.get(i);
 
                 /*
                  * Check that the required driver information exists
                  */
-                String name = XmlUtilities.GetAttribute(xmlNodeDriver, LabConsts.STRXML_ATTR_Name, false);
+                String name = XmlUtilities.GetAttributeValue(xmlNodeDriver, LabConsts.STRXML_ATTR_Name);
                 logMessage += String.format(STRLOG_DriverName_arg, name) + Logfile.STRLOG_Newline;
 
                 /*
@@ -308,15 +298,14 @@ public class LabEquipmentConfiguration {
              */
             this.mapSetups = new HashMap<>();
             Node xmlNodeSetups = XmlUtilities.GetChildNode(xmlNodeEquipmentConfiguration, LabConsts.STRXML_Setups);
-            this.xmlStringSetups = XmlUtilities.ToXmlString(xmlNodeSetups);
-            xmlNodeList = XmlUtilities.GetChildNodeList(xmlNodeSetups, LabConsts.STRXML_Setup, false);
+            xmlNodeList = XmlUtilities.GetChildNodeList(xmlNodeSetups, LabConsts.STRXML_Setup);
             for (int i = 0; i < xmlNodeList.size(); i++) {
                 Node xmlNodeSetup = (Node) xmlNodeList.get(i);
 
                 /*
                  * Get the setup id
                  */
-                String id = XmlUtilities.GetAttribute(xmlNodeSetup, LabConsts.STRXML_ATTR_Id, false);
+                String id = XmlUtilities.GetAttributeValue(xmlNodeSetup, LabConsts.STRXML_ATTR_Id);
                 logMessage += String.format(STRLOG_SetupId_arg, id) + Logfile.STRLOG_Newline;
 
                 /*
@@ -325,6 +314,12 @@ public class LabEquipmentConfiguration {
                 String strDriver = XmlUtilities.GetChildValue(xmlNodeSetup, LabConsts.STRXML_Driver);
                 this.mapSetups.put(id, strDriver);
             }
+
+            /*
+             * Get the validation node and save as an XML string
+             */
+            Node xmlNodeValidation = XmlUtilities.GetChildNode(xmlNodeEquipmentConfiguration, LabConsts.STRXML_Validation);
+            this.xmlValidation = XmlUtilities.ToXmlString(xmlNodeValidation);
 
             Logfile.Write(logLevel, logMessage);
         } catch (XmlUtilitiesException | NullPointerException | IllegalArgumentException | FileNotFoundException | ArithmeticException ex) {
@@ -341,7 +336,13 @@ public class LabEquipmentConfiguration {
      * @return
      */
     public String GetDriverName(String setupId) {
-        return this.mapSetups.get(setupId);
+        String mapping;
+
+        if ((mapping = this.mapSetups.get(setupId)) == null) {
+            throw new RuntimeException(String.format(STRERR_DriverNameNotFound_arg, setupId));
+        }
+
+        return mapping;
     }
 
     /**
@@ -350,7 +351,13 @@ public class LabEquipmentConfiguration {
      * @return
      */
     public String GetXmlDeviceConfiguration(String deviceName) {
-        return this.mapDevices.get(deviceName);
+        String mapping;
+
+        if ((mapping = this.mapDevices.get(deviceName)) == null) {
+            throw new RuntimeException(String.format(STRERR_XmlDeviceConfigurationNotFound_arg, deviceName));
+        }
+
+        return mapping;
     }
 
     /**
@@ -359,6 +366,12 @@ public class LabEquipmentConfiguration {
      * @return
      */
     public String GetXmlDriverConfiguration(String driverName) {
-        return this.mapDrivers.get(driverName);
+        String mapping;
+
+        if ((mapping = this.mapDrivers.get(driverName)) == null) {
+            throw new RuntimeException(String.format(STRERR_XmlDriverConfigurationNotFound_arg, driverName));
+        }
+
+        return mapping;
     }
 }

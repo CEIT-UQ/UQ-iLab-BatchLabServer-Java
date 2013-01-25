@@ -17,6 +17,7 @@ import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
 import uq.ilabs.library.labequipment.engine.LabConsts;
 import uq.ilabs.library.labequipment.engine.LabEquipmentConfiguration;
 import uq.ilabs.library.labequipment.engine.LabExperimentSpecification;
+import uq.ilabs.library.labequipment.engine.LabExperimentValidation;
 import uq.ilabs.library.labequipment.engine.types.ExecutionTimes;
 
 /**
@@ -43,14 +44,18 @@ public class DriverGeneric {
      */
     protected static final String STRERR_XmlSpecification = "xmlSpecification";
     protected static final String STRERR_InvalidSetupId_arg = "Invalid SetupId: %s";
+    protected static final String STRERR_DeviceNotSet_arg = "Device has not been set: %s";
+    protected static final String STRERR_InvalidDeviceInstance_arg = "Invalid device instance: %s";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private final Object executionStatusLock;
     private Calendar completionTime;
     //
     protected Node nodeDriver;
+    protected Node nodeValidation;
     protected LabExperimentSpecification labExperimentSpecification;
-    protected String xmlExperimentResults;
+    protected LabExperimentValidation labExperimentValidation;
+    protected String xmlExperimentResultsTemplate;
     protected ExecutionStatus executionStatus;
     protected boolean cancelled;
     //</editor-fold>
@@ -80,6 +85,11 @@ public class DriverGeneric {
     private enum States {
 
         None, Initialise, Start, Run, Stop, Finalise, Completed
+    }
+
+    private enum ExecuteStates {
+
+        WaitOneSecond, ShowMessage, CheckTime, Done
     }
     //</editor-fold>
 
@@ -121,7 +131,7 @@ public class DriverGeneric {
              * Get the experiment results XML template
              */
             Node xmlNodeExperimentResults = XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_ExperimentResults);
-            this.xmlExperimentResults = XmlUtilities.ToXmlString(xmlNodeExperimentResults);
+            this.xmlExperimentResultsTemplate = XmlUtilities.ToXmlString(xmlNodeExperimentResults);
 
             /*
              * Initialise local variables
@@ -138,6 +148,17 @@ public class DriverGeneric {
              * Save a copy of the driver XML node for the derived class
              */
             this.nodeDriver = nodeRoot.cloneNode(true);
+
+            /*
+             * Get the experiment validation from the XML string
+             */
+            xmlDocument = XmlUtilities.GetDocumentFromString(labEquipmentConfiguration.getXmlValidation());
+            nodeRoot = XmlUtilities.GetRootNode(xmlDocument, LabConsts.STRXML_Validation);
+
+            /*
+             * Save a copy of the experiment validation XML node for the derived class
+             */
+            this.nodeValidation = nodeRoot.cloneNode(true);
 
         } catch (NullPointerException | IllegalArgumentException | XmlUtilitiesException ex) {
             Logfile.WriteError(ex.toString());
@@ -174,25 +195,19 @@ public class DriverGeneric {
              * Check the setup Id
              */
             String setupId = this.labExperimentSpecification.getSetupId();
-            if (setupId.equals(LabConsts.STRXML_SetupId_Generic) == false) {
-                /*
-                 * Don't throw an exception, a derived class will want to check the setup Id
-                 */
-                validation = new Validation(String.format(STRERR_InvalidSetupId_arg, setupId));
-            } else {
-                /*
-                 * Calculate the execution time
-                 */
-                int executionTime = this.executionTimes.getInitialise()
-                        + this.executionTimes.getStart()
-                        + this.executionTimes.getRun()
-                        + this.executionTimes.getStop()
-                        + this.executionTimes.getFinalise();
+            switch (setupId) {
+                case LabConsts.STRXML_SetupId_Generic:
+                    /*
+                     * Specification is valid
+                     */
+                    validation = new Validation(true, this.executionTimes.getTotalExecutionTime());
+                    break;
 
-                /*
-                 * Specification is valid
-                 */
-                validation = new Validation(true, executionTime);
+                default:
+                    /*
+                     * Don't throw an exception, a derived class will want to check the setup Id
+                     */
+                    validation = new Validation(String.format(STRERR_InvalidSetupId_arg, setupId));
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -281,7 +296,7 @@ public class DriverGeneric {
         final String methodName = "GetExperimentResults";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        String experimentResults = this.xmlExperimentResults;
+        String experimentResults = this.xmlExperimentResultsTemplate;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
@@ -326,14 +341,12 @@ public class DriverGeneric {
         try {
             while (thisState != States.Completed) {
                 boolean success;
-//                int seconds;
 
                 /*
                  * Display message on each state change
                  */
                 if (thisState != lastState) {
                     String logMessage = String.format(STRLOG_StateChange_arg, lastState.toString(), thisState.toString());
-//                    System.out.println(logMessage);
                     Logfile.Write(logMessage);
 
                     lastState = thisState;
@@ -402,15 +415,62 @@ public class DriverGeneric {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = true;
+        int seconds = this.executionTimes.getInitialise();
 
-        for (int i = 0; i < this.executionTimes.getInitialise(); i++) {
-            System.out.println("[i]");
-            Delay.MilliSeconds(1000);
+        try {
+            /*
+             * Initialise state machine
+             */
+            ExecuteStates thisState = (seconds <= 0) ? ExecuteStates.Done : ExecuteStates.WaitOneSecond;
 
-            if (this.cancelled == true) {
-                success = false;
-                break;
+            /*
+             * State machine loop
+             */
+            while (thisState != ExecuteStates.Done) {
+                switch (thisState) {
+                    case WaitOneSecond:
+                        /*
+                         * Wait one second before continuing
+                         */
+                        Delay.MilliSeconds(1000);
+
+                        thisState = ExecuteStates.ShowMessage;
+                        break;
+
+                    case ShowMessage:
+                        /*
+                         * Display a message
+                         */
+                        System.out.println("[i]");
+
+                        thisState = ExecuteStates.CheckTime;
+                        break;
+
+                    case CheckTime:
+                        /*
+                         * Check if time has reached zero
+                         */
+                        if (--seconds == 0) {
+                            thisState = ExecuteStates.Done;
+                            break;
+                        }
+
+                        thisState = ExecuteStates.WaitOneSecond;
+                        break;
+                }
+
+                /*
+                 * Check if the experiment has been cancelled
+                 */
+                if (this.cancelled == true) {
+                    thisState = ExecuteStates.Done;
+                }
             }
+
+            success = (this.cancelled == false);
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            this.executionStatus.setErrorMessage(ex.getMessage());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
@@ -428,15 +488,62 @@ public class DriverGeneric {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = true;
+        int seconds = this.executionTimes.getStart();
 
-        for (int i = 0; i < this.executionTimes.getStart(); i++) {
-            System.out.println("[s]");
-            Delay.MilliSeconds(1000);
+        try {
+            /*
+             * Initialise state machine
+             */
+            ExecuteStates thisState = (seconds <= 0) ? ExecuteStates.Done : ExecuteStates.WaitOneSecond;
 
-            if (this.cancelled == true) {
-                success = false;
-                break;
+            /*
+             * State machine loop
+             */
+            while (thisState != ExecuteStates.Done) {
+                switch (thisState) {
+                    case WaitOneSecond:
+                        /*
+                         * Wait one second before continuing
+                         */
+                        Delay.MilliSeconds(1000);
+
+                        thisState = ExecuteStates.ShowMessage;
+                        break;
+
+                    case ShowMessage:
+                        /*
+                         * Display a message
+                         */
+                        System.out.println("[s]");
+
+                        thisState = ExecuteStates.CheckTime;
+                        break;
+
+                    case CheckTime:
+                        /*
+                         * Check if time has reached zero
+                         */
+                        if (--seconds == 0) {
+                            thisState = ExecuteStates.Done;
+                            break;
+                        }
+
+                        thisState = ExecuteStates.WaitOneSecond;
+                        break;
+                }
+
+                /*
+                 * Check if the experiment has been cancelled
+                 */
+                if (this.cancelled == true) {
+                    thisState = ExecuteStates.Done;
+                }
             }
+
+            success = (this.cancelled == false);
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            this.executionStatus.setErrorMessage(ex.getMessage());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
@@ -454,15 +561,62 @@ public class DriverGeneric {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = true;
+        int seconds = this.executionTimes.getRun();
 
-        for (int i = 0; i < this.executionTimes.getRun(); i++) {
-            System.out.println("[r]");
-            Delay.MilliSeconds(1000);
+        try {
+            /*
+             * Initialise state machine
+             */
+            ExecuteStates thisState = (seconds <= 0) ? ExecuteStates.Done : ExecuteStates.WaitOneSecond;
 
-            if (this.cancelled == true) {
-                success = false;
-                break;
+            /*
+             * State machine loop
+             */
+            while (thisState != ExecuteStates.Done) {
+                switch (thisState) {
+                    case WaitOneSecond:
+                        /*
+                         * Wait one second before continuing
+                         */
+                        Delay.MilliSeconds(1000);
+
+                        thisState = ExecuteStates.ShowMessage;
+                        break;
+
+                    case ShowMessage:
+                        /*
+                         * Display a message
+                         */
+                        System.out.println("[r]");
+
+                        thisState = ExecuteStates.CheckTime;
+                        break;
+
+                    case CheckTime:
+                        /*
+                         * Check if time has reached zero
+                         */
+                        if (--seconds == 0) {
+                            thisState = ExecuteStates.Done;
+                            break;
+                        }
+
+                        thisState = ExecuteStates.WaitOneSecond;
+                        break;
+                }
+
+                /*
+                 * Check if the experiment has been cancelled
+                 */
+                if (this.cancelled == true) {
+                    thisState = ExecuteStates.Done;
+                }
             }
+
+            success = (this.cancelled == false);
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            this.executionStatus.setErrorMessage(ex.getMessage());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
@@ -480,15 +634,66 @@ public class DriverGeneric {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = true;
+        String lastError = null;
+        int seconds = this.executionTimes.getStop();
 
-        for (int i = 0; i < this.executionTimes.getStop(); i++) {
-            System.out.println("[p]");
-            Delay.MilliSeconds(1000);
+        try {
+            /*
+             * Initialise state machine
+             */
+            ExecuteStates thisState = (seconds <= 0) ? ExecuteStates.Done : ExecuteStates.WaitOneSecond;
 
-//            if (this.cancelled == true) {
-//                success = false;
-//                break;
-//            }
+            /*
+             * State machine loop - Can't throw any exceptions if there were any errors, have to keep on going.
+             */
+            while (thisState != ExecuteStates.Done) {
+                switch (thisState) {
+                    case WaitOneSecond:
+                        /*
+                         * Wait one second before continuing
+                         */
+                        Delay.MilliSeconds(1000);
+
+                        thisState = ExecuteStates.ShowMessage;
+                        break;
+
+                    case ShowMessage:
+                        /*
+                         * Display a message
+                         */
+                        System.out.println("[p]");
+
+                        thisState = ExecuteStates.CheckTime;
+                        break;
+
+                    case CheckTime:
+                        /*
+                         * Check if time has reached zero
+                         */
+                        if (--seconds == 0) {
+                            thisState = ExecuteStates.Done;
+                            break;
+                        }
+
+                        thisState = ExecuteStates.WaitOneSecond;
+                        break;
+                }
+
+                /*
+                 * Do not check if the experiment has been cancelled, it has finished running anyway
+                 */
+            }
+
+            /*
+             * Check if there were any errors
+             */
+            success = (lastError == null);
+            if (success == false) {
+                this.executionStatus.setErrorMessage(lastError);
+            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            this.executionStatus.setErrorMessage(ex.getMessage());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
@@ -506,15 +711,67 @@ public class DriverGeneric {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = true;
+        String lastError = null;
+        int seconds = this.executionTimes.getFinalise();
 
-        for (int i = 0; i < this.executionTimes.getFinalise(); i++) {
-            System.out.println("[f]");
-            Delay.MilliSeconds(1000);
+        try {
+            /*
+             * Initialise state machine
+             */
+            ExecuteStates thisState = (seconds <= 0) ? ExecuteStates.Done : ExecuteStates.WaitOneSecond;
 
-//            if (this.cancelled == true) {
-//                success = false;
-//                break;
-//            }
+            /*
+             * State machine loop - Can't throw any exceptions if there were any errors, have to keep on going.
+             */
+            while (thisState != ExecuteStates.Done) {
+                switch (thisState) {
+
+                    case WaitOneSecond:
+                        /*
+                         * Wait one second before continuing
+                         */
+                        Delay.MilliSeconds(1000);
+
+                        thisState = ExecuteStates.ShowMessage;
+                        break;
+
+                    case ShowMessage:
+                        /*
+                         * Display a message
+                         */
+                        System.out.println("[f]");
+
+                        thisState = ExecuteStates.CheckTime;
+                        break;
+
+                    case CheckTime:
+                        /*
+                         * Check if time has reached zero
+                         */
+                        if (--seconds == 0) {
+                            thisState = ExecuteStates.Done;
+                            break;
+                        }
+
+                        thisState = ExecuteStates.WaitOneSecond;
+                        break;
+                }
+
+                /*
+                 * Do not check if the experiment has been cancelled, it has finished running anyway
+                 */
+            }
+
+            /*
+             * Check if there were any errors
+             */
+            success = (lastError == null);
+            if (success == false) {
+                this.executionStatus.setErrorMessage(lastError);
+            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            this.executionStatus.setErrorMessage(ex.getMessage());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,

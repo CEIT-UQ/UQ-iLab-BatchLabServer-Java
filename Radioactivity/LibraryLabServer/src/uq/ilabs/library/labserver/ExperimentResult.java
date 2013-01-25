@@ -5,6 +5,7 @@
 package uq.ilabs.library.labserver;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -21,13 +22,7 @@ public class ExperimentResult extends LabExperimentResult {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentResult.class.getName();
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Types">
-
-    public enum DataTypes {
-
-        Unknown, Real, Simulated, Calculated
-    };
+    private static final Level logLevel = Level.FINE;
     //</editor-fold>
 
     /**
@@ -39,15 +34,21 @@ public class ExperimentResult extends LabExperimentResult {
         super(configuration);
 
         final String methodName = "ExperimentResult";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that all required XML nodes exist
-         */
-        XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_DataType);
-        XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_DataVector);
+        try {
+            /*
+             * Check that all required XML nodes exist
+             */
+            XmlUtilities.GetChildNode(this.nodeExperimentResult, Consts.STRXML_DataType);
+            XmlUtilities.GetChildNode(this.nodeExperimentResult, Consts.STRXML_DataVector);
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
@@ -80,8 +81,8 @@ public class ExperimentResult extends LabExperimentResult {
                 XmlUtilities.SetChildValue(this.nodeExperimentResult, Consts.STRXML_Distance, distances);
                 int duration = XmlUtilities.GetChildValueAsInt(nodeRoot, Consts.STRXML_Duration);
                 XmlUtilities.SetChildValue(this.nodeExperimentResult, Consts.STRXML_Duration, duration);
-                int trials = XmlUtilities.GetChildValueAsInt(nodeRoot, Consts.STRXML_Repeat);
-                XmlUtilities.SetChildValue(this.nodeExperimentResult, Consts.STRXML_Repeat, trials);
+                int repeat = XmlUtilities.GetChildValueAsInt(nodeRoot, Consts.STRXML_Repeat);
+                XmlUtilities.SetChildValue(this.nodeExperimentResult, Consts.STRXML_Repeat, repeat);
 
                 /*
                  * Add the experiment result information to the XML document
@@ -105,8 +106,8 @@ public class ExperimentResult extends LabExperimentResult {
                     /*
                      * Copy the data vector's distance attribute and value
                      */
-                    String attribute = XmlUtilities.GetAttribute(nodeTemp, Consts.STRXML_ATTR_Distance, false);
-                    XmlUtilities.SetAttribute(nodeDataVector, Consts.STRXML_ATTR_Distance, attribute);
+                    String attribute = XmlUtilities.GetAttributeValue(nodeTemp, Consts.STRXML_ATTR_Distance, false);
+                    XmlUtilities.SetAttributeValue(nodeDataVector, Consts.STRXML_ATTR_Distance, attribute);
                     String value = XmlUtilities.GetValue(nodeTemp);
                     XmlUtilities.SetValue(nodeDataVector, value);
 

@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="./LabServer.xhtml">
+
+            <ui:define name="stylesheet">
+                <style>
+                    .hinputText, .hinputTextReadOnly, .hinputTextarea { width: 500px; }
+                </style>
+            </ui:define>
+
+            <ui:define name="title">
+                Manage Lab Equipment
+            </ui:define>
+
+            <ui:define name="content">
+                #{labEquipmentBean.pageLoad()}
+                <h4>
+                    Select LabEquipment Unit:
+                </h4>
+                <h:form>
+                    <h:selectOneMenu styleClass="hselectOneMenu" style="width: 50px;" value="#{labEquipmentBean.hsomLabEquipmentUnit}">
+                        <f:selectItems value="#{labEquipmentBean.labEquipmentUnits}" />
+                    </h:selectOneMenu>
+                    &nbsp;
+                    <h:commandButton styleClass="hcommandButton" value="Select" action="#{labEquipmentBean.actionSelect()}"/>
+                </h:form>
+                <p />
+                <h4>
+                    LabEquipment Unit Information:
+                </h4>
+                <h:form>
+                    <table  border="1">
+                        <tr>
+                            <td class="infotable">
+                                <table width="100%">
+                                    <tr>
+                                        <td class="label">
+                                            Unit:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText styleClass="hinputTextReadOnly" style="width: 40px;" readonly="true" value="#{labEquipmentBean.hitLabEquipmentUnit}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Service Url<small><sup>1</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText styleClass="hinputText" value="#{labEquipmentBean.hitServiceUrl}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Passkey<small><sup>1</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText styleClass="hinputText" style="width: 403px;" value="#{labEquipmentBean.hitPasskey}" />
+                                            &nbsp;
+                                            <h:commandButton styleClass="hcommandButton" value="Create" action="#{labEquipmentBean.actionCreateGuid()}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Enabled:
+                                        </td>
+                                        <td class="information">
+                                            <h:selectBooleanCheckbox value="#{labEquipmentBean.hcbEnabled}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            &nbsp;
+                                        </td>
+                                        <td class="buttons">
+                                            <h:panelGroup rendered="#{!labEquipmentBean.registered}">
+                                                <h:commandButton styleClass="hcommandButton" value="Save" action="#{labEquipmentBean.actionSave()}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{labEquipmentBean.registered}">
+                                                <h:commandButton styleClass="hcommandButton" value="Update" action="#{labEquipmentBean.actionUpdate()}"/>
+                                                &nbsp;
+                                                <h:commandButton styleClass="hcommandButton" value="Delete" action="#{labEquipmentBean.actionDelete()}"
+                                                                 onclick="javascript:return confirm('Delete LabEquipment Unit... Are you really sure?')"/>
+                                                &nbsp;
+                                                <h:commandButton styleClass="hcommandButton" value="Test" action="#{labEquipmentBean.actionTest()}"/>
+                                            </h:panelGroup>
+                                            &nbsp;
+                                            <h:commandButton styleClass="hcommandButton" value="New" action="#{labEquipmentBean.actionNew()}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </h:form>
+                <i>Notes:</i>
+                <ol style="list-style-type: decimal">
+                    <li>Changing this item requires a LabServer restart.</li>
+                </ol>
+                <p>
+                    <br />
+                    <h:outputText styleClass="#{labEquipmentBean.holMessageClass}" value="#{labEquipmentBean.holMessage}" rendered="#{!empty(labEquipmentBean.holMessage)}" />
+                </p>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -15,14 +15,16 @@ public class Consts extends LabConsts {
     /*
      * String constants for XML setup Ids
      */
-    public static final String STRXML_SetupId_Simulation = "Simulation";
     public static final String STRXML_SetupId_Equipment = "Equipment";
+    public static final String STRXML_SetupId_Simulation = "Simulation";
     /*
      * XML elements in the LabConfiguration
      */
     /*
      * XML elements in the validation
      */
+    public static final String STRXML_ValidationMinimum = "minimum";
+    public static final String STRXML_ValidationMaximum = "maximum";
     /*
      * XML elements in the experiment specification
      */

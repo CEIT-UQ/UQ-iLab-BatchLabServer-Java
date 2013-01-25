@@ -27,7 +27,7 @@ public class ExperimentResultsDB {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentResultsDB.class.getName();
-    private static final Level logLevel = Level.FINER;
+    private static final Level logLevel = Level.FINEST;
     /*
      * String constants for logfile messages
      */
@@ -39,77 +39,75 @@ public class ExperimentResultsDB {
     /*
      * String constants for exception messages
      */
-    private static final String STRERR_DBConnection = "dBConnection";
     private static final String STRERR_ExperimentResultInfo = "experimentResultInfo";
     private static final String STRERR_ResultsInfoList = "resultsInfoList";
+    /*
+     * Database column names
+     */
+    private static final String STRCOL_Id = "Id";
+    private static final String STRCOL_ExperimentId = "ExperimentId";
+    private static final String STRCOL_SbName = "SbName";
+    private static final String STRCOL_UserGroup = "UserGroup";
+    private static final String STRCOL_PriorityHint = "PriorityHint";
+    private static final String STRCOL_StatusCode = "StatusCode";
+    private static final String STRCOL_XmlExperimentResults = "XmlExperimentResult";
+    private static final String STRCOL_XmlResultExtension = "XmlResultExtension";
+    private static final String STRCOL_XmlBlobExtension = "XmlBlobExtension";
+    private static final String STRCOL_WarningMessages = "WarningMessages";
+    private static final String STRCOL_ErrorMessage = "ErrorMessage";
+    private static final String STRCOL_Notified = "Notified";
+    private static final String STRCOL_DateCreated = "DateCreated";
     /*
      * String constants for SQL processing
      */
     private static final String STRSQLCMD_Add = "{ ? = call Results_Add(?,?,?,?,?,?,?,?,?,?) }";
     private static final String STRSQLCMD_Delete = "{ ? = call Results_Delete(?) }";
     private static final String STRSQLCMD_RetrieveBy = "{ call Results_RetrieveBy(?,?,?) }";
-    private static final String STRSQLCMD_RetrieveAllNotNotified = "{ call Results_RetrieveAllNotNotified() }";
     private static final String STRSQLCMD_UpdateNotified = "{ call Results_UpdateNotified(?,?) }";
-    /*
-     * String constants for SQL result sets
-     */
-    private static final String STRCOL_Id = "id";
-    private static final String STRCOL_ExperimentId = "experimentid";
-    private static final String STRCOL_SbName = "sbname";
-    private static final String STRCOL_UserGroup = "usergroup";
-    private static final String STRCOL_PriorityHint = "priorityhint";
-    private static final String STRCOL_StatusCode = "statuscode";
-    private static final String STRCOL_XmlExperimentResults = "xmlexperimentresult";
-    private static final String STRCOL_XmlResultExtension = "xmlresultextension";
-    private static final String STRCOL_XmlBlobExtension = "xmlblobextension";
-    private static final String STRCOL_WarningMessages = "warningmessages";
-    private static final String STRCOL_ErrorMessage = "errormessage";
-    private static final String STRCOL_Notified = "notified";
-    private static final String STRCOL_DateCreated = "datecreated";
     /*
      * String constants for XML elements
      */
-    private static final String STRXML_experimentResults = "experimentResults";
-    private static final String STRXML_experimentResult = "experimentResult";
-    private static final String STRXML_experimentId = "experimentId";
-    private static final String STRXML_sbName = "sbName";
-    private static final String STRXML_userGroup = "userGroup";
-    private static final String STRXML_priorityHint = "priorityHint";
-    private static final String STRXML_statusCode = "statusCode";
-    private static final String STRXML_xmlExperimentResult = "xmlExperimentResult";
-    private static final String STRXML_xmlResultExtension = "xmlResultExtension";
-    private static final String STRXML_xmlBlobExtension = "xmlBlobExtension";
-    private static final String STRXML_warningMessages = "warningMessages";
-    private static final String STRXML_warningMessage = "warningMessage";
-    private static final String STRXML_errorMessage = "errorMessage";
+    private static final String STRXML_ExperimentResults = "experimentResults";
+    private static final String STRXML_ExperimentResult = "experimentResult";
+    private static final String STRXML_ExperimentId = "experimentId";
+    private static final String STRXML_SbName = "sbName";
+    private static final String STRXML_UserGroup = "userGroup";
+    private static final String STRXML_PriorityHint = "priorityHint";
+    private static final String STRXML_StatusCode = "statusCode";
+    private static final String STRXML_XmlExperimentResult = "xmlExperimentResult";
+    private static final String STRXML_XmlResultExtension = "xmlResultExtension";
+    private static final String STRXML_XmlBlobExtension = "xmlBlobExtension";
+    private static final String STRXML_WarningMessages = "warningMessages";
+    private static final String STRXML_WarningMessage = "warningMessage";
+    private static final String STRXML_ErrorMessage = "errorMessage";
     /*
      * XML experiment results template
      */
     private static final String STRXMLDOC_ExperimentResultsTemplate =
             "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-            + "<" + STRXML_experimentResults + ">"
-            + "<" + STRXML_experimentResult + ">"
-            + "<" + STRXML_experimentId + " />"
-            + "<" + STRXML_sbName + " />"
-            + "<" + STRXML_userGroup + " />"
-            + "<" + STRXML_priorityHint + " />"
-            + "<" + STRXML_statusCode + " />"
-            + "<" + STRXML_xmlExperimentResult + " />"
-            + "<" + STRXML_xmlResultExtension + " />"
-            + "<" + STRXML_xmlBlobExtension + " />"
-            + "<" + STRXML_warningMessages + ">"
-            + "<" + STRXML_warningMessage + " />"
-            + "</" + STRXML_warningMessages + ">"
-            + "<" + STRXML_errorMessage + " />"
-            + "</" + STRXML_experimentResult + ">"
-            + "</" + STRXML_experimentResults + ">";
+            + "<" + STRXML_ExperimentResults + ">"
+            + "<" + STRXML_ExperimentResult + ">"
+            + "<" + STRXML_ExperimentId + " />"
+            + "<" + STRXML_SbName + " />"
+            + "<" + STRXML_UserGroup + " />"
+            + "<" + STRXML_PriorityHint + " />"
+            + "<" + STRXML_StatusCode + " />"
+            + "<" + STRXML_XmlExperimentResult + " />"
+            + "<" + STRXML_XmlResultExtension + " />"
+            + "<" + STRXML_XmlBlobExtension + " />"
+            + "<" + STRXML_WarningMessages + ">"
+            + "<" + STRXML_WarningMessage + " />"
+            + "</" + STRXML_WarningMessages + ">"
+            + "<" + STRXML_ErrorMessage + " />"
+            + "</" + STRXML_ExperimentResult + ">"
+            + "</" + STRXML_ExperimentResults + ">";
     /*
      * XML warning messages template
      */
     private static final String STRXMLDOC_WarningMessagesTemplate =
-            "<" + STRXML_warningMessages + ">"
-            + "<" + STRXML_warningMessage + " />"
-            + "</" + STRXML_warningMessages + ">";
+            "<" + STRXML_WarningMessages + ">"
+            + "<" + STRXML_WarningMessage + " />"
+            + "</" + STRXML_WarningMessages + ">";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Connection sqlConnection;
@@ -124,17 +122,23 @@ public class ExperimentResultsDB {
         final String methodName = "ExperimentResults";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that all parameters are valid
-         */
-        if (dbConnection == null) {
-            throw new NullPointerException(STRERR_DBConnection);
-        }
+        try {
+            /*
+             * Check that all parameters are valid
+             */
+            if (dbConnection == null) {
+                throw new NullPointerException(DBConnection.class.getSimpleName());
+            }
 
-        /*
-         * Initialise local variables
-         */
-        this.sqlConnection = dbConnection.getConnection();
+            /*
+             * Initialise local variables
+             */
+            this.sqlConnection = dbConnection.getConnection();
+
+        } catch (NullPointerException | SQLException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -172,14 +176,14 @@ public class ExperimentResultsDB {
                      * Load the warning messages XML template string into a document
                      */
                     Document warningMessagesDocument = XmlUtilities.GetDocumentFromString(STRXMLDOC_WarningMessagesTemplate);
-                    Node warningMessagesRootNode = XmlUtilities.GetRootNode(warningMessagesDocument, STRXML_warningMessages);
+                    Node warningMessagesRootNode = XmlUtilities.GetRootNode(warningMessagesDocument, STRXML_WarningMessages);
 
                     /*
                      * Remove the empty warning message node and add the warning messages
                      */
-                    Node warningMessageNode = XmlUtilities.GetChildNode(warningMessagesRootNode, STRXML_warningMessage);
+                    Node warningMessageNode = XmlUtilities.GetChildNode(warningMessagesRootNode, STRXML_WarningMessage);
                     warningMessagesRootNode.removeChild(warningMessageNode);
-                    XmlUtilities.SetChildValues(warningMessagesRootNode, STRXML_warningMessage, experimentResultInfo.getWarningMessages());
+                    XmlUtilities.SetChildValues(warningMessagesRootNode, STRXML_WarningMessage, experimentResultInfo.getWarningMessages());
 
                     /*
                      * Convert the document to a string
@@ -448,7 +452,7 @@ public class ExperimentResultsDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, columnName);
+                sqlStatement.setString(1, (columnName != null) ? columnName.toLowerCase() : null);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -485,8 +489,8 @@ public class ExperimentResultsDB {
                     if (xmlWarningMessages != null) {
                         try {
                             Document document = XmlUtilities.GetDocumentFromString(xmlWarningMessages);
-                            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_warningMessages);
-                            info.setWarningMessages(XmlUtilities.GetChildValues(rootNode, STRXML_warningMessage, true));
+                            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_WarningMessages);
+                            info.setWarningMessages(XmlUtilities.GetChildValues(rootNode, STRXML_WarningMessage, false));
                         } catch (Exception ex) {
                         }
                     }
@@ -538,8 +542,8 @@ public class ExperimentResultsDB {
              * Load the experiment queue XML template string into a document
              */
             Document document = XmlUtilities.GetDocumentFromString(STRXMLDOC_ExperimentResultsTemplate);
-            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_experimentResults);
-            Node experimentResultNode = XmlUtilities.GetChildNode(rootNode, STRXML_experimentResult);
+            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_ExperimentResults);
+            Node experimentResultNode = XmlUtilities.GetChildNode(rootNode, STRXML_ExperimentResult);
 
             /*
              * Make a copy of the experiment node and remove it
@@ -558,27 +562,27 @@ public class ExperimentResultsDB {
                  * information
                  */
                 Node node = experimentResultNodeCopy.cloneNode(true);
-                XmlUtilities.SetChildValue(node, STRXML_experimentId, info.getExperimentId());
-                XmlUtilities.SetChildValue(node, STRXML_sbName, info.getSbName());
-                XmlUtilities.SetChildValue(node, STRXML_userGroup, info.getUserGroup());
-                XmlUtilities.SetChildValue(node, STRXML_priorityHint, info.getPriorityHint());
-                XmlUtilities.SetChildValue(node, STRXML_statusCode, info.getStatusCode().toString());
-                XmlUtilities.SetChildValue(node, STRXML_xmlExperimentResult, info.getXmlExperimentResults());
-                XmlUtilities.SetChildValue(node, STRXML_xmlResultExtension, info.getXmlResultExtension());
-                XmlUtilities.SetChildValue(node, STRXML_xmlBlobExtension, info.getXmlBlobExtension());
-                XmlUtilities.SetChildValue(node, STRXML_errorMessage, info.getErrorMessage());
+                XmlUtilities.SetChildValue(node, STRXML_ExperimentId, info.getExperimentId());
+                XmlUtilities.SetChildValue(node, STRXML_SbName, info.getSbName());
+                XmlUtilities.SetChildValue(node, STRXML_UserGroup, info.getUserGroup());
+                XmlUtilities.SetChildValue(node, STRXML_PriorityHint, info.getPriorityHint());
+                XmlUtilities.SetChildValue(node, STRXML_StatusCode, info.getStatusCode().toString());
+                XmlUtilities.SetChildValue(node, STRXML_XmlExperimentResult, info.getXmlExperimentResults());
+                XmlUtilities.SetChildValue(node, STRXML_XmlResultExtension, info.getXmlResultExtension());
+                XmlUtilities.SetChildValue(node, STRXML_XmlBlobExtension, info.getXmlBlobExtension());
+                XmlUtilities.SetChildValue(node, STRXML_ErrorMessage, info.getErrorMessage());
 
                 /*
                  * Remove the empty warning message node
                  */
-                Node warningMessagesNode = XmlUtilities.GetChildNode(node, STRXML_warningMessages);
-                Node warningMessageNode = XmlUtilities.GetChildNode(warningMessagesNode, STRXML_warningMessage);
+                Node warningMessagesNode = XmlUtilities.GetChildNode(node, STRXML_WarningMessages);
+                Node warningMessageNode = XmlUtilities.GetChildNode(warningMessagesNode, STRXML_WarningMessage);
                 warningMessagesNode.removeChild(warningMessageNode);
 
                 /*
                  * Add the warning messages
                  */
-                XmlUtilities.SetChildValues(warningMessagesNode, STRXML_warningMessage, info.getWarningMessages());
+                XmlUtilities.SetChildValues(warningMessagesNode, STRXML_WarningMessage, info.getWarningMessages());
 
                 /*
                  * Add the experiment node to the document

@@ -20,7 +20,7 @@ import uq.ilabs.library.labclient.Consts;
 import uq.ilabs.library.labclient.engine.ConfigProperties;
 import uq.ilabs.library.labclient.engine.LabClientSession;
 import uq.ilabs.library.labclient.engine.LabConsts;
-import uq.ilabs.library.labclient.servicebroker.ServiceBrokerAPI;
+import uq.ilabs.library.servicebroker.ServiceBrokerAPI;
 
 /**
  *
@@ -42,8 +42,7 @@ public class LabClientServlet extends HttpServlet {
     //</editor-fold>
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String methodName = "doGet";
 
         /*

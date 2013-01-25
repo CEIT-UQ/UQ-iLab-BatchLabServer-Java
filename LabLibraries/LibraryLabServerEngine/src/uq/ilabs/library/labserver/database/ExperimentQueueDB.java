@@ -24,7 +24,7 @@ public class ExperimentQueueDB {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentQueueDB.class.getName();
-    private static final Level logLevel = Level.FINER;
+    private static final Level logLevel = Level.FINEST;
     /*
      * String constants for logfile messages
      */
@@ -36,22 +36,7 @@ public class ExperimentQueueDB {
     private static final String STRLOG_Count_arg = "Count: %d";
     private static final String STRLOG_Null = "null";
     /*
-     * String constants for exception messages
-     */
-    private static final String STRERR_DBConnection = "dBConnection";
-    private static final String STRERR_LabExperimentInfo = "labExperimentInfo";
-    private static final String STRERR_LabExperimentInfoArray = "labExperimentInfoArray";
-    /*
-     * String constants for SQL processing
-     */
-    private static final String STRSQLCMD_Add = "{ ? = call Queue_Add(?,?,?,?,?,?,?) }";
-    private static final String STRSQLCMD_GetCountBy = "{ ? = call Queue_GetCountBy(?,?,?) }";
-    private static final String STRSQLCMD_RetrieveBy = "{ call Queue_RetrieveBy(?,?,?) }";
-    private static final String STRSQLCMD_RetrieveAllWithStatus = "{ call Queue_RetrieveAllWithStatus(?) }";
-    private static final String STRSQLCMD_UpdateStatus = "{ call Queue_UpdateStatus(?,?) }";
-    private static final String STRSQLCMD_UpdateStatusUnitId = "{ call Queue_UpdateStatusUnitId(?,?,?) }";
-    /*
-     * String constants for SQL result sets
+     * Database column names
      */
     private static final String STRCOL_Id = "id";
     private static final String STRCOL_ExperimentId = "experimentid";
@@ -65,33 +50,42 @@ public class ExperimentQueueDB {
     private static final String STRCOL_Cancelled = "cancelled";
     private static final String STRCOL_DateCreated = "datecreated";
     /*
+     * String constants for SQL processing
+     */
+    private static final String STRSQLCMD_Add = "{ ? = call Queue_Add(?,?,?,?,?,?,?) }";
+    private static final String STRSQLCMD_GetCountBy = "{ ? = call Queue_GetCountBy(?,?,?) }";
+    private static final String STRSQLCMD_RetrieveBy = "{ call Queue_RetrieveBy(?,?,?) }";
+    private static final String STRSQLCMD_RetrieveAllWithStatus = "{ call Queue_RetrieveAllWithStatus(?) }";
+    private static final String STRSQLCMD_UpdateStatus = "{ call Queue_UpdateStatus(?,?) }";
+    private static final String STRSQLCMD_UpdateStatusUnitId = "{ call Queue_UpdateStatusUnitId(?,?,?) }";
+    /*
      * String constants for the XML experiment queue template
      */
-    private static final String STRXML_experimentQueue = "experimentQueue";
-    private static final String STRXML_experiment = "experiment";
-    private static final String STRXML_experimentId = "experimentId";
-    private static final String STRXML_sbName = "sbName";
-    private static final String STRXML_userGroup = "userGroup";
-    private static final String STRXML_priorityHint = "priorityHint";
-    private static final String STRXML_specification = "specification";
-    private static final String STRXML_estExecutionTime = "estExecutionTime";
-    private static final String STRXML_cancelled = "cancelled";
+    private static final String STRXML_ExperimentQueue = "experimentQueue";
+    private static final String STRXML_Experiment = "experiment";
+    private static final String STRXML_ExperimentId = "experimentId";
+    private static final String STRXML_SbName = "sbName";
+    private static final String STRXML_UserGroup = "userGroup";
+    private static final String STRXML_PriorityHint = "priorityHint";
+    private static final String STRXML_Specification = "specification";
+    private static final String STRXML_EstExecutionTime = "estExecutionTime";
+    private static final String STRXML_Cancelled = "cancelled";
     /*
      * XML experiment queue template
      */
     private static final String STRXMLDOC_ExperimentQueueTemplate =
             "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-            + "<" + STRXML_experimentQueue + ">"
-            + "<" + STRXML_experiment + ">"
-            + "<" + STRXML_experimentId + " />"
-            + "<" + STRXML_sbName + " />"
-            + "<" + STRXML_userGroup + " />"
-            + "<" + STRXML_priorityHint + " />"
-            + "<" + STRXML_specification + " />"
-            + "<" + STRXML_estExecutionTime + " />"
-            + "<" + STRXML_cancelled + " />"
-            + "</" + STRXML_experiment + ">"
-            + "</" + STRXML_experimentQueue + ">";
+            + "<" + STRXML_ExperimentQueue + ">"
+            + "<" + STRXML_Experiment + ">"
+            + "<" + STRXML_ExperimentId + " />"
+            + "<" + STRXML_SbName + " />"
+            + "<" + STRXML_UserGroup + " />"
+            + "<" + STRXML_PriorityHint + " />"
+            + "<" + STRXML_Specification + " />"
+            + "<" + STRXML_EstExecutionTime + " />"
+            + "<" + STRXML_Cancelled + " />"
+            + "</" + STRXML_Experiment + ">"
+            + "</" + STRXML_ExperimentQueue + ">";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Connection sqlConnection;
@@ -106,17 +100,23 @@ public class ExperimentQueueDB {
         final String methodName = "ExperimentQueueDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that parameters are valid
-         */
-        if (dbConnection == null) {
-            throw new NullPointerException(STRERR_DBConnection);
-        }
+        try {
+            /*
+             * Check that parameters are valid
+             */
+            if (dbConnection == null) {
+                throw new NullPointerException(DBConnection.class.getSimpleName());
+            }
 
-        /*
-         * Initialise local variables
-         */
-        this.sqlConnection = dbConnection.getConnection();
+            /*
+             * Initialise local variables
+             */
+            this.sqlConnection = dbConnection.getConnection();
+
+        } catch (NullPointerException | SQLException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -140,7 +140,7 @@ public class ExperimentQueueDB {
              * Check that parameters are valid
              */
             if (labExperimentInfo == null) {
-                throw new NullPointerException(STRERR_LabExperimentInfo);
+                throw new NullPointerException(LabExperimentInfo.class.getSimpleName());
             }
 
             int queueId = -1;
@@ -380,7 +380,7 @@ public class ExperimentQueueDB {
          * Get the queued experiment information for a non-existent experiment
          */
         try {
-            QueuedExperimentInfo queuedExperimentInfo = GetQueuedExperimentInfo(0, null);
+            QueuedExperimentInfo queuedExperimentInfo = this.GetQueuedExperimentInfo(0, null);
             if (queuedExperimentInfo != null) {
                 waitEstimate.setEffectiveQueueLength(queuedExperimentInfo.getQueueLength());
                 waitEstimate.setEstWait(queuedExperimentInfo.getWaitTime());
@@ -548,21 +548,21 @@ public class ExperimentQueueDB {
                     /*
                      * Found a waiting experiment, get experiment information
                      */
-                    LabExperimentInfo info = new LabExperimentInfo();
-                    info.setQueueId(resultSet.getInt(STRCOL_Id));
-                    info.setExperimentId(resultSet.getInt(STRCOL_ExperimentId));
-                    info.setSbName(resultSet.getString(STRCOL_SbName));
-                    info.setUserGroup(resultSet.getString(STRCOL_UserGroup));
-                    info.setPriorityHint(resultSet.getInt(STRCOL_PriorityHint));
-                    info.setXmlSpecification(resultSet.getString(STRCOL_XmlSpecification));
-                    info.setEstExecutionTime(resultSet.getInt(STRCOL_EstExecutionTime));
-                    info.setStatusCode(StatusCodes.valueOf(resultSet.getString(STRCOL_StatusCode)));
-                    info.setCancelled(resultSet.getBoolean(STRCOL_Cancelled));
+                    LabExperimentInfo labExperimentInfo = new LabExperimentInfo();
+                    labExperimentInfo.setQueueId(resultSet.getInt(STRCOL_Id));
+                    labExperimentInfo.setExperimentId(resultSet.getInt(STRCOL_ExperimentId));
+                    labExperimentInfo.setSbName(resultSet.getString(STRCOL_SbName));
+                    labExperimentInfo.setUserGroup(resultSet.getString(STRCOL_UserGroup));
+                    labExperimentInfo.setPriorityHint(resultSet.getInt(STRCOL_PriorityHint));
+                    labExperimentInfo.setXmlSpecification(resultSet.getString(STRCOL_XmlSpecification));
+                    labExperimentInfo.setEstExecutionTime(resultSet.getInt(STRCOL_EstExecutionTime));
+                    labExperimentInfo.setStatusCode(StatusCodes.valueOf(resultSet.getString(STRCOL_StatusCode)));
+                    labExperimentInfo.setCancelled(resultSet.getBoolean(STRCOL_Cancelled));
 
                     /*
                      * Add the experiment info to the list
                      */
-                    labExperimentInfoList.add(info);
+                    labExperimentInfoList.add(labExperimentInfo);
                 }
             } catch (Exception ex) {
                 throw ex;
@@ -634,7 +634,7 @@ public class ExperimentQueueDB {
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_GetCountBy);
                 sqlStatement.registerOutParameter(1, Types.BIGINT);
-                sqlStatement.setString(2, columnName);
+                sqlStatement.setString(2, (columnName != null ? columnName.toLowerCase() : null));
                 sqlStatement.setInt(3, intval);
                 sqlStatement.setString(4, strval);
 
@@ -687,7 +687,7 @@ public class ExperimentQueueDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, columnName);
+                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -703,22 +703,22 @@ public class ExperimentQueueDB {
                     /*
                      * Found a waiting experiment, get the experiment information
                      */
-                    LabExperimentInfo info = new LabExperimentInfo();
-                    info.setQueueId(resultSet.getInt(STRCOL_Id));
-                    info.setExperimentId(resultSet.getInt(STRCOL_ExperimentId));
-                    info.setSbName(resultSet.getString(STRCOL_SbName));
-                    info.setUserGroup(resultSet.getString(STRCOL_UserGroup));
-                    info.setPriorityHint(resultSet.getInt(STRCOL_PriorityHint));
-                    info.setXmlSpecification(resultSet.getString(STRCOL_XmlSpecification));
-                    info.setEstExecutionTime(resultSet.getInt(STRCOL_EstExecutionTime));
-                    info.setStatusCode(StatusCodes.valueOf(resultSet.getString(STRCOL_StatusCode)));
-                    info.setUnitId(resultSet.getInt(STRCOL_UnitId));
-                    info.setCancelled(resultSet.getBoolean(STRCOL_Cancelled));
+                    LabExperimentInfo labExperimentInfo = new LabExperimentInfo();
+                    labExperimentInfo.setQueueId(resultSet.getInt(STRCOL_Id));
+                    labExperimentInfo.setExperimentId(resultSet.getInt(STRCOL_ExperimentId));
+                    labExperimentInfo.setSbName(resultSet.getString(STRCOL_SbName));
+                    labExperimentInfo.setUserGroup(resultSet.getString(STRCOL_UserGroup));
+                    labExperimentInfo.setPriorityHint(resultSet.getInt(STRCOL_PriorityHint));
+                    labExperimentInfo.setXmlSpecification(resultSet.getString(STRCOL_XmlSpecification));
+                    labExperimentInfo.setEstExecutionTime(resultSet.getInt(STRCOL_EstExecutionTime));
+                    labExperimentInfo.setStatusCode(StatusCodes.valueOf(resultSet.getString(STRCOL_StatusCode)));
+                    labExperimentInfo.setUnitId(resultSet.getInt(STRCOL_UnitId));
+                    labExperimentInfo.setCancelled(resultSet.getBoolean(STRCOL_Cancelled));
 
                     /*
                      * Add the info to the list
                      */
-                    list.add(info);
+                    list.add(labExperimentInfo);
                 }
             } catch (Exception ex) {
                 throw ex;
@@ -758,15 +758,15 @@ public class ExperimentQueueDB {
              * Check that parameters are valid
              */
             if (labExperimentInfoArray == null) {
-                throw new NullPointerException(STRERR_LabExperimentInfoArray);
+                throw new NullPointerException(LabExperimentInfo.class.getSimpleName() + "[]");
             }
 
             /*
              * Load the experiment queue XML template string into a document
              */
             Document document = XmlUtilities.GetDocumentFromString(STRXMLDOC_ExperimentQueueTemplate);
-            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_experimentQueue);
-            Node experimentNode = XmlUtilities.GetChildNode(rootNode, STRXML_experiment);
+            Node rootNode = XmlUtilities.GetRootNode(document, STRXML_ExperimentQueue);
+            Node experimentNode = XmlUtilities.GetChildNode(rootNode, STRXML_Experiment);
 
             /*
              * Make a copy of the experiment node and remove it
@@ -784,13 +784,13 @@ public class ExperimentQueueDB {
                  * Make a copy of the experiment node copy and fill it with values from the experiment information
                  */
                 Node node = experimentNodeCopy.cloneNode(true);
-                XmlUtilities.SetChildValue(node, STRXML_experimentId, labExperimentInfo.getExperimentId());
-                XmlUtilities.SetChildValue(node, STRXML_sbName, labExperimentInfo.getSbName());
-                XmlUtilities.SetChildValue(node, STRXML_userGroup, labExperimentInfo.getUserGroup());
-                XmlUtilities.SetChildValue(node, STRXML_priorityHint, labExperimentInfo.getPriorityHint());
-                XmlUtilities.SetChildValue(node, STRXML_specification, labExperimentInfo.getXmlSpecification());
-                XmlUtilities.SetChildValue(node, STRXML_estExecutionTime, labExperimentInfo.getEstExecutionTime());
-                XmlUtilities.SetChildValue(node, STRXML_cancelled, labExperimentInfo.isCancelled());
+                XmlUtilities.SetChildValue(node, STRXML_ExperimentId, labExperimentInfo.getExperimentId());
+                XmlUtilities.SetChildValue(node, STRXML_SbName, labExperimentInfo.getSbName());
+                XmlUtilities.SetChildValue(node, STRXML_UserGroup, labExperimentInfo.getUserGroup());
+                XmlUtilities.SetChildValue(node, STRXML_PriorityHint, labExperimentInfo.getPriorityHint());
+                XmlUtilities.SetChildValue(node, STRXML_Specification, labExperimentInfo.getXmlSpecification());
+                XmlUtilities.SetChildValue(node, STRXML_EstExecutionTime, labExperimentInfo.getEstExecutionTime());
+                XmlUtilities.SetChildValue(node, STRXML_Cancelled, labExperimentInfo.isCancelled());
 
                 /*
                  * Add the experiment node to the document

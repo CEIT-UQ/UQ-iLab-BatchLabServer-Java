@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="./LabServer.xhtml">
+
+            <ui:define name="stylesheet">
+                <style>
+                    .hinputText, .hinputTextReadOnly, .hinputTextarea { width: 300px; }
+                </style>
+            </ui:define>
+
+            <ui:define name="title">
+                My Account
+            </ui:define>
+
+            <ui:define name="content">
+                #{myAccountBean.pageLoad()}
+                <h4>
+                    User Information:
+                </h4>
+                <h:form>
+                    <table  border="1">
+                        <tr>
+                            <td class="infotable">
+                                <table width="100%">
+                                    <tr>
+                                        <td class="label">
+                                            Username:
+                                        </td>
+                                        <td>
+                                            <h:inputText class="hinputTextReadOnly" value="#{myAccountBean.hitUsername}" readonly="true" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            First Name:
+                                        </td>
+                                        <td>
+                                            <h:inputText class="hinputText" value="#{myAccountBean.hitFirstName}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Last Name:
+                                        </td>
+                                        <td>
+                                            <h:inputText class="hinputText" value="#{myAccountBean.hitLastname}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Contact Email:
+                                        </td>
+                                        <td>
+                                            <h:inputText class="hinputText" value="#{myAccountBean.hitContactEmail}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Password:
+                                        </td>
+                                        <td>
+                                            <h:inputSecret class="hinputText" value="#{myAccountBean.hisPassword}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Confirm Password:
+                                        </td>
+                                        <td>
+                                            <h:inputSecret class="hinputText" value="#{myAccountBean.hisConfirmPassword}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            &nbsp;
+                                        </td>
+                                        <td>
+                                            <p>
+                                                <h:commandButton styleClass="hcommandButton" value="Update" action="#{myAccountBean.actionUpdate()}"/>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </h:form>
+                <p>
+                    <br />
+                    <h:outputLabel styleClass="#{myAccountBean.holMessageClass}" value="#{myAccountBean.holMessage}" rendered="#{!empty(myAccountBean.holMessage)}" />
+                </p>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

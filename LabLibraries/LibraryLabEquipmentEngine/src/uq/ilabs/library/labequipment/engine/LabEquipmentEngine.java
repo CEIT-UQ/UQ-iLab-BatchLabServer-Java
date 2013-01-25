@@ -24,6 +24,7 @@ public class LabEquipmentEngine implements Runnable {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabEquipmentEngine.class.getName();
     private static final Level logLevel = Level.FINER;
+    private static final boolean debugTrace = false;
     /*
      * String constants
      */
@@ -264,9 +265,13 @@ public class LabEquipmentEngine implements Runnable {
 
         LabEquipmentStatus labEquipmentStatus = new LabEquipmentStatus(this.statusReady, this.statusMessage);
 
+        if (this.driver != null) {
+            ExecutionStatus executionStatus = this.driver.GetExecutionStatus();
+            labEquipmentStatus.setStatusMessage(executionStatus.getExecuteStatus().toString());
+        }
+
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_EquipmentStatus_arg2,
-                labEquipmentStatus.isOnline(), labEquipmentStatus.getStatusMessage()));
+                String.format(STRLOG_EquipmentStatus_arg2, labEquipmentStatus.isOnline(), labEquipmentStatus.getStatusMessage()));
 
         return labEquipmentStatus;
     }
@@ -364,7 +369,7 @@ public class LabEquipmentEngine implements Runnable {
             }
 
             /*
-             * Tell the thread that there is an experiment to execute and g
+             * Tell the thread that there is an experiment to execute
              */
             this.signalStartExecution.Notify();
 
@@ -411,9 +416,25 @@ public class LabEquipmentEngine implements Runnable {
                 }
 
                 /*
-                 *  Update the execution time including the time until the LabEquipment is ready
+                 * Check if the experiment has completed
                  */
-                executionStatus.setTimeRemaining(executionStatus.getTimeRemaining() + this.GetTimeUntilReady());
+                if (executionStatus.getExecuteStatus() == ExecutionStatus.Status.Completed) {
+                    /*
+                     * Check if the experiment has completed successfully
+                     */
+                    if (executionStatus.getResultStatus() != ExecutionStatus.Status.Completed) {
+                        /*
+                         * The driver is no longer needed
+                         */
+                        this.driver = null;
+                        this.ResumePowerdown();
+                    }
+                } else {
+                    /*
+                     *  Update the execution time including the time until the LabEquipment is ready
+                     */
+                    executionStatus.setTimeRemaining(executionStatus.getTimeRemaining() + this.GetTimeUntilReady());
+                }
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -571,7 +592,7 @@ public class LabEquipmentEngine implements Runnable {
          * Create and initialise the generic device, this will be overridden
          */
         try {
-            DeviceGeneric device = new DeviceGeneric(this.labEquipmentConfiguration);
+            DeviceGeneric device = new DeviceGeneric(this.labEquipmentConfiguration, DeviceGeneric.class.getSimpleName());
             success = device.Initialise();
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -653,8 +674,10 @@ public class LabEquipmentEngine implements Runnable {
                  */
                 if (this.runState != lastState) {
                     String logMessage = String.format(STRLOG_StateChange_arg, lastState.toString(), this.runState.toString());
-//                    System.out.println(logMessage);
-                    Logfile.Write(logMessage);
+                    if (debugTrace == true) {
+                        System.out.println(logMessage);
+                    }
+//                    Logfile.Write(logMessage);
 
                     lastState = this.runState;
                 }
@@ -692,7 +715,9 @@ public class LabEquipmentEngine implements Runnable {
                             /*
                              * Equipment is still powering up
                              */
-                            System.out.println('u');
+                            if (debugTrace == true) {
+                                System.out.println("[u]");
+                            }
                             continue;
                         }
 
@@ -785,7 +810,9 @@ public class LabEquipmentEngine implements Runnable {
                         /*
                          * Still counting down
                          */
-                        System.out.println('t');
+                        if (debugTrace == true) {
+                            System.out.println("[t]");
+                        }
                         break;
 
                     case PowerdownSuspended:
@@ -861,7 +888,9 @@ public class LabEquipmentEngine implements Runnable {
                             /*
                              * Poweroff delay is still counting down
                              */
-                            System.out.println('o');
+                            if (debugTrace == true) {
+                                System.out.println("[o]");
+                            }
                         } else {
                             /*
                              * Check if powerup has been requested
@@ -990,28 +1019,27 @@ public class LabEquipmentEngine implements Runnable {
             if (seconds != 0) {
                 logMessage += strSeconds;
             }
-            Logfile.Write(logMessage);
+            Logfile.Write(Level.INFO, logMessage);
         } else {
             if (minutes > 5) {
                 if (seconds % (5 * 60) == 0) {
                     /*
                      * Log message every 5 minutes
                      */
-                    Logfile.Write(STR_PowerdownIn + strMinutes);
+                    Logfile.Write(Level.INFO, STR_PowerdownIn + strMinutes);
                 }
             } else if (seconds > 5) {
                 if (seconds % 60 == 0 && seconds != 0) {
                     /*
                      * Log message every minute
                      */
-                    Logfile.Write(STR_PowerdownIn + strMinutes);
+                    Logfile.Write(Level.INFO, STR_PowerdownIn + strMinutes);
                 }
             } else if (seconds > 0) {
                 /*
                  * Log message every second
                  */
-                //
-                Logfile.Write(STR_PowerdownIn + strSeconds);
+                Logfile.Write(Level.INFO, STR_PowerdownIn + strSeconds);
             }
         }
     }

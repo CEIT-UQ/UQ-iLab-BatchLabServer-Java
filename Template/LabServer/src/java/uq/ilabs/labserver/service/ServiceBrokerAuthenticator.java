@@ -7,7 +7,6 @@ package uq.ilabs.labserver.service;
 import edu.mit.ilab.AuthHeader;
 import edu.mit.ilab.ObjectFactory;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -17,10 +16,10 @@ import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
-import javax.xml.ws.ProtocolException;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
+import javax.xml.ws.soap.SOAPFaultException;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.engine.ConfigProperties;
 import uq.ilabs.library.labserver.engine.LabConsts;
@@ -42,6 +41,7 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
      * String constants for logfile messages
      */
     private static final String STRLOG_LoggingLevel_arg = "LoggingLevel: %s";
+    private static final String STRLOG_Success_arg = "Success: %s";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private static ObjectFactory objectFactory;
@@ -87,9 +87,18 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
                 ProcessSoapHeader(messageContext);
 
                 success = true;
-            } catch (SOAPException | IOException ex) {
-                Logfile.WriteError(ex.toString());
-                throw new ProtocolException(ex);
+
+            } catch (Exception ex) {
+                /*
+                 * Create a SOAPFaultException to be thrown back to the caller
+                 */
+                try {
+                    SOAPFault fault = SOAPFactory.newInstance().createFault();
+                    fault.setFaultString(ex.getMessage());
+                    throw new SOAPFaultException(fault);
+                } catch (SOAPException e) {
+                    Logfile.WriteError(e.getMessage());
+                }
             }
         }
 
@@ -196,8 +205,10 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
      *
      * @param servletContext
      */
-    private void GetInitParameters(ServletContext servletContext) {
+    private boolean GetInitParameters(ServletContext servletContext) throws Exception {
         final String methodName = "GetInitParameters";
+
+        boolean success = false;
 
         try {
             /*
@@ -243,10 +254,17 @@ public class ServiceBrokerAuthenticator implements SOAPHandler<SOAPMessageContex
             configProperties.setXmlLabConfigurationPath(servletContext.getRealPath(xmlLabConfigurationPath));
 
             LabServerService.setInitialised(true);
+
+            success = true;
+
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName,
+                String.format(STRLOG_Success_arg, success));
+
+        return success;
     }
 }

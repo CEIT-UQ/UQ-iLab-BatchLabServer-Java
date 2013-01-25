@@ -5,6 +5,7 @@
 package uq.ilabs.servicebroker.database;
 
 import java.sql.*;
+import java.util.logging.Level;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
 
@@ -16,29 +17,22 @@ public class ExperimentsDB {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     public static final String STR_ClassName = ExperimentsDB.class.getName();
+    private static final Level logLevel = Level.FINEST;
     /*
      * String constants for logfile messages
      */
-    private static final String STRLOG_ExperimentId_arg = "experimentId: %s";
+    private static final String STRLOG_ExperimentId_arg = "ExperimentId: %d";
     /*
-     * String constants for exception messages
+     * Database column names
      */
-    private static final String STRERR_DBConnection = "dBConnection";
-    /*
-     * Database column names - must be lowercase
-     */
-    private static final String COL_ExperimentId = "experimentid";
+    private static final String STRCOL_ExperimentId = "ExperimentId";
+    private static final String STRCOL_LabServerGuid = "LabServerGuid";
     /*
      * String constants for SQL processing
      */
     private static final String STRSQLCMD_Add = "{ call Experiments_Add(?) }";
     private static final String STRSQLCMD_GetNextExperimentId = "{ call Experiments_GetNextExperimentId() }";
     private static final String STRSQLCMD_RetrieveBy = "{ call Experiments_RetrieveBy(?,?,?) }";
-    /*
-     * String constants for SQL result sets
-     */
-    private static final String STRSQL_ExperimentId = "ExperimentId";
-    private static final String STRSQL_LabServerGuid = "LabServerGuid";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Connection sqlConnection;
@@ -48,34 +42,40 @@ public class ExperimentsDB {
      *
      * @param dbConnection
      */
-    public ExperimentsDB(DBConnection dbConnection) throws SQLException {
-        final String STR_MethodName = "ExperimentsDB";
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName);
+    public ExperimentsDB(DBConnection dbConnection) throws Exception {
+        final String methodName = "ExperimentsDB";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that parameters are valid
-         */
-        if (dbConnection == null) {
-            throw new NullPointerException(STRERR_DBConnection);
+        try {
+            /*
+             * Check that parameters are valid
+             */
+            if (dbConnection == null) {
+                throw new NullPointerException(DBConnection.class.getSimpleName());
+            }
+
+            /*
+             * Initialise locals
+             */
+            this.sqlConnection = dbConnection.getConnection();
+
+        } catch (NullPointerException | SQLException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
-        /*
-         * Initialise locals
-         */
-        this.sqlConnection = dbConnection.getConnection();
-
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
      *
      * @param labServerGuid
-     * @return
+     * @return int
      * @throws Exception
      */
     public int Add(String labServerGuid) throws Exception {
-        final String STR_MethodName = "Add";
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName);
+        final String methodName = "Add";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         int experimentId = -1;
 
@@ -106,7 +106,7 @@ public class ExperimentsDB {
                 try {
                     sqlStatement.close();
                 } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, STR_MethodName, ex);
+                    Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
         } catch (Exception ex) {
@@ -114,7 +114,7 @@ public class ExperimentsDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         return experimentId;
@@ -122,11 +122,12 @@ public class ExperimentsDB {
 
     /**
      *
-     * @return @throws Exception
+     * @return int
+     * @throws Exception
      */
     public int GetNextExperimentId() throws Exception {
-        final String STR_MethodName = "GetNextExperimentId";
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName);
+        final String methodName = "GetNextExperimentId";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         int experimentId = -1;
 
@@ -156,7 +157,7 @@ public class ExperimentsDB {
                 try {
                     sqlStatement.close();
                 } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, STR_MethodName, ex);
+                    Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
         } catch (Exception ex) {
@@ -164,7 +165,7 @@ public class ExperimentsDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         return experimentId;
@@ -172,12 +173,32 @@ public class ExperimentsDB {
 
     /**
      *
-     * @return @throws Exception
+     * @param experimentId
+     * @return String
+     * @throws Exception
      */
     public String RetrieveByExperimentId(int experimentId) throws Exception {
-        final String STR_MethodName = "RetrieveByExperimentId";
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName,
+        final String methodName = "RetrieveByExperimentId";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
+
+        String labServerGuid = this.RetrieveBy(STRCOL_ExperimentId, experimentId, null);
+
+        return labServerGuid;
+    }
+
+    //================================================================================================================//
+    /**
+     *
+     * @param columnName
+     * @param intval
+     * @param strval
+     * @return String
+     * @throws Exception
+     */
+    public String RetrieveBy(String columnName, int intval, String strval) throws Exception {
+        final String methodName = "RetrieveBy";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         String labServerGuid = null;
 
@@ -189,9 +210,9 @@ public class ExperimentsDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, COL_ExperimentId);
-                sqlStatement.setInt(2, experimentId);
-                sqlStatement.setString(3, null);
+                sqlStatement.setString(1, (columnName != null) ? columnName.toLowerCase() : null);
+                sqlStatement.setInt(2, intval);
+                sqlStatement.setString(3, strval);
 
                 /*
                  * Execute the stored procedure
@@ -202,7 +223,7 @@ public class ExperimentsDB {
                  * Process the results of the query - only want the first result
                  */
                 if (resultSet.next() == true) {
-                    labServerGuid = resultSet.getString(STRSQL_LabServerGuid);
+                    labServerGuid = resultSet.getString(STRCOL_LabServerGuid);
                 }
             } catch (Exception ex) {
                 throw ex;
@@ -210,7 +231,7 @@ public class ExperimentsDB {
                 try {
                     sqlStatement.close();
                 } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, STR_MethodName, ex);
+                    Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
         } catch (Exception ex) {
@@ -218,7 +239,7 @@ public class ExperimentsDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
         return labServerGuid;
     }

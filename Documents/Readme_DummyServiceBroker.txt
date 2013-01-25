@@ -47,7 +47,7 @@ processed to determine the authenticity of the ServiceBroker making the request.
 
 SOAP header processing is carried out in the message handler that is attached to the web service for incoming requests
 or the web client for outgoing requests. Since each request is independent of any other request, the information in the
-SOAP header has to passed between the message handler and the application by means of the message context. The
+SOAP header has to be passed between the message handler and the application by means of the message context. The
 ServiceBroker may make two consecutive requests to two different LabServers meaning the information in the SOAP header
 will be different.
 
@@ -67,7 +67,7 @@ access. This can be picked up by the sender and the appropriate action taken.
 ServiceBroker EJB
 -----------------
 
-The ServiceBroker uses an Enterpise Bean to do the work of the web service. The web service simply processes the SOAP
+The ServiceBroker uses an Enterprise Bean to do the work of the web service. The web service simply processes the SOAP
 header information that is received through the message context before passing the request on to the bean to do the
 work.
 

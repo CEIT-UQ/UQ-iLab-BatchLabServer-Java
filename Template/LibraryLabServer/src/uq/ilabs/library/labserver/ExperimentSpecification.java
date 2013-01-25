@@ -46,20 +46,25 @@ public class ExperimentSpecification extends LabExperimentSpecification {
         final String methodName = "ExperimentSpecification";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Get the experiment parameters from the specification
-         */
         try {
-            this.someParameter = XmlUtilities.GetChildValueAsInt(this.nodeSpecification, Consts.STRXML_SomeParameter);
-        } catch (XmlUtilitiesException ex) {
-            throw new XmlUtilitiesException(String.format(STRERR_ValueNotSpecified_arg, STRERR_SomeParameter));
-        } catch (NumberFormatException ex) {
+            /*
+             * Get the experiment parameters from the specification
+             */
             try {
-                XmlUtilities.GetChildValueAsDouble(this.nodeSpecification, Consts.STRXML_SomeParameter);
-            } catch (NumberFormatException ex1) {
-                throw new NumberFormatException(String.format(STRERR_ValueNotNumber_arg, STRERR_SomeParameter));
+                this.someParameter = XmlUtilities.GetChildValueAsInt(this.nodeSpecification, Consts.STRXML_SomeParameter);
+            } catch (XmlUtilitiesException ex) {
+                throw new RuntimeException(String.format(STRERR_ValueNotSpecified_arg, STRERR_SomeParameter));
+            } catch (NumberFormatException ex) {
+                try {
+                    XmlUtilities.GetChildValueAsDouble(this.nodeSpecification, Consts.STRXML_SomeParameter);
+                    throw new RuntimeException(String.format(STRERR_ValueNotInteger_arg, STRERR_SomeParameter));
+                } catch (NumberFormatException ex1) {
+                    throw new RuntimeException(String.format(STRERR_ValueNotNumber_arg, STRERR_SomeParameter));
+                }
             }
-            throw new NumberFormatException(String.format(STRERR_ValueNotInteger_arg, STRERR_SomeParameter));
+        } catch (RuntimeException | XmlUtilitiesException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);

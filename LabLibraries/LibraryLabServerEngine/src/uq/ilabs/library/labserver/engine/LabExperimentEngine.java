@@ -18,8 +18,7 @@ import uq.ilabs.library.labserver.engine.types.ExperimentResultInfo;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
 import uq.ilabs.library.labserver.engine.types.LabExecutionInfo;
 import uq.ilabs.library.labserver.engine.types.LabExperimentInfo;
-import uq.ilabs.library.labserver.labequipment.LabEquipmentAPI;
-import uq.ilabs.library.labserver.servicebroker.ServiceBrokerAPI;
+import uq.ilabs.library.servicebroker.ServiceBrokerAPI;
 
 /**
  *
@@ -30,6 +29,7 @@ public class LabExperimentEngine implements Runnable {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabExperimentEngine.class.getName();
     private static final Level logLevel = Level.FINER;
+    private static final boolean debugTrace = true;
     /*
      * String constants
      */
@@ -49,6 +49,7 @@ public class LabExperimentEngine implements Runnable {
      */
     private static final String STRLOG_UnitId_arg = "UnitId: %d";
     private static final String STRLOG_LabEquipmentStatus_arg2 = "LabEquipment - Online: %s  Message: %s";
+    private static final String STRLOG_LabEquipmentDisabled = "Disabled";
     private static final String STRLOG_LabStatus_arg2 = "Online: %s  Message: %s";
     private static final String STRLOG_ExperimentIdSbName_arg = "ExperimentId: %d SbName: %s";
     private static final String STRLOG_TimeUntilReady_arg = "TimeUntilReady: %d seconds";
@@ -62,13 +63,13 @@ public class LabExperimentEngine implements Runnable {
     /*
      * String constants for exception messages
      */
-    private static final String STRERR_LabEquipmentStatus_arg2 = "LabEquipmentStatus: %s";
+    private static final String STRERR_LabEquipmentStatus_arg = "LabEquipmentStatus: %s";
+    private static final String STRERR_TimeUntilReady_arg = "TimeUntilReady: %s";
     private static final String STRERR_InvalidUnitId_arg = "Invalid UnitId: %d";
     private static final String STRERR_InvalidSetupId_arg = "Invalid SetupId: %s";
     private static final String STRERR_LabExecutionInfoLock = "labExecutionInfoLock";
     private static final String STRERR_ThreadFailedToStart = "Thread failed to start!";
 //
-    private static final String STRERR_LabEquipmentAPI = "labEquipmentAPI";
     private static final String STRERR_LabExperimentInfo = "labExperimentInfo";
     private static final String STRERR_RetryingExperiment_arg = "Retrying Experiment... Retry: %d";
     private static final String STRERR_FailedToUpdateQueueStatus = "Failed to update queue statistics!";
@@ -85,7 +86,6 @@ public class LabExperimentEngine implements Runnable {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Thread thread;
-    private LabEquipmentAPI labEquipmentAPI;
     private final Object labExecutionInfoLock;
     //
     protected int unitId;
@@ -148,46 +148,36 @@ public class LabExperimentEngine implements Runnable {
             }
 
             /*
-             * Check if a lab equipment service exists for this lab experiment engine - may not exist
+             * Get the LabEquipment service information for this unit
              */
-            if (this.labManagement.getLabEquipmentServiceInfo().length > unitId) {
-                /*
-                 * Get the LabEquipment service information for this unit
-                 */
-                LabEquipmentServiceInfo labEquipmentServiceInfo = this.labManagement.getLabEquipmentServiceInfo()[unitId];
+            LabEquipmentServiceInfo labEquipmentServiceInfo = this.labManagement.getLabEquipmentServiceInfoList().get(unitId);
 
-                /*
-                 * Try to get a proxy to the LabEquipment service
-                 */
-                this.labEquipmentAPI = new LabEquipmentAPI(labEquipmentServiceInfo.getServiceUrl());
-                if (this.labEquipmentAPI == null) {
-                    throw new NullPointerException(STRERR_LabEquipmentAPI);
-                }
-                this.labEquipmentAPI.setIdentifier(this.labManagement.getConfigProperties().getLabServerGuid());
-                this.labEquipmentAPI.setPasskey(labEquipmentServiceInfo.getPasskey());
-
-                /*
-                 * Get the status of the LabEquipment
-                 */
+            /*
+             * Check if LabEquipment is enabled
+             */
+            if (labEquipmentServiceInfo != null && labEquipmentServiceInfo.isEnabled() == true) {
                 try {
-                    LabEquipmentStatus labEquipmentStatus = this.labEquipmentAPI.GetLabEquipmentStatus();
+                    /*
+                     * Get the status of the LabEquipment
+                     */
+                    LabEquipmentStatus labEquipmentStatus = labEquipmentServiceInfo.getLabEquipmentAPI().GetLabEquipmentStatus();
                     Logfile.Write(logLevel, String.format(STRLOG_LabEquipmentStatus_arg2,
                             labEquipmentStatus.isOnline(), labEquipmentStatus.getStatusMessage()));
-                } catch (Exception ex) {
-                    Logfile.Write(logLevel, String.format(STRERR_LabEquipmentStatus_arg2, ex.getMessage()));
-                }
 
-                /*
-                 * Get the time until the equipment is ready
-                 */
-                try {
-                    int timeUntilReady = this.labEquipmentAPI.GetTimeUntilReady();
-                    Logfile.Write(logLevel, String.format(STRLOG_TimeUntilReady_arg, timeUntilReady));
+                    /*
+                     * Get the time until the equipment is ready
+                     */
+                    try {
+                        int timeUntilReady = labEquipmentServiceInfo.getLabEquipmentAPI().GetTimeUntilReady();
+                        Logfile.Write(logLevel, String.format(STRLOG_TimeUntilReady_arg, timeUntilReady));
+                    } catch (Exception ex) {
+                        Logfile.Write(logLevel, String.format(STRERR_TimeUntilReady_arg, ex.getMessage()));
+                    }
                 } catch (Exception ex) {
-                    Logfile.Write(logLevel, String.format(STRERR_LabEquipmentStatus_arg2, ex.getMessage()));
+                    Logfile.Write(logLevel, String.format(STRERR_LabEquipmentStatus_arg, ex.getMessage()));
                 }
             }
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException | NullPointerException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
         }
@@ -290,32 +280,42 @@ public class LabExperimentEngine implements Runnable {
      */
     public LabStatus GetLabStatus() {
         final String methodName = "GetLabStatus";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_UnitId_arg, this.unitId));
 
         LabStatus labStatus;
 
         try {
             /*
-             * Check if a LabEquipment service exists for this engine - may not
+             * Get the LabEquipment service information for this unit
              */
-            if (this.labEquipmentAPI != null) {
-                /*
-                 * Get the status of the LabEquipment
-                 */
-                LabEquipmentStatus labEquipmentStatus = this.labEquipmentAPI.GetLabEquipmentStatus();
-                labStatus = new LabStatus(labEquipmentStatus.isOnline(), labEquipmentStatus.getStatusMessage());
+            LabEquipmentServiceInfo labEquipmentServiceInfo = this.labManagement.getLabEquipmentServiceInfoList().get(this.unitId);
+
+            /*
+             * Check if LabEquipment is enabled
+             */
+            if (labEquipmentServiceInfo != null && labEquipmentServiceInfo.isEnabled() == false) {
+                labStatus = new LabStatus(false, STRLOG_LabEquipmentDisabled);
             } else {
-                /*
-                 * No equipment service, just get the status of this engine
-                 */
-                labStatus = new LabStatus();
-                synchronized (this.labExecutionInfoLock) {
-                    labStatus.setOnline(true);
-                    if (this.labExecutionInfo != null) {
-                        StatusCodes statusCode = this.labExecutionInfo.getLabExperimentInfo().getStatusCode();
-                        labStatus.setLabStatusMessage(statusCode.toString());
-                    } else {
-                        labStatus.setLabStatusMessage(StatusCodes.Ready.toString());
+                if (labEquipmentServiceInfo != null && labEquipmentServiceInfo.getLabEquipmentAPI() != null) {
+                    /*
+                     * Get the status of the LabEquipment
+                     */
+                    LabEquipmentStatus labEquipmentStatus = labEquipmentServiceInfo.getLabEquipmentAPI().GetLabEquipmentStatus();
+                    labStatus = new LabStatus(labEquipmentStatus.isOnline(), labEquipmentStatus.getStatusMessage());
+                } else {
+                    /*
+                     * No LabEquipment service, just get the status of this engine
+                     */
+                    labStatus = new LabStatus();
+                    synchronized (this.labExecutionInfoLock) {
+                        labStatus.setOnline(true);
+                        if (this.labExecutionInfo != null) {
+                            StatusCodes statusCode = this.labExecutionInfo.getLabExperimentInfo().getStatusCode();
+                            labStatus.setLabStatusMessage(statusCode.toString());
+                        } else {
+                            labStatus.setLabStatusMessage(StatusCodes.Ready.toString());
+                        }
                     }
                 }
             }
@@ -489,7 +489,7 @@ public class LabExperimentEngine implements Runnable {
             /*
              * Cancel the experiment
              */
-            this.Cancel(unitId, methodName);
+            this.Cancel(this.unitId, methodName);
 
             try {
                 this.thread.join();
@@ -533,7 +533,9 @@ public class LabExperimentEngine implements Runnable {
                  */
                 if (thisState != lastState) {
                     String logMessage = String.format(STRLOG_StateChange_arg2, lastState.toString(), thisState.toString());
-                    System.out.println(logMessage);
+                    if (debugTrace == true) {
+                        System.out.println(logMessage);
+                    }
 //                    Logfile.Write(logLevel, logMessage);
 
                     lastState = thisState;
@@ -673,7 +675,7 @@ public class LabExperimentEngine implements Runnable {
                 break;
             case LabConsts.STRXML_SetupId_EquipmentGeneric:
                 driverGeneric = new DriverEquipmentGeneric(this.labManagement.getLabConfiguration(),
-                        this.labManagement.getLabEquipmentServiceInfo()[this.unitId]);
+                        this.labManagement.getLabEquipmentServiceInfoList().get(this.unitId));
                 break;
             default:
                 throw new RuntimeException(String.format(STRERR_InvalidSetupId_arg, setupId));
@@ -895,7 +897,7 @@ public class LabExperimentEngine implements Runnable {
         boolean success = false;
 
         try {
-            String from = this.labManagement.getConfigProperties().getContactEmail();
+            String from = this.labManagement.getLabServerInfo().getContactEmail();
             if (from == null) {
                 throw new NullPointerException(STRERR_ContactEmailNotSpecified);
             }
@@ -914,13 +916,13 @@ public class LabExperimentEngine implements Runnable {
                 /*
                  * Send email to all those listed for when the experiment fails
                  */
-                toArray = this.labManagement.getConfigProperties().getFailedEmailList();
+                toArray = this.labManagement.getLabServerInfo().getFailedEmailList();
                 errorMessage = String.format(STRLOG_MailMessageError_arg, resultReport.getErrorMessage());
             } else {
                 /*
                  * Send email to all those listed for when the experiment completes successfully or is cancelled
                  */
-                toArray = this.labManagement.getConfigProperties().getCompletedEmailList();
+                toArray = this.labManagement.getLabServerInfo().getCompletedEmailList();
                 errorMessage = "";
             }
 
@@ -935,7 +937,7 @@ public class LabExperimentEngine implements Runnable {
                 smtpClient.getTo().addAll(Arrays.asList(toArray));
                 smtpClient.setFrom(from);
                 String subject = String.format(STRLOG_MailMessageSubject_arg2,
-                        this.labManagement.getLabConfiguration().getTitle(), resultReport.getStatusCode().toString());
+                        this.labManagement.getLabServerInfo().getName(), resultReport.getStatusCode().toString());
                 smtpClient.setSubject(subject);
                 smtpClient.setBody(String.format(STRLOG_MailMessageBody_arg7,
                         labExperimentResult.getSbName(), labExperimentResult.getExperimentId(),

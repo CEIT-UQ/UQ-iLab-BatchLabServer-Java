@@ -4,6 +4,7 @@
  */
 package uq.ilabs.library.labserver;
 
+import java.util.logging.Level;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import uq.ilabs.library.lab.utilities.Logfile;
@@ -18,6 +19,7 @@ public class ExperimentResult extends LabExperimentResult {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentResult.class.getName();
+    private static final Level logLevel = Level.FINE;
     //</editor-fold>
 
     /**
@@ -29,14 +31,20 @@ public class ExperimentResult extends LabExperimentResult {
         super(configuration);
 
         final String methodName = "ExperimentResult";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that all required XML nodes exist
-         */
-        XmlUtilities.GetChildValue(this.nodeExperimentResult, Consts.STRXML_SomeResult);
+        try {
+            /*
+             * Check that all required XML nodes exist
+             */
+            XmlUtilities.GetChildNode(this.nodeExperimentResult, Consts.STRXML_SomeResult);
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**

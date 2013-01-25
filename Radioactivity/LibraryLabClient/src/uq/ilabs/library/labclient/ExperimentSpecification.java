@@ -78,14 +78,20 @@ public class ExperimentSpecification extends LabExperimentSpecification {
         final String methodName = "ExperimentSpecification";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that all required XML nodes exist
-         */
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_SourceName);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_AbsorberName);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_Distance);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_Duration);
-        XmlUtilities.GetChildValue(this.nodeSpecification, Consts.STRXML_Repeat);
+        try {
+            /*
+             * Check that all required XML nodes exist
+             */
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_SourceName);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_AbsorberName);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_Distance);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_Duration);
+            XmlUtilities.GetChildNode(this.nodeSpecification, Consts.STRXML_Repeat);
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }

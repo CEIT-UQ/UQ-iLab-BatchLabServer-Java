@@ -78,6 +78,13 @@ public class LabExperimentValidation {
      */
     @Override
     public String toString() {
-        return XmlUtilities.ToXmlString(this.nodeValidation);
+        String xmlString = null;
+
+        try {
+            xmlString = XmlUtilities.ToXmlString(this.nodeValidation);
+        } catch (XmlUtilitiesException ex) {
+        }
+
+        return xmlString;
     }
 }

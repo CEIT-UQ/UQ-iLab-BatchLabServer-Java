@@ -4,13 +4,17 @@
  */
 package uq.ilabs.labclient;
 
+import java.io.Serializable;
 import java.util.logging.Level;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import uq.ilabs.library.lab.types.ClientSubmissionReport;
 import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.utilities.Logfile;
+import uq.ilabs.library.lab.utilities.XmlUtilities;
 import uq.ilabs.library.labclient.Consts;
 import uq.ilabs.library.labclient.ExperimentSpecification;
 import uq.ilabs.library.labclient.engine.LabClientSession;
@@ -22,7 +26,7 @@ import uq.ilabs.library.labclient.engine.types.SetupInfo;
  */
 @ManagedBean
 @SessionScoped
-public class SetupBean {
+public class SetupBean implements Serializable {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = SetupBean.class.getName();
@@ -30,6 +34,7 @@ public class SetupBean {
     /*
      * String constants
      */
+    private static final String STR_HintRange_arg2 = "Range: %d to %d";
     private static final String STR_SpecificationValid_arg = "Specification is valid. Execution time will be %s.";
     private static final String STR_SubmissionSuccessful_arg2 = "Submission was successful. Experiment # is %d and execution time is %s.";
     private static final String STR_MinutesAnd_arg2 = "%d minute%s and ";
@@ -59,6 +64,7 @@ public class SetupBean {
     private String holMessage;
     private String holMessageClass;
     private String hitSomeParameter;
+    private String attrRange;
 
     public String[] getSetupNames() {
         return setupNames;
@@ -94,6 +100,10 @@ public class SetupBean {
 
     public void setHitSomeParameter(String hitSomeParameter) {
         this.hitSomeParameter = hitSomeParameter;
+    }
+
+    public String getAttrRange() {
+        return attrRange;
     }
     //</editor-fold>
 
@@ -274,6 +284,19 @@ public class SetupBean {
         SetupInfo setupInfo = this.labClientSession.getSetupInfoMap().get(this.hsomSetupName);
         this.setupId = setupInfo.getId();
         this.hotSetupDescription = setupInfo.getDescription();
+
+        try {
+            /*
+             * Validation boundary values
+             */
+            Document document = XmlUtilities.GetDocumentFromString(this.labClientSession.getXmlValidation());
+            Node nodeRoot = XmlUtilities.GetRootNode(document, Consts.STRXML_Validation);
+            Node nodeValidation = XmlUtilities.GetChildNode(nodeRoot, Consts.STRXML_SomeParameter);
+            int minimum = XmlUtilities.GetChildValueAsInt(nodeValidation, Consts.STRXML_ValidationMinimum);
+            int maximum = XmlUtilities.GetChildValueAsInt(nodeValidation, Consts.STRXML_ValidationMaximum);
+            this.attrRange = String.format(STR_HintRange_arg2, minimum, maximum);
+        } catch (Exception ex) {
+        }
 
         /*
          * Hide the information message

@@ -19,7 +19,7 @@ public class ConfigProperties {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ConfigProperties.class.getName();
-    private static final Level logLevel = Level.INFO;
+    private static final Level logLevel = Level.FINE;
     /*
      * String constants for logfile messages
      */
@@ -123,15 +123,15 @@ public class ConfigProperties {
                     throw new IllegalArgumentException(STRERR_LabServer);
                 }
             }
-            labServerName = splitLabServer[LabConsts.INDEX_LABSERVER_NAME];
-            labServerGuid = splitLabServer[LabConsts.INDEX_LABSERVER_GUID];
-            labServerPasskey = splitLabServer[LabConsts.INDEX_LABSERVER_PASSKEY];
+            this.labServerName = splitLabServer[LabConsts.INDEX_LABSERVER_NAME];
+            this.labServerGuid = splitLabServer[LabConsts.INDEX_LABSERVER_GUID];
+            this.labServerPasskey = splitLabServer[LabConsts.INDEX_LABSERVER_PASSKEY];
 
             /*
-             * Get ServiceBroker authentication
+             * Get LabServer authentication
              */
-            authenticating = Boolean.parseBoolean(configProperties.getProperty(LabConsts.STRCFG_Authenticating, Boolean.toString(true)));
-            logAuthentication = Boolean.parseBoolean(configProperties.getProperty(LabConsts.STRCFG_LogAuthentication, Boolean.toString(false)));
+            this.authenticating = Boolean.parseBoolean(configProperties.getProperty(LabConsts.STRCFG_Authenticating, Boolean.toString(true)));
+            this.logAuthentication = Boolean.parseBoolean(configProperties.getProperty(LabConsts.STRCFG_LogAuthentication, Boolean.toString(false)));
         } catch (NullPointerException | IllegalArgumentException | IOException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;

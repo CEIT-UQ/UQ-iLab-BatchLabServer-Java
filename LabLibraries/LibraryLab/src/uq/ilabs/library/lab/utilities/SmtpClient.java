@@ -5,6 +5,7 @@
 package uq.ilabs.library.lab.utilities;
 
 import java.util.*;
+import java.util.logging.Level;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -20,6 +21,7 @@ public class SmtpClient {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = SmtpClient.class.getName();
+    private static final Level logLevel = Level.FINER;
     /*
      * String constants
      */
@@ -77,7 +79,7 @@ public class SmtpClient {
      */
     public SmtpClient(String host) {
         final String methodName = "SmtpClient";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         /*
          * Initialise email address lists
@@ -93,7 +95,7 @@ public class SmtpClient {
         properties.put(STR_MailHost, host);
         this.session = Session.getInstance(properties);
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
@@ -102,7 +104,7 @@ public class SmtpClient {
      */
     public boolean Send() {
         final String methodName = "Send";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         /*
          * Assume this will fail
@@ -174,7 +176,7 @@ public class SmtpClient {
             }
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
         return success;
     }

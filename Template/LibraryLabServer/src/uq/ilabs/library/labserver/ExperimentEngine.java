@@ -4,6 +4,7 @@
  */
 package uq.ilabs.library.labserver;
 
+import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.drivers.DriverEquipment;
 import uq.ilabs.library.labserver.drivers.DriverSimulation;
@@ -19,6 +20,7 @@ public class ExperimentEngine extends LabExperimentEngine {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ExperimentEngine.class.getName();
+    private static final Level logLevel = Level.FINE;
     //</editor-fold>
 
     /**
@@ -31,13 +33,18 @@ public class ExperimentEngine extends LabExperimentEngine {
         super(unitId, labManagement);
 
         final String methodName = "ExperimentEngine";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Nothing to do here
-         */
+        try {
+            /*
+             * Nothing to do here
+             */
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
@@ -60,7 +67,7 @@ public class ExperimentEngine extends LabExperimentEngine {
                 break;
             case Consts.STRXML_SetupId_Equipment:
                 driverGeneric = new DriverEquipment((Configuration) this.labManagement.getLabConfiguration(),
-                        this.labManagement.getLabEquipmentServiceInfo()[this.unitId]);
+                        this.labManagement.getLabEquipmentServiceInfoList().get(this.unitId));
                 break;
             default:
                 driverGeneric = super.GetDriver(setupId);

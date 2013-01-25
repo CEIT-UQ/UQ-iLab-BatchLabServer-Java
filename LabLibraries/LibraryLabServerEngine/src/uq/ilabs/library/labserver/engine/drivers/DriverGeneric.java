@@ -11,6 +11,7 @@ import uq.ilabs.library.labserver.engine.LabConfiguration;
 import uq.ilabs.library.labserver.engine.LabConsts;
 import uq.ilabs.library.labserver.engine.LabExperimentResult;
 import uq.ilabs.library.labserver.engine.LabExperimentSpecification;
+import uq.ilabs.library.labserver.engine.LabExperimentValidation;
 
 /**
  *
@@ -21,6 +22,7 @@ public class DriverGeneric {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = DriverGeneric.class.getName();
     private static final Level logLevel = Level.FINEST;
+    private static final boolean debugTrace = true;
     /*
      * String constants for logfile messages
      */
@@ -45,6 +47,8 @@ public class DriverGeneric {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     protected LabConfiguration labConfiguration;
+    protected LabExperimentSpecification labExperimentSpecification;
+    protected LabExperimentValidation labExperimentValidation;
     protected LabExperimentResult labExperimentResult;
     protected Calendar timeStarted;
     protected Calendar timeCompleted;
@@ -112,17 +116,10 @@ public class DriverGeneric {
 
         try {
             /*
-             * Check that parameters are valid
-             */
-            if (xmlSpecification == null) {
-                throw new NullPointerException(STRERR_XmlSpecification);
-            }
-
-            /*
              * Create an instance of LabExperimentSpecification and get the setup Id
              */
-            LabExperimentSpecification labExperimentSpecification = new LabExperimentSpecification(xmlSpecification);
-            if (labExperimentSpecification == null) {
+            this.labExperimentSpecification = new LabExperimentSpecification(xmlSpecification);
+            if (this.labExperimentSpecification == null) {
                 throw new NullPointerException(LabExperimentSpecification.class.getSimpleName());
             }
 
@@ -174,14 +171,6 @@ public class DriverGeneric {
                 throw new RuntimeException(validationReport.getErrorMessage());
             }
 
-            /*
-             * Create an instance of LabExperimentSpecification to get specification information
-             */
-            LabExperimentSpecification labExperimentSpecification = new LabExperimentSpecification(xmlSpecification);
-            if (labExperimentSpecification == null) {
-                throw new NullPointerException(LabExperimentSpecification.class.getSimpleName());
-            }
-
             try {
                 /*
                  * Set the start and completion times
@@ -199,7 +188,9 @@ public class DriverGeneric {
                  * Delay for the full execution time, unless cancelled
                  */
                 for (int i = 0; i < INT_ExecutionTimeSecs; i++) {
-                    System.out.println('*');
+                    if (debugTrace == true) {
+                        System.out.println("[*]");
+                    }
                     Delay.MilliSeconds(1000);
 
                     /*

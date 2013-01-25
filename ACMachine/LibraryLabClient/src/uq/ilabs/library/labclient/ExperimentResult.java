@@ -7,9 +7,9 @@ package uq.ilabs.library.labclient;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.logging.Level;
+import org.w3c.dom.Node;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
-import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
 import uq.ilabs.library.labclient.engine.LabExperimentResult;
 
 /**
@@ -40,7 +40,7 @@ public class ExperimentResult extends LabExperimentResult {
      *
      * @param xmlExperimentResult
      */
-    public ExperimentResult(String xmlExperimentResult) {
+    public ExperimentResult(String xmlExperimentResult) throws Exception {
         super(xmlExperimentResult);
 
         final String methodName = "ExperimentResult";
@@ -59,7 +59,10 @@ public class ExperimentResult extends LabExperimentResult {
             this.current = XmlUtilities.GetChildValueAsDouble(this.nodeExperimentResult, Consts.STRXML_Current);
             this.powerFactor = XmlUtilities.GetChildValueAsDouble(this.nodeExperimentResult, Consts.STRXML_PowerFactor);
             this.speed = XmlUtilities.GetChildValueAsInt(this.nodeExperimentResult, Consts.STRXML_Speed);
-        } catch (XmlUtilitiesException ex) {
+
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);

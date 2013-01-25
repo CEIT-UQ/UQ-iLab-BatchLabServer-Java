@@ -14,15 +14,20 @@ import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPFault;
 import javax.xml.ws.ProtocolException;
+import javax.xml.ws.soap.SOAPFaultException;
 import uq.ilabs.library.lab.types.*;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.Configuration;
 import uq.ilabs.library.labserver.ExperimentManager;
 import uq.ilabs.library.labserver.database.ServiceBrokersDB;
+import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
 import uq.ilabs.library.labserver.engine.ConfigProperties;
+import uq.ilabs.library.labserver.engine.LabConsts;
 import uq.ilabs.library.labserver.engine.LabManagement;
-import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
 
 /**
  *
@@ -49,11 +54,11 @@ public class LabServerServiceBean {
     private static final String STRERR_ExperimentManagerCreateFailed = "ExperimentManager.Create() Failed!";
     private static final String STRERR_ExperimentManagerStartFailed = "ExperimentManager.Start() Failed!";
     private static final String STRERR_AccessDenied_arg = "LabServer Access Denied: %s";
-    private static final String STRERR_AuthHeaderNull = "AuthHeader is null";
-    private static final String STRERR_ServiceBrokerGuidNull = "ServiceBroker Guid is null";
-    private static final String STRERR_ServiceBrokerGuidUnkown_arg = "ServiceBroker Guid '%s' is unknown";
-    private static final String STRERR_PasskeyNull = "Passkey is null";
-    private static final String STRERR_PasskeyInvalid_arg = "Passkey '%s' is invalid";
+    private static final String STRERR_AuthHeader = "AuthHeader";
+    private static final String STRERR_ServiceBrokerGuid = "ServiceBroker Guid";
+    private static final String STRERR_Passkey = "Passkey";
+    private static final String STRERR_NotSpecified_arg = "%s: Not specified!";
+    private static final String STRERR_Invalid_arg = "%s: Invalid!";
     private static final String STRERR_AccessNotPermitted = "Access is not permitted";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
@@ -86,7 +91,14 @@ public class LabServerServiceBean {
                  * Create an instance of the LabManagement
                  */
                 Configuration configuration = new Configuration(null, this.configProperties.getXmlLabConfigurationPath());
+                if (configuration == null) {
+                    throw new NullPointerException(Configuration.class.getSimpleName());
+                }
                 LabManagement labManagement = new LabManagement(this.configProperties, configuration);
+                if (labManagement == null) {
+                    throw new NullPointerException(LabManagement.class.getSimpleName());
+                }
+                LabServerService.setLabManagement(labManagement);
 
                 this.serviceBrokersDB = labManagement.getServiceBrokersDB();
 
@@ -122,8 +134,8 @@ public class LabServerServiceBean {
      * @return boolean
      */
     public boolean cancel(AuthHeader authHeader, int experimentId) {
-        final String STR_MethodName = "cancel";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
+        final String methodName = "cancel";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         boolean success = false;
@@ -140,7 +152,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, STR_MethodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Success_arg, success));
 
         return success;
@@ -154,8 +166,8 @@ public class LabServerServiceBean {
      * @return edu.mit.ilab.WaitEstimate
      */
     public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(AuthHeader authHeader, String userGroup, int priorityHint) {
-        final String STR_MethodName = "getEffectiveQueueLength";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
+        final String methodName = "getEffectiveQueueLength";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_UserGroupPriorityHint_arg2, userGroup, priorityHint));
 
         edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
@@ -173,7 +185,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return proxyWaitEstimate;
     }
@@ -185,8 +197,8 @@ public class LabServerServiceBean {
      * @return edu.mit.ilab.LabExperimentStatus
      */
     public edu.mit.ilab.LabExperimentStatus getExperimentStatus(AuthHeader authHeader, int experimentId) {
-        final String STR_MethodName = "getExperimentStatus";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
+        final String methodName = "getExperimentStatus";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
@@ -204,7 +216,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return proxyLabExperimentStatus;
     }
@@ -216,8 +228,8 @@ public class LabServerServiceBean {
      * @return String
      */
     public String getLabConfiguration(AuthHeader authHeader, String userGroup) {
-        final String STR_MethodName = "getLabConfiguration";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
+        final String methodName = "getLabConfiguration";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         String labConfiguration = null;
 
@@ -233,7 +245,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return labConfiguration;
     }
@@ -244,8 +256,8 @@ public class LabServerServiceBean {
      * @return String
      */
     public String getLabInfo(AuthHeader authHeader) {
-        final String STR_MethodName = "getLabInfo";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
+        final String methodName = "getLabInfo";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         String labInfo = null;
 
@@ -261,7 +273,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return labInfo;
     }
@@ -272,8 +284,8 @@ public class LabServerServiceBean {
      * @return edu.mit.ilab.LabStatus
      */
     public edu.mit.ilab.LabStatus getLabStatus(AuthHeader authHeader) {
-        final String STR_MethodName = "getLabStatus";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
+        final String methodName = "getLabStatus";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         edu.mit.ilab.LabStatus proxyLabStatus = null;
 
@@ -290,7 +302,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return proxyLabStatus;
     }
@@ -302,8 +314,8 @@ public class LabServerServiceBean {
      * @return edu.mit.ilab.ResultReport
      */
     public edu.mit.ilab.ResultReport retrieveResult(AuthHeader authHeader, int experimentId) {
-        final String STR_MethodName = "retrieveResult";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName,
+        final String methodName = "retrieveResult";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
         edu.mit.ilab.ResultReport proxyResultReport = null;
@@ -325,7 +337,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return proxyResultReport;
     }
@@ -340,8 +352,8 @@ public class LabServerServiceBean {
      * @return edu.mit.ilab.SubmissionReport
      */
     public edu.mit.ilab.SubmissionReport submit(AuthHeader authHeader, int experimentId, String experimentSpecification, String userGroup, int priorityHint) {
-        final String STR_MethodName = "submit";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
+        final String methodName = "submit";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         edu.mit.ilab.SubmissionReport proxySubmissionReport = null;
 
@@ -358,7 +370,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return proxySubmissionReport;
     }
@@ -370,8 +382,8 @@ public class LabServerServiceBean {
      * @return edu.mit.ilab.ValidationReport
      */
     public edu.mit.ilab.ValidationReport validate(AuthHeader authHeader, String experimentSpecification, String userGroup) {
-        final String STR_MethodName = "validate";
-        Logfile.WriteCalled(logLevel, STR_ClassName, STR_MethodName);
+        final String methodName = "validate";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         edu.mit.ilab.ValidationReport proxyValidationReport = null;
 
@@ -388,7 +400,7 @@ public class LabServerServiceBean {
             Logfile.WriteError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(STR_ClassName, methodName);
 
         return proxyValidationReport;
     }
@@ -404,80 +416,95 @@ public class LabServerServiceBean {
         String sbName = null;
 
         /*
-         * Check if authenticating
+         * Check if logging authentication information
          */
-        if (configProperties.isAuthenticating()) {
-            if (configProperties.isLogAuthentication()) {
-                if (authHeader == null) {
-                    Logfile.Write(STRLOG_AuthHeaderNull);
-                } else {
-                    Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, authHeader.getIdentifier(), authHeader.getPassKey()));
+        if (this.configProperties.isLogAuthentication() == true) {
+            if (authHeader == null) {
+                Logfile.Write(STRLOG_AuthHeaderNull);
+            } else {
+                Logfile.Write(String.format(STRLOG_IdentifierPasskey_arg2, authHeader.getIdentifier(), authHeader.getPassKey()));
+            }
+        }
+
+        try {
+            /*
+             * Check when authenticating that AuthHeader and ServiceBroker Guid are specified
+             */
+            if (authHeader == null) {
+                if (this.configProperties.isAuthenticating() == true) {
+                    throw new ProtocolException(String.format(STRERR_NotSpecified_arg, STRERR_AuthHeader));
                 }
+
+                /*
+                 * Probably using WebService tester, set name to localhost
+                 */
+                return LabConsts.STR_SbNameLocalHost;
             }
 
+            if (authHeader.getIdentifier() == null) {
+                throw new ProtocolException(String.format(STRERR_NotSpecified_arg, STRERR_ServiceBrokerGuid));
+            }
+
+            /*
+             * Check if the ServiceBrokerInfo cache exists
+             */
+            HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo = LabServerService.getMapServiceBrokerInfo();
+            if (mapServiceBrokerInfo == null) {
+                /*
+                 * Create the cache and populate
+                 */
+                mapServiceBrokerInfo = new HashMap<>();
+                ArrayList serviceBrokerInfoList = this.serviceBrokersDB.RetrieveAll();
+                Iterator iterator = serviceBrokerInfoList.iterator();
+                while (iterator.hasNext()) {
+                    ServiceBrokerInfo serviceBrokerInfo = (ServiceBrokerInfo) iterator.next();
+                    mapServiceBrokerInfo.put(serviceBrokerInfo.getGuid(), serviceBrokerInfo);
+                }
+                LabServerService.setMapServiceBrokerInfo(mapServiceBrokerInfo);
+            }
+
+            /*
+             * Check if the ServiceBrokerInfo for this ServiceBroker Guid exists
+             */
+            ServiceBrokerInfo serviceBrokerInfo = mapServiceBrokerInfo.get(authHeader.getIdentifier());
+            if (serviceBrokerInfo == null) {
+                throw new ProtocolException(String.format(STRERR_Invalid_arg, STRERR_ServiceBrokerGuid));
+            }
+
+            /*
+             * Verify the passkey
+             */
+            if (authHeader.getPassKey() == null) {
+                throw new ProtocolException(String.format(STRERR_NotSpecified_arg, STRERR_Passkey));
+            }
+            if (authHeader.getPassKey().equalsIgnoreCase(serviceBrokerInfo.getOutPasskey()) == false) {
+                throw new ProtocolException(String.format(STRERR_Invalid_arg, STRERR_Passkey));
+            }
+
+            /*
+             * Check that the ServiceBroker is permitted access
+             */
+            if (serviceBrokerInfo.isPermitted() == false) {
+                throw new ProtocolException(STRERR_AccessNotPermitted);
+            }
+
+            /*
+             * Successfully authenticated
+             */
+            sbName = serviceBrokerInfo.getName();
+
+        } catch (ProtocolException ex) {
+            String message = String.format(STRERR_AccessDenied_arg, ex.getMessage());
+            Logfile.WriteError(message);
+
+            /*
+             * Create a SOAPFaultException to be thrown all the way back to the caller
+             */
             try {
-                /*
-                 * Check that AuthHeader and ServiceBroker Guid are specified
-                 */
-                if (authHeader == null) {
-                    throw new ProtocolException(STRERR_AuthHeaderNull);
-                }
-                if (authHeader.getIdentifier() == null) {
-                    throw new ProtocolException(STRERR_ServiceBrokerGuidNull);
-                }
-
-                /*
-                 * Check if the ServiceBrokerInfo cache exists
-                 */
-                HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo = LabServerService.getMapServiceBrokerInfo();
-                if (mapServiceBrokerInfo == null) {
-                    /*
-                     * Create the cache and populate
-                     */
-                    mapServiceBrokerInfo = new HashMap<>();
-                    ArrayList serviceBrokerInfoList = this.serviceBrokersDB.RetrieveAll();
-                    Iterator iterator = serviceBrokerInfoList.iterator();
-                    while (iterator.hasNext()) {
-                        ServiceBrokerInfo serviceBrokerInfo = (ServiceBrokerInfo) iterator.next();
-                        mapServiceBrokerInfo.put(serviceBrokerInfo.getGuid(), serviceBrokerInfo);
-                    }
-                    LabServerService.setMapServiceBrokerInfo(mapServiceBrokerInfo);
-                }
-
-                /*
-                 * Check if the ServiceBrokerInfo for this ServiceBroker Guid exists
-                 */
-                ServiceBrokerInfo serviceBrokerInfo = mapServiceBrokerInfo.get(authHeader.getIdentifier());
-                if (serviceBrokerInfo == null) {
-                    throw new ProtocolException(String.format(STRERR_ServiceBrokerGuidUnkown_arg, authHeader.getIdentifier()));
-                }
-
-                /*
-                 * Verify the passkey
-                 */
-                if (authHeader.getPassKey() == null) {
-                    throw new ProtocolException(STRERR_PasskeyNull);
-                }
-                if (authHeader.getPassKey().equalsIgnoreCase(serviceBrokerInfo.getOutPasskey()) == false) {
-                    throw new ProtocolException(String.format(STRERR_PasskeyInvalid_arg, authHeader.getPassKey()));
-                }
-
-                /*
-                 * Check that the ServiceBroker is permitted access
-                 */
-                if (serviceBrokerInfo.isPermitted() == false) {
-                    throw new ProtocolException(STRERR_AccessNotPermitted);
-                }
-
-                /*
-                 * Successfully authenticated
-                 */
-                sbName = serviceBrokerInfo.getName();
-
-            } catch (ProtocolException ex) {
-                String message = String.format(STRERR_AccessDenied_arg, ex.getMessage());
-                Logfile.WriteError(message);
-                throw new ProtocolException(message);
+                SOAPFault fault = SOAPFactory.newInstance().createFault();
+                fault.setFaultString(message);
+                throw new SOAPFaultException(fault);
+            } catch (SOAPException e) {
             }
         }
 

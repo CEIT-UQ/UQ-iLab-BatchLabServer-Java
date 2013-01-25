@@ -24,10 +24,6 @@ public class ServiceBrokerService {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ServiceBrokerService.class.getName();
-    /*
-     * String constants
-     */
-    private static final String STR_AccessDenied = "ServiceBrokerService - Access Denied!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     @Resource

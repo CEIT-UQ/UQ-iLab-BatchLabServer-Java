@@ -143,14 +143,14 @@ public class SetupBean implements Serializable {
             Document document = XmlUtilities.GetDocumentFromString(this.labClientSession.getXmlConfiguration());
             Node nodeConfiguration = XmlUtilities.GetRootNode(document, Consts.STRXML_Configuration);
             Node node = XmlUtilities.GetChildNode(nodeConfiguration, Consts.STRXML_TimeServers);
-            this.serverUrlList = XmlUtilities.GetChildValues(node, Consts.STRXML_Url, true);
+            this.serverUrlList = XmlUtilities.GetChildValues(node, Consts.STRXML_Url);
 
             /*
              * Populate the time server dropdown list
              */
             node = XmlUtilities.GetChildNode(nodeConfiguration, Consts.STRXML_TimeFormats);
-            this.timeFormatList = XmlUtilities.GetChildValues(node, Consts.STRXML_TimeFormat, true);
-            this.timeFormatDefault = XmlUtilities.GetAttribute(node, Consts.STRXML_ATTR_Default, false);
+            this.timeFormatList = XmlUtilities.GetChildValues(node, Consts.STRXML_TimeFormat);
+            this.timeFormatDefault = XmlUtilities.GetAttributeValue(node, Consts.STRXML_ATTR_Default);
 
         } catch (Exception ex) {
         }

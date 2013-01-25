@@ -4,6 +4,8 @@
  */
 package uq.ilabs.labserver.client;
 
+import java.io.Serializable;
+import java.util.UUID;
 import java.util.logging.Level;
 import javax.faces.application.ViewExpiredException;
 import javax.faces.bean.ManagedBean;
@@ -14,7 +16,7 @@ import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
 import uq.ilabs.library.labserver.database.ServiceBrokersDB;
-import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
+import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
 
 /**
  *
@@ -22,7 +24,7 @@ import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
  */
 @ManagedBean
 @SessionScoped
-public class ServiceBrokersBean {
+public class ServiceBrokersBean implements Serializable {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ServiceBrokersBean.class.getName();
@@ -62,7 +64,6 @@ public class ServiceBrokersBean {
     private boolean hcbPermitted;
     private String[] serviceBrokers;
     private boolean registered;
-//    private boolean deleteDisabled;
     private String holMessage;
     private String holMessageClass;
 
@@ -130,9 +131,6 @@ public class ServiceBrokersBean {
         return registered;
     }
 
-//    public boolean isDeleteDisabled() {
-//        return deleteDisabled;
-//    }
     public String getHolMessage() {
         return holMessage;
     }
@@ -186,6 +184,18 @@ public class ServiceBrokersBean {
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String actionCreateGuid() {
+
+        this.hitOutgoingPasskey = UUID.randomUUID().toString();
+
+        /* Navigate to the current page */
+        return null;
     }
 
     /**
@@ -376,7 +386,6 @@ public class ServiceBrokersBean {
          * Update controls
          */
         this.registered = false;
-//        this.deleteDisabled = true;
 
         this.ShowMessageInfo(null);
 
@@ -440,7 +449,6 @@ public class ServiceBrokersBean {
              * Update controls
              */
             this.registered = true;
-//            this.deleteDisabled = false;
 
         } catch (Exception ex) {
             ShowMessageError(ex.getMessage());

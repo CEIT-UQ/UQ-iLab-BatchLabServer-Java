@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.servicebroker.engine.types.LabServerInfo;
 
@@ -21,6 +22,7 @@ public class ConfigProperties {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = ConfigProperties.class.getName();
+    private static final Level logLevel = Level.FINE;
     /*
      * String constants
      */
@@ -121,8 +123,8 @@ public class ConfigProperties {
      * @throws Exception
      */
     public ConfigProperties(String filename) throws Exception {
-        final String STR_MethodName = "ConfigProperties";
-        Logfile.WriteCalled(STR_ClassName, STR_MethodName,
+        final String methodName = "ConfigProperties";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Filename_arg, filename));
 
         try {
@@ -253,7 +255,7 @@ public class ConfigProperties {
             throw ex;
         }
 
-        Logfile.WriteCompleted(STR_ClassName, STR_MethodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**

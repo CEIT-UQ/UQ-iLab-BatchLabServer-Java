@@ -30,9 +30,14 @@ public class EquipmentManager extends LabEquipmentManager {
         final String methodName = "EquipmentManager";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Nothing to do here
-         */
+        try {
+            /*
+             * Nothing to do here
+             */
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -59,7 +64,7 @@ public class EquipmentManager extends LabEquipmentManager {
 
             success = true;
         } catch (Exception ex) {
-            Logfile.WriteException(STR_ClassName, methodName, ex);
+            Logfile.WriteError(ex.toString());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);

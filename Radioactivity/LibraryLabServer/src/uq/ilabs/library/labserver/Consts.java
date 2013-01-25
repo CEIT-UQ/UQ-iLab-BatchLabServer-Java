@@ -13,10 +13,6 @@ import uq.ilabs.library.labserver.engine.LabConsts;
 public class Consts extends LabConsts {
 
     /*
-     * Initialisation parameters
-     */
-    public static final String STRPRM_XmlSimulationConfigPath = "XmlSimulationConfigPath";
-    /*
      * XML elements in the LabConfiguration.xml file
      */
     public static final String STRXML_SetupId_RadioactivityVsTime = "RadioactivityVsTime";
@@ -59,25 +55,4 @@ public class Consts extends LabConsts {
     public static final String STRXML_DataVector = "dataVector";
     public static final String STRXML_ATTR_Distance = "distance";
     public static final String STRXML_ATTR_Units = "units";
-    /*
-     * XML elements in the SimulationConfig.xml file
-     */
-    public static final String STRXML_SimulationConfig = "simulationConfig";
-    public static final String STRXML_ATTR_title = "title";
-    public static final String STRXML_ATTR_version = "version";
-    public static final String STRXML_SimDistance = "distance";
-    public static final String STRXML_SimDuration = "duration";
-    public static final String STRXML_SimMean = "mean";
-    public static final String STRXML_SimPower = "power";
-    public static final String STRXML_SimDeviation = "deviation";
-    public static final String STRXML_Tube = "tube";
-    public static final String STRXML_OffsetDistance = "offsetDistance";
-    public static final String STRXML_HomeDistance = "homeDistance";
-    public static final String STRXML_MoveRate = "moveRate";
-//    public static final String STRXML_Sources = "sources";
-//    public static final String STRXML_Absorbers = "absorbers";
-    public static final String STRXML_SelectTimes = "selectTimes";
-    public static final String STRXML_ReturnTimes = "returnTimes";
-    public static final String STRXML_FirstLocation = "firstLocation";
-    public static final String STRXML_HomeLocation = "homeLocation";
 }

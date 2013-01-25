@@ -6,10 +6,11 @@ package uq.ilabs.library.labserver.database;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labserver.engine.types.ServiceBrokerInfo;
+import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
 
 /**
  *
@@ -26,10 +27,6 @@ public class ServiceBrokersDB {
     private static final String STRLOG_Id_arg = "Id: %d";
     private static final String STRLOG_Count_arg = "Count: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
-    /*
-     * String constants for exception messages
-     */
-    private static final String STRERR_DBConnection = "dBConnection";
     /*
      * Database column names
      */
@@ -54,26 +51,6 @@ public class ServiceBrokersDB {
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private Connection sqlConnection;
     //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Properties">
-    private boolean authenticating;
-    private boolean logAuthentication;
-
-    public boolean isAuthenticating() {
-        return authenticating;
-    }
-
-    public void setAuthenticating(boolean authenticating) {
-        this.authenticating = authenticating;
-    }
-
-    public boolean isLogAuthentication() {
-        return logAuthentication;
-    }
-
-    public void setLogAuthentication(boolean logAuthentication) {
-        this.logAuthentication = logAuthentication;
-    }
-    //</editor-fold>
 
     /**
      *
@@ -84,19 +61,23 @@ public class ServiceBrokersDB {
         final String methodName = "ServiceBrokersDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Check that parameters are valid
-         */
-        if (dbConnection == null) {
-            throw new NullPointerException(STRERR_DBConnection);
-        }
+        try {
+            /*
+             * Check that parameters are valid
+             */
+            if (dbConnection == null) {
+                throw new NullPointerException(DBConnection.class.getSimpleName());
+            }
 
-        /*
-         * Initialise local variables and properties
-         */
-        this.sqlConnection = dbConnection.getConnection();
-        this.authenticating = true;
-        this.logAuthentication = false;
+            /*
+             * Initialise locals
+             */
+            this.sqlConnection = dbConnection.getConnection();
+
+        } catch (NullPointerException | SQLException ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -135,6 +116,13 @@ public class ServiceBrokersDB {
         int id = -1;
 
         try {
+            /*
+             * Check that parameters are valid
+             */
+            if (serviceBrokerInfo == null) {
+                throw new NullPointerException(ServiceBrokerInfo.class.getSimpleName());
+            }
+
             CallableStatement sqlStatement = null;
 
             try {
@@ -286,6 +274,13 @@ public class ServiceBrokersDB {
         boolean success = false;
 
         try {
+            /*
+             * Check that parameters are valid
+             */
+            if (serviceBrokerInfo == null) {
+                throw new NullPointerException(ServiceBrokerInfo.class.getSimpleName());
+            }
+
             CallableStatement sqlStatement = null;
 
             try {
@@ -426,21 +421,32 @@ public class ServiceBrokersDB {
                  * Process the results of the query - only want the first result
                  */
                 while (resultSet.next() == true) {
-                    ServiceBrokerInfo info = new ServiceBrokerInfo();
-                    info.setId(resultSet.getInt(STRCOL_Id));
-                    info.setName(resultSet.getString(STRCOL_Name));
-                    info.setGuid(resultSet.getString(STRCOL_Guid));
-                    info.setOutPasskey(resultSet.getString(STRCOL_OutPasskey));
-                    info.setInPasskey(resultSet.getString(STRCOL_InPasskey));
-                    info.setServiceUrl(resultSet.getString(STRCOL_ServiceUrl));
-                    info.setPermitted(resultSet.getBoolean(STRCOL_Permitted));
-                    info.setDateCreated(resultSet.getTimestamp(STRCOL_DateCreated));
-                    info.setDateModified(resultSet.getTimestamp(STRCOL_DateModified));
+                    ServiceBrokerInfo serviceBrokerInfo = new ServiceBrokerInfo();
+                    serviceBrokerInfo.setId(resultSet.getInt(STRCOL_Id));
+                    serviceBrokerInfo.setName(resultSet.getString(STRCOL_Name));
+                    serviceBrokerInfo.setGuid(resultSet.getString(STRCOL_Guid));
+                    serviceBrokerInfo.setOutPasskey(resultSet.getString(STRCOL_OutPasskey));
+                    serviceBrokerInfo.setInPasskey(resultSet.getString(STRCOL_InPasskey));
+                    serviceBrokerInfo.setServiceUrl(resultSet.getString(STRCOL_ServiceUrl));
+                    serviceBrokerInfo.setPermitted(resultSet.getBoolean(STRCOL_Permitted));
+
+                    Calendar calendar;
+                    Timestamp timestamp;
+                    if ((timestamp = resultSet.getTimestamp(STRCOL_DateCreated)) != null) {
+                        calendar = Calendar.getInstance();
+                        calendar.setTime(timestamp);
+                        serviceBrokerInfo.setDateCreated(calendar);
+                    }
+                    if ((timestamp = resultSet.getTimestamp(STRCOL_DateModified)) != null) {
+                        calendar = Calendar.getInstance();
+                        calendar.setTime(timestamp);
+                        serviceBrokerInfo.setDateModified(calendar);
+                    }
 
                     /*
                      * Add the info to the list
                      */
-                    list.add(info);
+                    list.add(serviceBrokerInfo);
                 }
             } catch (Exception ex) {
                 throw ex;

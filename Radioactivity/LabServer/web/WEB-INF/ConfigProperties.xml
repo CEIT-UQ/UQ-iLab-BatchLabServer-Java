@@ -3,9 +3,6 @@
 <properties>
     <comment>Radioactivity LabServer</comment>
 
-    <!-- LabServerGuid: LabServer's Globally Unique Identifer maximum 40 characters -->
-    <entry key="LabServerGuid">FF464E3507564f28A64F156282BB912E</entry>
-
     <!-- DBHost: Database host -->
     <entry key="DBHost">localhost</entry>
     <!-- DBDatabase: Database name -->
@@ -15,21 +12,7 @@
     <!-- DBPassword: Database user's password -->
     <entry key="DBPassword">ilab</entry>
 
-    <!-- Authenticating: If true, deny access if the ServiceBroker's guid and passkey are not valid -->
-    <entry key="Authenticating">true</entry>
     <!-- LogAuthentication: If true, log the ServiceBroker's guid and passkey -->
     <entry key="LogAuthentication">false</entry>
-
-    <!-- ContactEmail: Email address for LabServer's manager. If not specified, no email is sent. -->
-    <entry key="ContactEmail"></entry>
-    <!-- CompletedEmailList: Comma-seperated list of email addresses that will receive an email when the experiment completes. If not specified, no email is sent. -->
-    <entry key="CompletedEmailList"></entry>
-    <!-- FailedEmailList: Comma-seperated list of email addresses that will receive an email when the experiment fails. If not specified, no email is sent. -->
-    <entry key="FailedEmailList"></entry>
-
-    <!-- FarmSize: Number of Lab Experiment engines if no LabEquipment services are specified and can be not specified -->
-    <!-- <entry key="FarmSize">1</entry> -->
-    <!-- LabEquipmentService?: If present and starting at zero, comma-seperated LabEquipment service url and passkey -->
-    <entry key="LabEquipmentService0">http://localhost:8080/RadioactivityLabEquipment/LabEquipmentService, fd3cf16cc855484fb06801379f475837</entry>
 
 </properties>

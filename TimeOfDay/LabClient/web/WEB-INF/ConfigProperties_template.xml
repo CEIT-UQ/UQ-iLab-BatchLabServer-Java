@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>TimeOfDay LabClient</comment>
+
+    <!-- ServiceUrl: ServiceBroker's web service URL -->
+    <entry key="ServiceUrl"></entry>
+
+    <!-- LabServerId: LabServer's Globally Unique Identifer maximum 40 characters -->
+    <entry key="LabServerId"></entry>
+
+    <!-- MultiSubmit: If true, allows the client to submit further experiments before previously submitted experiments have completed -->
+    <entry key="MultiSubmit">False</entry>
+
+    <!-- FeedbackEmail: Email address of administrator for feedback link on webpage, can be empty -->
+    <entry key="FeedbackEmail"></entry>
+
+    <!--
+
+    NOTE: The LabClient can be launched with URL request parameters for LabServerId, ServiceUrl and MultiSubmit. This
+    allows the one deployment of the LabClient web application to be used with multiple ServiceBrokers and LabServers.
+
+    An example URL that uses the Microsoft Visual Studio development .NET C# code is:
+
+    /LabClient.do?ServiceUrl=http://localhost:8081/ServiceBrokerService.asmx&LabServerId=8C0BA543419E4d4ab340d449acd3e057&MultiSubmit=true
+
+    -->
+
+</properties>

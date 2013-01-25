@@ -35,7 +35,7 @@ public class DriverEquipment extends DriverEquipmentGeneric {
 
         try {
             /*
-             * Initialise local variables and properties
+             * Create an instance of the experiment result ready to fill in
              */
             this.labExperimentResult = new ExperimentResult(configuration);
             if (this.labExperimentResult == null) {

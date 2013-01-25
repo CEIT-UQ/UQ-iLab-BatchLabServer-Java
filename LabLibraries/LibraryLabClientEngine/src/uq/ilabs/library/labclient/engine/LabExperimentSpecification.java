@@ -69,7 +69,7 @@ public class LabExperimentSpecification {
             /*
              * Check that all required XML nodes exist
              */
-            XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_SetupId);
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_SetupId);
 
             /*
              * Save a copy of the experiment specification for the derived class

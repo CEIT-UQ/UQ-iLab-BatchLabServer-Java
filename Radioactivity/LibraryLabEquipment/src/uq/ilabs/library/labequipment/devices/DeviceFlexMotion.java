@@ -4,9 +4,10 @@
  */
 package uq.ilabs.library.labequipment.devices;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import org.w3c.dom.Node;
-import uq.ilabs.library.lab.utilities.Delay;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
 import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
@@ -26,84 +27,44 @@ public class DeviceFlexMotion extends DeviceGeneric {
     /*
      * String constants for logfile messages
      */
-    private static final String STRLOG_Location_arg = "Location: %s";
-    private static final String STRLOG_Distance_arg = "Distance: %d";
+    protected static final String STRLOG_Location_arg = "Location: %s";
+    protected static final String STRLOG_Distance_arg = "Distance: %d";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private int currentTubeDistance;
-    private char currentSourceLocation;
-    private char currentAbsorberLocation;
+    private HashMap<String, Character> mapSources;
+    private HashMap<String, Character> mapAbsorbers;
+    //
+    protected int tubeOffsetDistance;
+    protected double tubeMoveRate;
+    protected char sourceFirstLocation;
+    protected char sourceHomeLocation;
+    protected double[] sourceSelectTimes;
+    protected double[] sourceReturnTimes;
+    protected boolean absorbersPresent;
+    protected char absorberFirstLocation;
+    protected char absorberHomeLocation;
+    protected double[] absorberSelectTimes;
+    protected double[] absorberReturnTimes;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private int tubeOffsetDistance;
-    private int tubeHomeDistance;
-    private double tubeMoveRate;
-    private char sourceFirstLocation;
-    private char sourceLastLocation;
-    private char sourceHomeLocation;
-    private double[] sourceSelectTimes;
-    private double[] sourceReturnTimes;
-    private boolean absorbersPresent;
-    private char absorberFirstLocation;
-    private char absorberLastLocation;
-    private char absorberHomeLocation;
-    private double[] absorberSelectTimes;
-    private double[] absorberReturnTimes;
 
-    public int getTubeOffsetDistance() {
-        return tubeOffsetDistance;
+    public static String ClassName() {
+        return DeviceFlexMotion.class.getSimpleName();
     }
+    protected int tubeHomeDistance;
+    protected String sourceHomeName;
+    protected String absorberHomeName;
 
     public int getTubeHomeDistance() {
         return tubeHomeDistance;
     }
 
-    public double getTubeMoveRate() {
-        return tubeMoveRate;
+    public String getSourceHomeName() {
+        return sourceHomeName;
     }
 
-    public char getSourceFirstLocation() {
-        return sourceFirstLocation;
-    }
-
-    public char getSourceLastLocation() {
-        return sourceLastLocation;
-    }
-
-    public char getSourceHomeLocation() {
-        return sourceHomeLocation;
-    }
-
-    public double[] getSourceSelectTimes() {
-        return sourceSelectTimes;
-    }
-
-    public double[] getSourceReturnTimes() {
-        return sourceReturnTimes;
-    }
-
-    public boolean isAbsorbersPresent() {
-        return absorbersPresent;
-    }
-
-    public char getAbsorberFirstLocation() {
-        return absorberFirstLocation;
-    }
-
-    public char getAbsorberLastLocation() {
-        return absorberLastLocation;
-    }
-
-    public char getAbsorberHomeLocation() {
-        return absorberHomeLocation;
-    }
-
-    public double[] getAbsorberSelectTimes() {
-        return absorberSelectTimes;
-    }
-
-    public double[] getAbsorberReturnTimes() {
-        return absorberReturnTimes;
+    public String getAbsorberHomeName() {
+        return absorberHomeName;
     }
     //</editor-fold>
 
@@ -113,7 +74,7 @@ public class DeviceFlexMotion extends DeviceGeneric {
      * @throws Exception
      */
     public DeviceFlexMotion(LabEquipmentConfiguration labEquipmentConfiguration) throws Exception {
-        super(labEquipmentConfiguration);
+        super(labEquipmentConfiguration, DeviceFlexMotion.class.getSimpleName());
 
         final String methodName = "DeviceFlexMotion";
         Logfile.WriteCalled(Level.CONFIG, STR_ClassName, methodName);
@@ -155,24 +116,38 @@ public class DeviceFlexMotion extends DeviceGeneric {
             }
 
             /*
-             * Check if absorber settings are present
+             * Source name to location mapping
              */
-            this.absorbersPresent = true;
-            try {
-                node = XmlUtilities.GetChildNode(this.xmlNodeDevice, Consts.STRXML_Absorbers, true);
-            } catch (Exception ex) {
+            this.mapSources = new HashMap<>();
+            ArrayList nodeList = XmlUtilities.GetChildNodeList(node, Consts.STRXML_Source);
+            for (int i = 0; i < nodeList.size(); i++) {
+                Node nodeSource = (Node) nodeList.get(i);
+
                 /*
-                 * No absorbers
+                 * Get the source name and location
                  */
-                this.absorbersPresent = false;
-                this.absorberFirstLocation = this.sourceFirstLocation;
-                this.absorberHomeLocation = this.sourceFirstLocation;
+                String name = XmlUtilities.GetChildValue(nodeSource, Consts.STRXML_Name);
+                char location = XmlUtilities.GetChildValueAsChar(nodeSource, Consts.STRXML_Location);
+
+                /*
+                 * Check if this is the home location, if it is save the source name
+                 */
+                if (location == this.sourceHomeLocation) {
+                    this.sourceHomeName = name;
+                }
+
+                /*
+                 * Add the mapping
+                 */
+                this.mapSources.put(name, location);
             }
 
             /*
-             * Absorber settings
+             * Absorber settings, may not be present
              */
-            if (this.absorbersPresent == true) {
+            node = XmlUtilities.GetChildNode(this.xmlNodeDevice, Consts.STRXML_Absorbers);
+
+            try {
                 this.absorberFirstLocation = XmlUtilities.GetChildValueAsChar(node, Consts.STRXML_FirstLocation);
                 this.absorberHomeLocation = XmlUtilities.GetChildValueAsChar(node, Consts.STRXML_HomeLocation);
 
@@ -195,8 +170,41 @@ public class DeviceFlexMotion extends DeviceGeneric {
                 for (int i = 0; i < csvTimesSplit.length; i++) {
                     this.absorberReturnTimes[i] = Double.parseDouble(csvTimesSplit[i]);
                 }
+
+                this.absorbersPresent = true;
+            } catch (XmlUtilitiesException | NumberFormatException ex) {
+                /*
+                 * No absorbers
+                 */
+                this.absorbersPresent = false;
             }
 
+            /*
+             * Absorber name to location mapping
+             */
+            this.mapAbsorbers = new HashMap<>();
+            nodeList = XmlUtilities.GetChildNodeList(node, Consts.STRXML_Absorber, false);
+            for (int i = 0; i < nodeList.size(); i++) {
+                Node nodeAbsorber = (Node) nodeList.get(i);
+
+                /*
+                 * Get the source name and location
+                 */
+                String name = XmlUtilities.GetChildValue(nodeAbsorber, Consts.STRXML_Name);
+                char location = XmlUtilities.GetChildValueAsChar(nodeAbsorber, Consts.STRXML_Location);
+
+                /*
+                 * Check if this is the home location, if it is save the absorber name
+                 */
+                if (location == this.absorberHomeLocation) {
+                    this.absorberHomeName = name;
+                }
+
+                /*
+                 * Add the mapping
+                 */
+                this.mapAbsorbers.put(name, location);
+            }
         } catch (XmlUtilitiesException | NumberFormatException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -212,22 +220,21 @@ public class DeviceFlexMotion extends DeviceGeneric {
     @Override
     public boolean Initialise() {
         final String methodName = "Initialise";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = false;
 
         try {
-//            success = super.Initialise();
-            this.currentSourceLocation = this.sourceHomeLocation;
-            this.currentAbsorberLocation = this.absorberHomeLocation;
-            this.currentTubeDistance = this.tubeHomeDistance;
-            success = true;
+            /*
+             * Nothing to do here
+             */
 
+            success = true;
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName,
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Success_arg, success));
 
         return success;
@@ -241,123 +248,160 @@ public class DeviceFlexMotion extends DeviceGeneric {
      * @return
      */
     public double GetTubeMoveTime(int startDistance, int endDistance) {
-        double seconds;
-
-        /*
-         * Get the absolute distance
-         */
-        int distance = endDistance - startDistance;
-        if (distance < 0) {
-            distance = -distance;
-        }
-
-        /*
-         * Tube move rate is in seconds per millimetre
-         */
-        seconds = (distance * this.tubeMoveRate);
-
-        return seconds;
+        return 0.0;
     }
 
     /**
      *
-     * @param toLocation
-     * @return
+     * @param toName
+     * @return double
      */
-    public double GetSourceSelectTime(char toLocation) {
-        double seconds = 0.0;
+    public double GetSourceSelectTime(String toName) {
+        double time = 0.0;
 
-        int index = toLocation - this.sourceFirstLocation;
-        if (index >= 0 && index < this.sourceSelectTimes.length) {
-            seconds = this.sourceSelectTimes[index];
+        Character location = this.mapSources.get(toName);
+        if (location != null) {
+            time = this.GetSourceSelectTime(location);
         }
 
-        return seconds;
+        return time;
     }
 
     /**
      *
-     * @param fromLocation
-     * @return
+     * @param fromName
+     * @return double
      */
-    public double GetSourceReturnTime(char fromLocation) {
-        double seconds = 0.0;
+    public double GetSourceReturnTime(String fromName) {
+        double time = 0.0;
 
-        int index = fromLocation - this.sourceFirstLocation;
-        if (index >= 0 && index < this.sourceReturnTimes.length) {
-            seconds = this.sourceReturnTimes[index];
+        Character location = this.mapSources.get(fromName);
+        if (location != null) {
+            time = this.GetSourceReturnTime(location);
         }
 
-        return seconds;
+        return time;
     }
 
     /**
      *
-     * @param toLocation
-     * @return
+     * @param toName
+     * @return double
      */
-    public double GetAbsorberSelectTime(char toLocation) {
-        double seconds = 0.0;
+    public double GetAbsorberSelectTime(String toName) {
+        double time = 0.0;
 
-        if (this.absorbersPresent == true) {
-            int index = toLocation - this.absorberFirstLocation;
-            if (index >= 0 && index < this.absorberSelectTimes.length) {
-                seconds = this.absorberSelectTimes[index];
-            }
+        Character location = this.mapAbsorbers.get(toName);
+        if (location != null) {
+            time = this.GetAbsorberSelectTime(location);
         }
 
-        return seconds;
+        return time;
     }
 
     /**
      *
-     * @param fromLocation
-     * @return
+     * @param fromName
+     * @return double
      */
-    public double GetAbsorberReturnTime(char fromLocation) {
-        double seconds = 0.0;
+    public double GetAbsorberReturnTime(String fromName) {
+        double time = 0.0;
 
-        if (this.absorbersPresent == true) {
-            int index = fromLocation - this.absorberFirstLocation;
-            if (index >= 0 && index < this.absorberReturnTimes.length) {
-                seconds = this.absorberReturnTimes[index];
-            }
+        Character location = this.mapAbsorbers.get(fromName);
+        if (location != null) {
+            time = this.GetAbsorberReturnTime(location);
         }
 
-        return seconds;
+        return time;
     }
 
     /**
      *
-     * @param location
+     * @param distance
      * @return boolean
      */
-    public boolean SetAbsorberLocation(char location) {
-        final String methodName = "SetAbsorberLocation";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Location_arg, location));
+    public boolean SelectTubeDistance(int distance) {
+        return this.SetTubeDistance(distance);
+    }
 
-        if (this.absorbersPresent == true) {
-            /*
-             * Determine if selecting or returning absorber
-             */
-            int seconds;
-            if (location != this.absorberHomeLocation) {
-                seconds = (int) this.GetAbsorberSelectTime(location);
-            } else {
-                seconds = (int) this.GetAbsorberReturnTime(this.currentAbsorberLocation);
-            }
+    /**
+     *
+     * @param name
+     * @return
+     */
+    public boolean SelectSource(String name) {
+        boolean success = false;
 
-            for (int i = 0; i < seconds; i++) {
-                Delay.MilliSeconds(1000);
-                System.out.println("A");
-            }
-
-            this.currentAbsorberLocation = location;
+        Character location = this.mapSources.get(name);
+        if (location != null) {
+            success = this.SetSourceLocation(location.charValue());
         }
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+        return success;
+    }
 
+    /**
+     *
+     * @param name
+     * @return boolean
+     */
+    public boolean SelectAbsorber(String name) {
+        boolean success = true;
+
+        if (this.absorbersPresent == true) {
+            success = false;
+
+            Character location = this.mapAbsorbers.get(name);
+            if (location != null) {
+                success = this.SetAbsorberLocation(location.charValue());
+            }
+        }
+
+        return success;
+    }
+
+    /**
+     *
+     * @param toLocation
+     * @return
+     */
+    protected double GetSourceSelectTime(char toLocation) {
+        return 0.0;
+    }
+
+    /**
+     *
+     * @param fromLocation
+     * @return
+     */
+    protected double GetSourceReturnTime(char fromLocation) {
+        return 0.0;
+    }
+
+    /**
+     *
+     * @param toLocation
+     * @return
+     */
+    protected double GetAbsorberSelectTime(char toLocation) {
+        return 0.0;
+    }
+
+    /**
+     *
+     * @param fromLocation
+     * @return
+     */
+    protected double GetAbsorberReturnTime(char fromLocation) {
+        return 0.0;
+    }
+
+    /**
+     *
+     * @param distance
+     * @return boolean
+     */
+    protected boolean SetTubeDistance(int distance) {
         return true;
     }
 
@@ -366,54 +410,16 @@ public class DeviceFlexMotion extends DeviceGeneric {
      * @param location
      * @return boolean
      */
-    public boolean SetSourceLocation(char location) {
-        final String methodName = "SetSourceLocation";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Location_arg, location));
-
-        /*
-         * Determine if selecting or returning source
-         */
-        int seconds;
-        if (location != this.sourceHomeLocation) {
-            seconds = (int) this.GetSourceSelectTime(location);
-        } else {
-            seconds = (int) this.GetSourceReturnTime(this.currentSourceLocation);
-        }
-
-        for (int i = 0; i < seconds; i++) {
-            Delay.MilliSeconds(1000);
-            System.out.println("S");
-        }
-
-        this.currentSourceLocation = location;
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
-
+    protected boolean SetAbsorberLocation(char location) {
         return true;
     }
 
     /**
      *
-     * @param targetDistance
+     * @param location
      * @return boolean
      */
-    public boolean SetTubeDistance(int distance) {
-        final String methodName = "SetTubeDistance";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Distance_arg, distance));
-
-        int seconds = (int) this.GetTubeMoveTime(this.currentTubeDistance, distance);
-
-        for (int i = 0; i < seconds; i++) {
-            Delay.MilliSeconds(1000);
-            System.out.println("T");
-        }
-
-        this.currentTubeDistance = distance;
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
-
+    protected boolean SetSourceLocation(char location) {
         return true;
     }
 }

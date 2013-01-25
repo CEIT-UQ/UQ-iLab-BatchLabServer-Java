@@ -18,6 +18,8 @@ import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
+import uq.ilabs.library.labserver.database.LabServerDB;
+import uq.ilabs.library.labserver.database.types.LabServerInfo;
 import uq.ilabs.library.labserver.engine.ConfigProperties;
 import uq.ilabs.library.labserver.engine.LabConfiguration;
 
@@ -113,35 +115,34 @@ public class LabServerServlet extends HttpServlet {
                 labServerSession = new LabServerSession();
 
                 /*
-                 * Get information from ConfigProperties and save to the session
-                 */
-                labServerSession.setContactEmail(configProperties.getContactEmail());
-
-                /*
-                 * Create the database connection and save to the session
-                 */
-                DBConnection dbConnection = new DBConnection(configProperties.getDbDatabase());
-                dbConnection.setHost(configProperties.getDbHost());
-                dbConnection.setDatabase(configProperties.getDbDatabase());
-                dbConnection.setUser(configProperties.getDbUser());
-                dbConnection.setPassword(configProperties.getDbPassword());
-                labServerSession.setDbConnection(dbConnection);
-
-                /*
                  * Get information from the LabConfiguration file and save to the session
                  */
                 LabConfiguration labConfiguration = new LabConfiguration(null, configProperties.getXmlLabConfigurationPath());
                 labServerSession.setTitle(labConfiguration.getTitle());
                 labServerSession.setVersion(labConfiguration.getVersion());
-                labServerSession.setPhotoUrl(labConfiguration.getPhotoUrl());
-                labServerSession.setCameraUrl(labConfiguration.getCameraUrl());
+                labServerSession.setNavmenuPhotoUrl(labConfiguration.getNavmenuPhotoUrl());
+                labServerSession.setLabCameraUrl(labConfiguration.getLabCameraUrl());
                 labServerSession.setLabInfoUrl(labConfiguration.getLabInfoUrl());
                 Logfile.Write(String.format(STRLOG_TitleVersion_arg2, labServerSession.getTitle(), labServerSession.getVersion()));
+
+                /*
+                 * Get information from ConfigProperties and save to the session
+                 */
+                DBConnection dbConnection = configProperties.getDbConnection();
+                labServerSession.setDbConnection(dbConnection);
+
+                /*
+                 * Get specific LabServer information and save to the session
+                 */
+                LabServerDB labServerDB = new LabServerDB(dbConnection);
+                LabServerInfo labServerInfo = labServerDB.Retrieve();
+                labServerSession.setLabServerInfo(labServerInfo);
 
                 /*
                  * Set LabServerSession information in the session for access by the web pages
                  */
                 httpSession.setAttribute(Consts.STRSSN_LabServer, labServerSession);
+
             } catch (Exception ex) {
                 Logfile.WriteError(ex.toString());
             }

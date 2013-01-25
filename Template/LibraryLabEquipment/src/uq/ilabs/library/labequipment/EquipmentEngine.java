@@ -20,7 +20,10 @@ public class EquipmentEngine extends LabEquipmentEngine {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = EquipmentEngine.class.getName();
-    private static final Level logLevel = Level.INFO;
+    private static final Level logLevel = Level.FINE;
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Variables">
+    private DeviceEquipment deviceEquipment;
     //</editor-fold>
 
     /**
@@ -34,9 +37,18 @@ public class EquipmentEngine extends LabEquipmentEngine {
         final String methodName = "EquipmentEngine";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        /*
-         * Nothing to do here
-         */
+        try {
+            /*
+             * Create instances of the equipment devices
+             */
+            this.deviceEquipment = new DeviceEquipment(this.labEquipmentConfiguration);
+            if (this.deviceEquipment == null) {
+                throw new NullPointerException(DeviceEquipment.class.getSimpleName());
+            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            throw ex;
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -61,7 +73,9 @@ public class EquipmentEngine extends LabEquipmentEngine {
         switch (setupId) {
             case Consts.STRXML_SetupId_Equipment:
                 driverGeneric = new DriverEquipment(this.labEquipmentConfiguration);
+                ((DriverEquipment) driverGeneric).setDeviceEquipment(this.deviceEquipment);
                 break;
+
             default:
                 driverGeneric = super.GetDriver(setupId);
                 break;
@@ -82,11 +96,17 @@ public class EquipmentEngine extends LabEquipmentEngine {
         final String methodName = "PowerupEquipment";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        boolean success = true;
+        boolean success = false;
 
-        /*
-         * YOUR CODE HERE
-         */
+        try {
+            /*
+             * YOUR CODE HERE
+             */
+
+            success = true;
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Success_arg, success));
@@ -107,10 +127,13 @@ public class EquipmentEngine extends LabEquipmentEngine {
 
         try {
             /*
-             * Create and initialise the equipment device
+             * Initialise the equipment devices
              */
-            DeviceEquipment deviceEquipment = new DeviceEquipment(this.labEquipmentConfiguration);
-            success = deviceEquipment.Initialise();
+            if (this.deviceEquipment.Initialise() == false) {
+                throw new RuntimeException(this.deviceEquipment.getLastError());
+            }
+
+            success = true;
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
         }
@@ -130,11 +153,17 @@ public class EquipmentEngine extends LabEquipmentEngine {
         final String methodName = "PowerdownEquipment";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        boolean success = true;
+        boolean success = false;
 
-        /*
-         * YOUR CODE HERE
-         */
+        try {
+            /*
+             * YOUR CODE HERE
+             */
+
+            success = true;
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_Success_arg, success));

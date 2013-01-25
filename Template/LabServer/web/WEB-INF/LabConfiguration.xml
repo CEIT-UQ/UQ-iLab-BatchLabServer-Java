@@ -2,44 +2,26 @@
 <!--<!DOCTYPE labConfiguration SYSTEM "LabConfiguration.dtd">-->
 <labConfiguration title="Template" version="4.0">
     <navmenuPhoto>
-        <image>~/images/generic_content32.jpg</image>
+        <image>http://localhost:8080/TemplateLabServer/resources/img/generic_content32.jpg</image>
     </navmenuPhoto>
     <labCamera>
-        <url>http://LabCameras/Template_LabCamera.html</url>
+        <url />
     </labCamera>
     <labInfo>
         <text>LabInfo for Template LabServer</text>
         <url>http://localhost:8080/TemplateLabServer/LabInfo.html</url>
     </labInfo>
     <configuration>
-        <!-- YOUR CODE FROM HERE ... -->
-        <setup id="Simulation">
-            <name>Setup for Simulation</name>
-            <description>
-                <p>
-                    Setup for running an experiment as a simulation. 'SomeParameter' takes a number in the range of
-                    10 to 900 and generates a random number for the result.
-                </p>
-                <p>
-                    The experiment is run by a driver in the LabServer and an artifical delay has been included to make
-                    this experiment a little more realistic.
-                </p>
-                <p>
-                    Try validating by giving 'SomeParameter' no value, non-number value, non-integer value and an
-                    out-of-range value.
-                </p>
-            </description>
-        </setup>
         <setup id="Equipment">
             <name>Setup for Equipment</name>
             <description>
                 <p>
                     Setup for running an experiment on the LabEquipment. 'SomeParameter' takes a number in the range of
-                    1 to 1000 and generates a random number for the result.
+                    10 to 900 and generates a random number for the result.
                 </p>
                 <p>
                     The experiment is run by a driver in the LabEquipment and an artifical delay has been included to
-                    make this experiment a little more realistic.
+                    make this experiment more realistic.
                 </p>
                 <p>
                     Try validating by giving 'SomeParameter' no value, non-number value, non-integer value and an
@@ -47,21 +29,33 @@
                 </p>
             </description>
         </setup>
-        <!-- ... TO HERE -->
+        <setup id="Simulation">
+            <name>Setup for Simulation</name>
+            <description>
+                <p>
+                    Setup for running an experiment as a simulation on the LabServer. 'SomeParameter' takes a number in
+                    the range of 10 to 900 and generates a random number for the result.
+                </p>
+                <p>
+                    The experiment is run by a driver in the LabServer and a software delay has been included to make
+                    this experiment more realistic.
+                </p>
+                <p>
+                    Try validating by giving 'SomeParameter' no value, non-number value, non-integer value and an
+                    out-of-range value.
+                </p>
+            </description>
+        </setup>
     </configuration>
     <validation>
-        <!-- YOUR CODE FROM HERE ... -->
         <someParameter>
-            <min>10</min>
-            <max>900</max>
+            <minimum>10</minimum>
+            <maximum>900</maximum>
         </someParameter>
-        <!-- ... TO HERE -->
     </validation>
     <experimentSpecification>
         <setupId />
-        <!-- YOUR CODE FROM HERE ... -->
         <someParameter />
-        <!-- ... TO HERE -->
     </experimentSpecification>
     <experimentResult>
         <timestamp />
@@ -72,9 +66,7 @@
         <unitId />
         <setupId />
         <setupName />
-        <!-- YOUR CODE FROM HERE ... -->
         <someParameter />
         <someResult />
-        <!-- ... TO HERE -->
     </experimentResult>
 </labConfiguration>

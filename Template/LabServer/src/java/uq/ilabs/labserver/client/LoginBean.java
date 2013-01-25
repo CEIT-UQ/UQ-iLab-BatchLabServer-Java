@@ -4,6 +4,7 @@
  */
 package uq.ilabs.labserver.client;
 
+import java.util.logging.Level;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 import javax.faces.context.FacesContext;
@@ -13,7 +14,7 @@ import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
 import uq.ilabs.library.labserver.client.UserSession;
 import uq.ilabs.library.labserver.database.UsersDB;
-import uq.ilabs.library.labserver.engine.types.UserInfo;
+import uq.ilabs.library.labserver.database.types.UserInfo;
 
 /**
  *
@@ -25,14 +26,20 @@ public class LoginBean {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LoginBean.class.getName();
+    private static final Level logLevel = Level.FINE;
     /*
-     * String constants
+     * String constants for logfile messages
+     */
+    private static final String STRLOG_LoginUserGroup_arg2 = "Login - User: %s  Group: %s";
+    /*
+     * String constants for exception messages
      */
     private static final String STRERR_NotSpecified_arg = "%s - Not specified!";
     private static final String STRERR_Username = "Username";
     private static final String STRERR_Password = "Password";
-    private static final String STRERR_UnknownUsername = "Login failed - Unknown username!";
-    private static final String STRERR_IncorrectPassword = "Login failed - Incorrect password!";
+    private static final String STRERR_LoginFailed = "Login failed: ";
+    private static final String STRERR_UnknownUsername = STRERR_LoginFailed + "Unknown username!";
+    private static final String STRERR_IncorrectPassword = STRERR_LoginFailed + "Incorrect password!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabServerSession labServerSession;
@@ -81,7 +88,7 @@ public class LoginBean {
      */
     public String actionLogin() {
         final String methodName = "actionLogin";
-        Logfile.WriteCalled(STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         try {
             /*
@@ -116,6 +123,8 @@ public class LoginBean {
                 throw new RuntimeException(STRERR_IncorrectPassword);
             }
 
+            Logfile.Write(Level.INFO, String.format(STRLOG_LoginUserGroup_arg2, userInfo.getUsername(), userInfo.getUserGroup()));
+
             /*
              * Create user session information and add to ServiceBroker session
              */
@@ -128,7 +137,7 @@ public class LoginBean {
             ShowMessageError(ex.getMessage());
         }
 
-        Logfile.WriteCompleted(STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
         /* Navigate to the current page */
         return null;
