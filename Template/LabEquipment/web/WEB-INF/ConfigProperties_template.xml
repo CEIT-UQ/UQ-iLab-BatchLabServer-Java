@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-    <comment>Radioactivity LabEquipment</comment>
+    <comment>Template LabEquipment</comment>
 
     <!-- LabServer: Comma-seperated LabServer's name, LabServer's guid and LabServer's passkey -->
     <entry key="LabServer"> , , </entry>
