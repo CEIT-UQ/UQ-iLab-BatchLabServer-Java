@@ -29,6 +29,7 @@ public class DriverGeneric {
     protected static final String STRLOG_Validation_arg3 = "Accepted: %s  EstRuntime: %.1f  ErrorMessage: %s";
     protected static final String STRLOG_ExecutionTime_arg = "ExecutionTime: %d";
     protected static final String STRLOG_StatusCode_arg = "StatusCode: %s";
+    protected static final String STRLOG_TimeRemaining_arg = "TimeRemaining: %d";
     /*
      * String constants for exception messages
      */
@@ -248,17 +249,24 @@ public class DriverGeneric {
      * @return
      */
     public int GetTimeRemaining() {
-        int timeRemaining = 0;
+        final String methodName = "GetTimeRemaining";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+
+        int timeRemaining = -1;
 
         if (this.timeCompleted != null) {
             /*
              * Get the time in seconds from now until the expected completion time
              */
-            timeRemaining = (int) ((this.timeCompleted.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000);
+            long timeNowInMillis = Calendar.getInstance().getTimeInMillis();
+            timeRemaining = (int) ((this.timeCompleted.getTimeInMillis() - timeNowInMillis) / 1000);
             if (timeRemaining < 0) {
                 timeRemaining = 0;
             }
         }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_TimeRemaining_arg, timeRemaining));
 
         return timeRemaining;
     }

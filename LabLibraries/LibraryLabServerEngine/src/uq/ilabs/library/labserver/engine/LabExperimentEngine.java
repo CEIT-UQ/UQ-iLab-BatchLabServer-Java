@@ -99,6 +99,24 @@ public class LabExperimentEngine implements Runnable {
         return unitId;
     }
 
+    /**
+     * Get the experiment Id for the experiment currently executing on this unit. If this unit is not currently
+     * executing an experiment, return 0.
+     *
+     * @return int
+     */
+    public int getExperimentId() {
+        int experimentId = 0;
+
+        synchronized (this.labExecutionInfoLock) {
+            if (this.labExecutionInfo != null && this.labExecutionInfo.getLabExperimentInfo() != null) {
+                experimentId = this.labExecutionInfo.getLabExperimentInfo().getExperimentId();
+            }
+        }
+
+        return experimentId;
+    }
+
     public boolean isRunning() {
         return running;
     }
@@ -395,35 +413,27 @@ public class LabExperimentEngine implements Runnable {
      */
     public int GetRemainingRuntime() {
         final String methodName = "GetRemainingRuntime";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_UnitId_arg, this.unitId));
 
-        int remainingRuntime = -1;
+        int remainingRuntime = 0;
 
         /*
          * Check if an experiment is currently running
          */
         synchronized (this.labExecutionInfoLock) {
             if (this.labExecutionInfo != null) {
-//                /*
-//                 * Get the lab experiment information
-//                 */
-//                LabExperimentInfo labExperimentInfo = this.labExecutionInfo.getLabExperimentInfo();
-//                if (labExperimentInfo != null) {
-//                    /*
-//                     * Calculate the time remaining for the experiment
-//                     */
-//                    long elapsedTime = (Calendar.getInstance().getTimeInMillis() - this.labExecutionInfo.getStartTime().getTimeInMillis()) / 1000;
-//                    remainingRuntime = labExperimentInfo.getEstExecutionTime() - (int) elapsedTime;
                 DriverGeneric driver = this.labExecutionInfo.getDriver();
                 if (driver != null) {
                     remainingRuntime = driver.GetTimeRemaining();
-
-                    /*
-                     * Remaining runtime cannot be negative and may have been underestimated. Don't say remaining
-                     * runtime is zero while the experiment is still running.
-                     */
-                    if (remainingRuntime < 1) {
-                        remainingRuntime = 1;
+                    if (remainingRuntime >= 0) {
+                        /*
+                         * Remaining runtime may have been underestimated. Don't say remaining
+                         * runtime is zero while the experiment is still running.
+                         */
+                        if (remainingRuntime == 0) {
+                            remainingRuntime = 1;
+                        }
                     }
                 }
             }
@@ -561,7 +571,7 @@ public class LabExperimentEngine implements Runnable {
                         /*
                          * Prepare the experiment for running
                          */
-                        if (PrepareExperiment(labExperimentInfo) == false) {
+                        if (this.PrepareExperiment(labExperimentInfo) == false) {
                             /*
                              * Preparation failed
                              */
@@ -576,7 +586,7 @@ public class LabExperimentEngine implements Runnable {
                         /*
                          * Execute the experiment
                          */
-                        if (ExecuteExperiment() == false) {
+                        if (this.ExecuteExperiment() == false) {
                             /*
                              * Check if experiment should be retried
                              */
@@ -596,7 +606,7 @@ public class LabExperimentEngine implements Runnable {
                         /*
                          * Conclude experiment after running
                          */
-                        if (ConcludeExperiment() == false) {
+                        if (this.ConcludeExperiment() == false) {
                             /*
                              * Conclude failed, don't rerun experiment
                              */
@@ -612,7 +622,7 @@ public class LabExperimentEngine implements Runnable {
                          * Notify ServiceBroker of experiment completion
                          */
                         LabExperimentResult labExperimentResult = this.labExecutionInfo.getLabExperimentResult();
-                        NotifyServiceBroker(labExperimentResult.getExperimentId(), labExperimentResult.getSbName());
+                        this.NotifyServiceBroker(labExperimentResult.getExperimentId(), labExperimentResult.getSbName());
 
                         thisState = States.NotifyByEmail;
                         break;
@@ -621,7 +631,7 @@ public class LabExperimentEngine implements Runnable {
                         /*
                          * Notify by email of experiment completion
                          */
-                        NotifyByEmail(this.labExecutionInfo.getLabExperimentResult());
+                        this.NotifyByEmail(this.labExecutionInfo.getLabExperimentResult());
 
                         /*
                          * Experiment is finished

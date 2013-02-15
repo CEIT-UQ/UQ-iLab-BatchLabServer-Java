@@ -37,7 +37,8 @@ public class LabExperimentManager implements Runnable {
     private static final String STRLOG_ExperimentStatus_arg4 = "QueuePosition: %d  QueueWaitTime: %.0f  EstRuntime: %.0f  RemainingRuntime: %.0f";
     private static final String STRLOG_StatusCode_arg = "StatusCode: %s";
     private static final String STRLOG_Accepted_arg = "Accepted: %s";
-    private static final String STRLOG_UnitIdLabStatusMessage_arg2 = "%d:%s  ";
+    private static final String STRLOG_UnitIdLabStatusMessage_arg2 = "%d:%s ";
+    private static final String STRLOG_UnitIdExperimentIdLabStatusMessage_arg2 = "%d:%d:%s ";
     private static final String STRLOG_StateChange_arg2 = "[LEM: %s->%s]";
     private static final String STRLOG_RevertToWaiting_arg = " Revert to waiting - ExperimentId: %d  SbName: '%s'";
     //
@@ -278,8 +279,7 @@ public class LabExperimentManager implements Runnable {
         /*
          * Add in the time remaining before the next experiment can run
          */
-//        LabExperimentStatus labExperimentStatus = this.GetLabExperimentStatus(0, null);
-//        waitEstimate.setEstWait(waitEstimate.getEstWait() + labExperimentStatus.getExperimentStatus().getEstRemainingRuntime());
+        waitEstimate.setEstWait(waitEstimate.getEstWait() + this.GetMinRemainingRuntime());
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
@@ -463,8 +463,21 @@ public class LabExperimentManager implements Runnable {
                 LabStatus engineLabStatus = labExperimentEngine.GetLabStatus();
                 labStatus.setOnline(labStatus.isOnline() || engineLabStatus.isOnline());
                 if (engineLabStatus.isOnline() == true) {
-                    String message = String.format(STRLOG_UnitIdLabStatusMessage_arg2, unitId, engineLabStatus.getLabStatusMessage());
-                    labStatus.setLabStatusMessage(labStatus.getLabStatusMessage() + message);
+                    String message = labStatus.getLabStatusMessage();
+
+                    /*
+                     * Check if the engine is currently running an experiment
+                     */
+                    int experimentId = labExperimentEngine.getExperimentId();
+                    if (experimentId > 0) {
+                        /*
+                         * It is, so include the experiment Id in the lab status message
+                         */
+                        message += String.format(STRLOG_UnitIdExperimentIdLabStatusMessage_arg2, unitId, experimentId, engineLabStatus.getLabStatusMessage());
+                    } else {
+                        message += String.format(STRLOG_UnitIdLabStatusMessage_arg2, unitId, engineLabStatus.getLabStatusMessage());
+                    }
+                    labStatus.setLabStatusMessage(message);
                 }
             }
         } catch (Exception ex) {
@@ -934,7 +947,7 @@ public class LabExperimentManager implements Runnable {
      * @return
      */
     private int GetMinRemainingRuntime() {
-        final String methodName = "Validate";
+        final String methodName = "GetMinRemainingRuntime";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         int minRemainingRuntime = Integer.MAX_VALUE;
@@ -955,13 +968,19 @@ public class LabExperimentManager implements Runnable {
                 if (labExperimentEngine == null) {
                     throw new NullPointerException(String.format(STRERR_LabExperimentEngineUnitId_arg, unitId));
                 }
-
+                
                 /*
-                 * Get the remaining runtime for this engine and check if this is a smaller value
+                 * Check to see if the experiment engine is online
                  */
-                int remainingRuntime = labExperimentEngine.GetRemainingRuntime();
-                if (remainingRuntime < minRemainingRuntime) {
-                    minRemainingRuntime = remainingRuntime;
+                LabStatus labStatus = labExperimentEngine.GetLabStatus();
+                if (labStatus.isOnline() == true) {
+                    /*
+                     * Get the remaining runtime for this engine and check if this is a smaller value
+                     */
+                    int remainingRuntime = labExperimentEngine.GetRemainingRuntime();
+                    if (remainingRuntime < minRemainingRuntime) {
+                        minRemainingRuntime = remainingRuntime;
+                    }
                 }
             }
         } catch (Exception ex) {

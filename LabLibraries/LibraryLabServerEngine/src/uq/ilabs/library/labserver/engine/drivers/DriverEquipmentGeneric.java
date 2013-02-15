@@ -215,12 +215,13 @@ public class DriverEquipmentGeneric extends DriverGeneric {
                  */
                 int executionTimeRemaining = executionStatus.getTimeRemaining();
                 Logfile.Write(String.format(STRLOG_ExecutionStatus_arg2,
-                        executionStatus.getExecuteStatus().toString(), executionStatus.getTimeRemaining()));
+                        executionStatus.getExecuteStatus().toString(), executionTimeRemaining));
 
                 /*
-                 * Update the expected completion time
+                 * Update the expected completion time, time now plus time remaining
                  */
-                this.timeCompleted.setTimeInMillis(this.timeStarted.getTimeInMillis() + executionTimeRemaining * 1000);
+                long timeNowInMillis = Calendar.getInstance().getTimeInMillis();
+                this.timeCompleted.setTimeInMillis(timeNowInMillis + executionTimeRemaining * 1000);
 
                 /*
                  * Wait a bit and then check again
