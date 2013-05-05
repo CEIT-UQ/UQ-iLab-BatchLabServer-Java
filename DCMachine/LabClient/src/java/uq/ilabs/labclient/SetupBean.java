@@ -398,13 +398,11 @@ public class SetupBean implements Serializable {
          * Create an instance of the experiment specification
          */
         ExperimentSpecification experimentSpecification = new ExperimentSpecification(this.labClientSession.getXmlSpecification());
-        if (experimentSpecification == null) {
-            throw new NullPointerException(ExperimentSpecification.class.getSimpleName());
-        }
 
         /*
          * Add specification information
          */
+        experimentSpecification.setSetupName(this.hsomSetupName);
         experimentSpecification.setSetupId(this.setupId);
         experimentSpecification.setMinimum(this.hitMinimum);
         experimentSpecification.setMaximum(this.hitMaximum);

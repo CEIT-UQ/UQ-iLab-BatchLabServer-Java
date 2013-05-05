@@ -52,7 +52,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ViewExpiredServlet</servlet-name>
-        <url-pattern>/faces/ViewExpired.xhtml</url-pattern>
+        <url-pattern>/ViewExpired.do</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
@@ -62,6 +62,6 @@
     </welcome-file-list>
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/faces/ViewExpired.xhtml</location>
+        <location>/ViewExpired.do</location>
     </error-page>
 </web-app>

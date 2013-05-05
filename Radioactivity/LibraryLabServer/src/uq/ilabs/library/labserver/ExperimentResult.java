@@ -97,6 +97,22 @@ public class ExperimentResult extends LabExperimentResult {
                 Node nodeClone = nodeDataVector.cloneNode(true);
 
                 /*
+                 * Determine the attribute to add to the datavector
+                 */
+                String attributeName;
+                switch (setupId) {
+                    case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
+                    case Consts.STRXML_SetupId_SimActivityVsAbsorber:
+                    case Consts.STRXML_SetupId_SimActivityVsAbsorberNoDelay:
+                        attributeName = Consts.STRXML_ATTR_AbsorberName;
+                        break;
+
+                    default:
+                        attributeName = Consts.STRXML_ATTR_Distance;
+                        break;
+                }
+
+                /*
                  * Process data vectors in the experiment results
                  */
                 ArrayList<Node> nodeList = XmlUtilities.GetChildNodeList(nodeRoot, Consts.STRXML_DataVector);
@@ -106,8 +122,8 @@ public class ExperimentResult extends LabExperimentResult {
                     /*
                      * Copy the data vector's distance attribute and value
                      */
-                    String attribute = XmlUtilities.GetAttributeValue(nodeTemp, Consts.STRXML_ATTR_Distance, false);
-                    XmlUtilities.SetAttributeValue(nodeDataVector, Consts.STRXML_ATTR_Distance, attribute);
+                    String attributeValue = XmlUtilities.GetAttributeValue(nodeTemp, attributeName, false);
+                    XmlUtilities.SetAttributeValue(nodeDataVector, attributeName, attributeValue);
                     String value = XmlUtilities.GetValue(nodeTemp);
                     XmlUtilities.SetValue(nodeDataVector, value);
 

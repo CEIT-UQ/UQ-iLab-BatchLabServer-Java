@@ -106,9 +106,6 @@ public class DriverSimulation extends DriverGeneric {
              * Create an instance of ExperimentSpecification
              */
             ExperimentSpecification experimentSpecification = new ExperimentSpecification(xmlSpecification);
-            if (experimentSpecification == null) {
-                throw new NullPointerException(ExperimentSpecification.class.getSimpleName());
-            }
 
             /*
              * Check the setup Id
@@ -170,9 +167,6 @@ public class DriverSimulation extends DriverGeneric {
              * Create an instance of ExperimentSpecification to get specification information
              */
             ExperimentSpecification experimentSpecification = new ExperimentSpecification(xmlSpecification);
-            if (experimentSpecification == null) {
-                throw new NullPointerException(ExperimentSpecification.class.getSimpleName());
-            }
 
             try {
                 /*

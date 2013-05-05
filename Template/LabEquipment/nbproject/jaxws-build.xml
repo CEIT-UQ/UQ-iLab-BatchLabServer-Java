@@ -28,7 +28,7 @@
     </target>
     <target name="wsimport-service-LabEquipmentService" depends="wsimport-init">
         <mkdir dir="${build.generated.dir}/jax-wsCache/service/LabEquipmentService"/>
-        <wsimport sourcedestdir="${build.generated.dir}/jax-wsCache/service/LabEquipmentService" destdir="${build.generated.dir}/jax-wsCache/service/LabEquipmentService" wsdl="${basedir}/${conf-dir}xml-resources/web-services/LabEquipmentService/wsdl/ILabEquipmentService.asmx.wsdl" catalog="catalog.xml" extension="true" verbose="true" xnocompile="true" xendorsed="true">
+        <wsimport sourcedestdir="${build.generated.dir}/jax-wsCache/service/LabEquipmentService" destdir="${build.generated.dir}/jax-wsCache/service/LabEquipmentService" wsdl="${basedir}/${conf-dir}xml-resources/web-services/LabEquipmentService/wsdl/ILabEquipmentService.asmx.wsdl" catalog="catalog.xml" encoding="${source.encoding}" extension="true" verbose="true" xnocompile="true" xendorsed="true">
             <depends file="${basedir}/${conf-dir}xml-resources/web-services/LabEquipmentService/wsdl/ILabEquipmentService.asmx.wsdl"/>
             <produces dir="${build.generated.dir}/jax-wsCache/service/LabEquipmentService"/>
         </wsimport>

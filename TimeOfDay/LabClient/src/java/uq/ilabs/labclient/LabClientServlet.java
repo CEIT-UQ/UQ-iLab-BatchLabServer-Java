@@ -5,7 +5,6 @@
 package uq.ilabs.labclient;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,9 +94,7 @@ public class LabClientServlet extends HttpServlet {
                 int couponId = 0;
                 String passkey = null;
                 Map<String, String[]> parameterMap = request.getParameterMap();
-                Iterator iterator = parameterMap.keySet().iterator();
-                while (iterator.hasNext()) {
-                    String key = (String) iterator.next();
+                for (String key : parameterMap.keySet()) {
                     if (key.equalsIgnoreCase(Consts.STRREQ_CouponId)) {
                         couponId = Integer.parseInt(request.getParameter(key));
                     } else if (key.equalsIgnoreCase(Consts.STRREQ_Coupon_Id)) {

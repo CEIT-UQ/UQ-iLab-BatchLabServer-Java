@@ -69,17 +69,14 @@
         <sources default="Strontium-90">
             <source>
                 <name>None</name>
-                <location>F</location>
             </source>
             <source>
                 <name>Strontium-90</name>
-                <location>A</location>
             </source>
         </sources>
         <absorbers default="None">
             <absorber>
                 <name>None</name>
-                <location>A</location>
             </absorber>
         </absorbers>
         <distances>
@@ -107,6 +104,7 @@
         </vdnTotaltime>
     </validation>
     <experimentSpecification>
+        <setupName />
         <setupId />
         <sourceName />
         <absorberName />
@@ -121,8 +119,8 @@
         <experimentId />
         <sbName />
         <unitId />
-        <setupId />
         <setupName />
+        <setupId />
         <sourceName />
         <absorberName />
         <distance />
@@ -131,8 +129,4 @@
         <dataType />
         <dataVector />
     </experimentResult>
-    <resultsApplet>
-        <archive></archive>
-        <code></code>
-    </resultsApplet>
 </labConfiguration>

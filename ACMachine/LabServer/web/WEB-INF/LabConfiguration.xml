@@ -83,6 +83,7 @@
         </setup>
     </configuration>
     <experimentSpecification>
+        <setupName />
         <setupId />
     </experimentSpecification>
     <experimentResult>
@@ -92,7 +93,7 @@
         <experimentId />
         <sbName />
         <unitId />
-        <setupId />
         <setupName />
+        <setupId />
     </experimentResult>
 </labConfiguration>

@@ -160,6 +160,7 @@
         </vdnLoad>
     </validation>
     <experimentSpecification>
+        <setupName />
         <setupId />
         <speedMin />
         <speedMax />
@@ -178,7 +179,7 @@
         <experimentId />
         <sbName />
         <unitId />
-        <setupId />
         <setupName />
+        <setupId />
     </experimentResult>
 </labConfiguration>

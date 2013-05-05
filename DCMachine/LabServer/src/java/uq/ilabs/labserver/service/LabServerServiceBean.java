@@ -48,6 +48,7 @@ public class LabServerServiceBean {
     private static final String STRLOG_ExperimentId_arg = "ExperimentId: %d";
     private static final String STRLOG_UserGroupPriorityHint_arg2 = "UserGroup: %s  PriorityHint: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
+    private static final String STRLOG_ClosingLogger_arg = "%s: Closing logger.";
     /*
      * String constants for exception messages
      */
@@ -91,13 +92,7 @@ public class LabServerServiceBean {
                  * Create an instance of the LabManagement
                  */
                 Configuration configuration = new Configuration(null, this.configProperties.getXmlLabConfigurationPath());
-                if (configuration == null) {
-                    throw new NullPointerException(Configuration.class.getSimpleName());
-                }
                 LabManagement labManagement = new LabManagement(this.configProperties, configuration);
-                if (labManagement == null) {
-                    throw new NullPointerException(LabManagement.class.getSimpleName());
-                }
                 LabServerService.setLabManagement(labManagement);
 
                 this.serviceBrokersDB = labManagement.getServiceBrokersDB();
@@ -676,6 +671,7 @@ public class LabServerServiceBean {
         /*
          * Close the logfile
          */
+        Logfile.Write(String.format(STRLOG_ClosingLogger_arg, STR_ClassName));
         Logfile.CloseLogger();
 
         Logfile.WriteCompleted(Level.INFO, STR_ClassName, methodName);

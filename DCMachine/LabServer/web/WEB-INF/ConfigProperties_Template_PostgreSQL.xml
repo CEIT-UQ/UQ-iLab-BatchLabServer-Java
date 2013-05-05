@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>DCMachine LabServer</comment>
+
+    <!-- DBHost: Database driver -->
+    <entry key="DBDriver">org.postgresql.Driver</entry>
+    <!-- DBUrl: Database url which includes the database name -->
+    <entry key="DBUrl">jdbc:postgresql://localhost:5432/DCMachine_LabServer</entry>
+    <!-- DBUser: Database user name, privileges need to be granted for this user to use the database -->
+    <entry key="DBUser"></entry>
+    <!-- DBPassword: Database user's password -->
+    <entry key="DBPassword"></entry>
+
+    <!-- LogAuthentication: If true, log the ServiceBroker's guid and passkey -->
+    <entry key="LogAuthentication">false</entry>
+
+</properties>

@@ -20,8 +20,10 @@ public class Consts extends LabConsts {
     public static final String STRXML_SetupId_RadioactivityVsAbsorber = "RadioactivityVsAbsorber";
     public static final String STRXML_SetupId_SimActivityVsTime = "SimActivityVsTime";
     public static final String STRXML_SetupId_SimActivityVsDistance = "SimActivityVsDistance";
+    public static final String STRXML_SetupId_SimActivityVsAbsorber = "SimActivityVsAbsorber";
     public static final String STRXML_SetupId_SimActivityVsTimeNoDelay = "SimActivityVsTimeNoDelay";
     public static final String STRXML_SetupId_SimActivityVsDistanceNoDelay = "SimActivityVsDistanceNoDelay";
+    public static final String STRXML_SetupId_SimActivityVsAbsorberNoDelay = "SimActivityVsAbsorberNoDelay";
     /*
      * XML Configuration
      */

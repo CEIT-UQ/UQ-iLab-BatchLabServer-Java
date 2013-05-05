@@ -184,8 +184,11 @@ public class ExperimentResult extends LabExperimentResult {
         sw.write(String.format(strFormat, STR_DataType, this.dataType));
         switch (this.setupId) {
             case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorber:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorberNoDelay:
                 sw.write(String.format(strFormat, STR_CountsForAbsorber, ""));
                 break;
+
             default:
                 sw.write(String.format(strFormat, STR_CountsAtDistance, ""));
                 break;
@@ -201,6 +204,8 @@ public class ExperimentResult extends LabExperimentResult {
             }
             switch (this.setupId) {
                 case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
+                case Consts.STRXML_SetupId_SimActivityVsAbsorber:
+                case Consts.STRXML_SetupId_SimActivityVsAbsorberNoDelay:
                     sw.write(String.format(strFormat, this.absorberList[i], csvString));
                     break;
                 default:

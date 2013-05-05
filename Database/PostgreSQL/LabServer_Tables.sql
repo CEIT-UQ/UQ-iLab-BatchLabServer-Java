@@ -11,13 +11,37 @@ CREATE TABLE Queue
     UserGroup varchar(64) NOT NULL,
     PriorityHint integer NOT NULL,
     XmlSpecification varchar NOT NULL,
-    EstExecutionTime integer NOT NULL,
+    EstimatedExecTime integer NOT NULL,
     StatusCode varchar(16) NOT NULL,
     UnitId integer DEFAULT -1,
     Cancelled boolean DEFAULT false,
-    DateCreated timestamp DEFAULT current_timestamp,
 
-    PRIMARY KEY(ExperimentId, SbName)
+    PRIMARY KEY (Id),
+    UNIQUE (ExperimentId, SbName)
+);
+
+/********************************************************************************************************************
+*/
+
+DROP TABLE IF EXISTS Results;
+
+CREATE TABLE Results
+(
+    Id serial NOT NULL,
+    ExperimentId int NOT NULL,
+    SbName varchar(32) NOT NULL,
+    UserGroup varchar(64) NOT NULL,
+    PriorityHint int NOT NULL,
+    StatusCode varchar(16) NOT NULL,
+    XmlExperimentResult varchar,
+    XmlResultExtension varchar(2048),
+    XmlBlobExtension varchar(2048),
+    WarningMessages varchar(2048),
+    ErrorMessage varchar(2048),
+    Notified boolean DEFAULT false,
+
+    PRIMARY KEY (Id),
+    UNIQUE (ExperimentId, SbName)
 );
 
 /********************************************************************************************************************
@@ -41,31 +65,26 @@ CREATE TABLE Statistics
     TimeCompleted timestamp,
     Cancelled boolean DEFAULT false,
 
-    PRIMARY KEY(ExperimentId, SbName)
+    PRIMARY KEY (Id),
+    UNIQUE (ExperimentId, SbName)
 );
 
 /********************************************************************************************************************
 */
 
-DROP TABLE IF EXISTS Results;
+DROP TABLE IF EXISTS LabEquipment;
 
-CREATE TABLE Results
+CREATE TABLE LabEquipment
 (
     Id serial NOT NULL,
-    ExperimentId int NOT NULL,
-    SbName varchar(32) NOT NULL,
-    UserGroup varchar(64) NOT NULL,
-    PriorityHint int NOT NULL,
-    StatusCode varchar(16) NOT NULL,
-    XmlExperimentResult varchar NULL,
-    XmlResultExtension varchar(2048) NULL,
-    XmlBlobExtension varchar(2048) NULL,
-    WarningMessages varchar(2048) NULL,
-    ErrorMessage varchar(2048) NULL,
-    Notified boolean DEFAULT false,
+    ServiceUrl varchar(256),
+    Passkey varchar(40),
+    Enabled boolean DEFAULT false,
     DateCreated timestamp DEFAULT current_timestamp,
+    DateModified timestamp,
 
-    PRIMARY KEY(ExperimentId, SbName)
+    PRIMARY KEY (Id),
+    UNIQUE (ServiceUrl)
 );
 
 /********************************************************************************************************************
@@ -86,24 +105,8 @@ CREATE TABLE LabServer
     DateCreated timestamp DEFAULT current_timestamp,
     DateModified timestamp,
 
-    PRIMARY KEY(Name)
-);
-
-/********************************************************************************************************************
-*/
-
-DROP TABLE IF EXISTS LabEquipment;
-
-CREATE TABLE LabEquipment
-(
-    Id serial NOT NULL,
-    ServiceUrl varchar(256),
-    Passkey varchar(40),
-    Enabled boolean DEFAULT false,
-    DateCreated timestamp DEFAULT current_timestamp,
-    DateModified timestamp,
-
-    PRIMARY KEY(Id)
+    PRIMARY KEY (Id),
+    UNIQUE (Name)
 );
 
 /********************************************************************************************************************
@@ -123,7 +126,8 @@ CREATE TABLE ServiceBrokers
     DateCreated timestamp DEFAULT current_timestamp,
     DateModified timestamp,
 
-    PRIMARY KEY(Name)
+    PRIMARY KEY(Id),
+    UNIQUE(Name)
 );
 
 /********************************************************************************************************************
@@ -138,11 +142,12 @@ CREATE TABLE Users
     FirstName varchar(64) NOT NULL,
     LastName varchar(64) NOT NULL,
     ContactEmail varchar(128) NOT NULL,
-    UserGroup varchar(32) NOT NULL,
+    UserGroup varchar(64) NOT NULL,
     Password varchar(40) NOT NULL,
     AccountLocked boolean DEFAULT FALSE,
     DateCreated timestamp DEFAULT current_timestamp,
     DateModified timestamp,
 
-    PRIMARY KEY(Username)
+    PRIMARY KEY(UserId),
+    UNIQUE(Username)
 );

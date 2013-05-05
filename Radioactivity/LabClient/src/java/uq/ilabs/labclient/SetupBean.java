@@ -7,7 +7,6 @@ package uq.ilabs.labclient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.logging.Level;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -532,6 +531,7 @@ public class SetupBean implements Serializable {
                 this.selectedAbsorbersRendered = Boolean.toString(false);
                 this.selectedDistancesRendered = Boolean.toString(false);
                 break;
+
             case Consts.STRXML_SetupId_RadioactivityVsDistance:
             case Consts.STRXML_SetupId_SimActivityVsDistance:
             case Consts.STRXML_SetupId_SimActivityVsDistanceNoDelay:
@@ -547,7 +547,10 @@ public class SetupBean implements Serializable {
                 this.availableDistanceList.removeAll(Arrays.asList(selectedDistances));
                 this.selectedDistanceList.addAll(Arrays.asList(selectedDistances));
                 break;
+
             case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorber:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorberNoDelay:
                 /*
                  * Show selected absorber list and hide selected distance list
                  */
@@ -585,13 +588,11 @@ public class SetupBean implements Serializable {
          * Create an instance of the experiment specification
          */
         ExperimentSpecification experimentSpecification = new ExperimentSpecification(this.labClientSession.getXmlSpecification());
-        if (experimentSpecification == null) {
-            throw new NullPointerException(ExperimentSpecification.class.getSimpleName());
-        }
 
         /*
          * Add specification information
          */
+        experimentSpecification.setSetupName(this.hsomSetupName);
         experimentSpecification.setSetupId(this.setupId);
         experimentSpecification.setSource(this.hsomSource);
         experimentSpecification.setDuration(this.hitDuration);
@@ -601,9 +602,7 @@ public class SetupBean implements Serializable {
          * Create a CSV string of absorbers
          */
         String csvAbsorbers = "";
-        Iterator iterator = this.selectedAbsorberList.iterator();
-        while (iterator.hasNext()) {
-            String absorber = (String) iterator.next();
+        for (String absorber : this.selectedAbsorberList) {
             csvAbsorbers += String.format("%s%s", (!csvAbsorbers.isEmpty()) ? Consts.STR_CsvSplitter : "", absorber);
         }
 
@@ -611,9 +610,7 @@ public class SetupBean implements Serializable {
          * Create a CSV string of distances
          */
         String csvDistances = "";
-        iterator = this.selectedDistanceList.iterator();
-        while (iterator.hasNext()) {
-            String distance = (String) iterator.next();
+        for (String distance : this.selectedDistanceList) {
             csvDistances += String.format("%s%s", (!csvDistances.isEmpty()) ? Consts.STR_CsvSplitter : "", distance);
         }
 
@@ -624,13 +621,17 @@ public class SetupBean implements Serializable {
                 experimentSpecification.setAbsorbers(this.hsomAbsorber);
                 experimentSpecification.setDistances(this.hsomDistance);
                 break;
+
             case Consts.STRXML_SetupId_RadioactivityVsDistance:
             case Consts.STRXML_SetupId_SimActivityVsDistance:
             case Consts.STRXML_SetupId_SimActivityVsDistanceNoDelay:
                 experimentSpecification.setAbsorbers(this.hsomAbsorber);
                 experimentSpecification.setDistances(csvDistances);
                 break;
+
             case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorber:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorberNoDelay:
                 experimentSpecification.setAbsorbers(csvAbsorbers);
                 experimentSpecification.setDistances(this.hsomDistance);
                 break;

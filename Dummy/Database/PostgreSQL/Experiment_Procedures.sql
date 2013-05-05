@@ -8,17 +8,39 @@ DROP FUNCTION IF EXISTS Experiments_Add
 
 CREATE FUNCTION Experiments_Add
 (
-    LabServerGuid varchar(40)
+    LabServerGuid varchar
 )
 RETURNS integer AS
 $BODY$
     INSERT INTO Experiments (
         LabServerGuid
     )
-    VALUES ($1)
+    VALUES (
+        $1
+    )
     RETURNING ExperimentId;
 $BODY$
     LANGUAGE sql VOLATILE;
+
+/********************************************************************************************************************
+*/
+
+DROP FUNCTION IF EXISTS Experiments_Delete
+(
+    integer
+);
+
+CREATE FUNCTION Experiments_Delete
+(
+    ExperimentId integer
+)
+RETURNS integer AS
+$BODY$
+    DELETE FROM Experiments
+    WHERE ExperimentId = $1
+    RETURNING ExperimentId;
+$BODY$
+  LANGUAGE sql VOLATILE;
 
 /********************************************************************************************************************
 */
@@ -32,13 +54,14 @@ CREATE FUNCTION Experiments_GetNextExperimentId
 )
 RETURNS integer AS
 $BODY$
-SELECT
-    CASE
-        WHEN (SELECT count(*) FROM Experiments) = 0 THEN
-            1
-        ELSE
-            (SELECT (max(ExperimentId) + 1) FROM Experiments)
-    END$BODY$
+    SELECT
+        CASE
+            WHEN (SELECT count(*) FROM Experiments) = 0 THEN
+                1
+            ELSE
+                (SELECT (max(ExperimentId) + 1) FROM Experiments)
+        END
+$BODY$
 LANGUAGE sql VOLATILE;
 
 /********************************************************************************************************************
@@ -66,11 +89,11 @@ $BODY$
         CASE
             WHEN $1 IS NULL THEN
                 TRUE
-            WHEN $1 = 'experimentid' THEN
+            WHEN lower($1) = 'experimentid' THEN
                 ExperimentId = $2
-            WHEN $1 = 'labserverguid' THEN
+            WHEN lower($1) = 'labserverguid' THEN
                 LabServerGuid = $3
         END
-    ORDER BY ExperimentId
+    ORDER BY ExperimentId ASC
 $BODY$
     LANGUAGE sql VOLATILE;

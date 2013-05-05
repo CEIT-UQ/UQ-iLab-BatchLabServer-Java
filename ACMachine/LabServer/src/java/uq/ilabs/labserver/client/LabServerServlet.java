@@ -145,6 +145,7 @@ public class LabServerServlet extends HttpServlet {
 
             } catch (Exception ex) {
                 Logfile.WriteError(ex.toString());
+                throw new ServletException(ex.toString());
             }
         }
 

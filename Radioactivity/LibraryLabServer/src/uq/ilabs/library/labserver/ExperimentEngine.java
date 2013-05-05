@@ -63,10 +63,13 @@ public class ExperimentEngine extends LabExperimentEngine {
         switch (setupId) {
             case Consts.STRXML_SetupId_RadioactivityVsTime:
             case Consts.STRXML_SetupId_RadioactivityVsDistance:
+            case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
             case Consts.STRXML_SetupId_SimActivityVsTime:
             case Consts.STRXML_SetupId_SimActivityVsDistance:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorber:
             case Consts.STRXML_SetupId_SimActivityVsTimeNoDelay:
             case Consts.STRXML_SetupId_SimActivityVsDistanceNoDelay:
+            case Consts.STRXML_SetupId_SimActivityVsAbsorberNoDelay:
                 driverGeneric = new DriverEquipment((Configuration) this.labManagement.getLabConfiguration(),
                         this.labManagement.getLabEquipmentServiceInfoList().get(this.unitId));
                 break;

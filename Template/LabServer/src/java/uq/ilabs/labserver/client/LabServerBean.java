@@ -30,6 +30,10 @@ public class LabServerBean implements Serializable {
     private static final String STR_ClassName = LabServerBean.class.getName();
     private static final Level logLevel = Level.FINE;
     /*
+     * String constants for logfile messages
+     */
+    private static final String STRLOG_ClosingLogger_arg = "%s: Closing logger.";
+    /*
      * String constants
      */
     private static final String STR_User_arg = "User: %s";
@@ -141,6 +145,7 @@ public class LabServerBean implements Serializable {
          * otherwise let the service close the logger when it is finished.
          */
         if (LabServerService.isInitialised() == false) {
+            Logfile.Write(String.format(STRLOG_ClosingLogger_arg, STR_ClassName));
             Logfile.CloseLogger();
         }
 

@@ -202,9 +202,6 @@ public class ResultsBean implements Serializable {
             }
 
             ExperimentResult experimentResult = new ExperimentResult(resultReport.getXmlExperimentResults());
-            if (experimentResult == null) {
-                throw new NullPointerException(ExperimentResult.class.getSimpleName());
-            }
 
             /*
              * Check for correct experiment type

@@ -5,7 +5,6 @@
 package uq.ilabs.library.labserver;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.logging.Level;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -22,20 +21,11 @@ public class Configuration extends LabConfiguration {
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = Configuration.class.getName();
     private static final Level logLevel = Level.FINE;
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Variables">
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Properties">
-    HashMap<String, Character> sourceNameLocationMap;
-    HashMap<String, Character> absorberNameLocationMap;
-
-    public HashMap<String, Character> getSourceNameLocationMap() {
-        return sourceNameLocationMap;
-    }
-
-    public HashMap<String, Character> getAbsorberNameLocationMap() {
-        return absorberNameLocationMap;
-    }
+    /*
+     * String constants for logfile messages
+     */
+    private static final String STRLOG_Sources_arg = "Sources: %s";
+    private static final String STRLOG_Absorbers_arg = "Absorbers: %s";
     //</editor-fold>
 
     /**
@@ -62,32 +52,47 @@ public class Configuration extends LabConfiguration {
              */
             Node node = XmlUtilities.GetChildNode(nodeConfiguration, Consts.STRXML_Sources);
             ArrayList nodeList = XmlUtilities.GetChildNodeList(node, Consts.STRXML_Source);
-            this.sourceNameLocationMap = new HashMap<>();
+            String[] sourceNames = new String[nodeList.size()];
             for (int i = 0; i < nodeList.size(); i++) {
                 /*
                  * Get the source name
                  */
                 Node nodeSource = (Node) nodeList.get(i);
-                String name = XmlUtilities.GetChildValue(nodeSource, Consts.STRXML_Name);
-                String location = XmlUtilities.GetChildValue(nodeSource, Consts.STRXML_Location);
-                this.sourceNameLocationMap.put(name, location.charAt(0));
+                sourceNames[i] = XmlUtilities.GetChildValue(nodeSource, Consts.STRXML_Name);
             }
+
+            /*
+             * Create a CSV string of absorbers
+             */
+            String csvSources = "";
+            for (String sourceName : sourceNames) {
+                csvSources += String.format("%s%s", (!csvSources.isEmpty()) ? Consts.STR_CsvSplitter : "", sourceName);
+            }
+            Logfile.Write(logLevel, String.format(STRLOG_Sources_arg, csvSources));
 
             /*
              * Get all absorber names and their locations
              */
             node = XmlUtilities.GetChildNode(nodeConfiguration, Consts.STRXML_Absorbers);
             nodeList = XmlUtilities.GetChildNodeList(node, Consts.STRXML_Absorber);
-            this.absorberNameLocationMap = new HashMap<>();
+            String[] absorberNames = new String[nodeList.size()];
             for (int i = 0; i < nodeList.size(); i++) {
                 /*
                  * Get the source name
                  */
-                Node nodeSource = (Node) nodeList.get(i);
-                String name = XmlUtilities.GetChildValue(nodeSource, Consts.STRXML_Name);
-                String location = XmlUtilities.GetChildValue(nodeSource, Consts.STRXML_Location);
-                this.absorberNameLocationMap.put(name, location.charAt(0));
+                Node nodeAbsorber = (Node) nodeList.get(i);
+                absorberNames[i] = XmlUtilities.GetChildValue(nodeAbsorber, Consts.STRXML_Name);
             }
+
+            /*
+             * Create a CSV string of absorbers
+             */
+            String csvAbsorbers = "";
+            for (String absorberName : absorberNames) {
+                csvAbsorbers += String.format("%s%s", (!csvAbsorbers.isEmpty()) ? Consts.STR_CsvSplitter : "", absorberName);
+            }
+            Logfile.Write(logLevel, String.format(STRLOG_Absorbers_arg, csvAbsorbers));
+
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
             throw ex;

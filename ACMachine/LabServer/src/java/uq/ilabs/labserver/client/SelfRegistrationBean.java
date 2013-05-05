@@ -358,9 +358,6 @@ public class SelfRegistrationBean implements Serializable {
              * Get a proxy to the LabServer service
              */
             LabServerAPI labServerAPI = new LabServerAPI(this.hitServiceUrl);
-            if (labServerAPI == null) {
-                throw new NullPointerException(LabServerAPI.class.getSimpleName());
-            }
             labServerAPI.setIdentifier(serviceBrokerInfo.getGuid());
             labServerAPI.setPasskey(serviceBrokerInfo.getOutPasskey());
 
@@ -506,8 +503,7 @@ public class SelfRegistrationBean implements Serializable {
 
         try {
             LabServerInfo labServerInfo = this.labServerDB.Retrieve();
-            this.registered = (labServerInfo != null);
-            if (this.registered == true) {
+            if (labServerInfo != null) {
                 this.hitLabServerName = labServerInfo.getName();
                 this.hitLabServerGuid = labServerInfo.getGuid();
                 this.hitServiceUrl = labServerInfo.getServiceUrl();
@@ -515,6 +511,8 @@ public class SelfRegistrationBean implements Serializable {
                 this.hitCompletedEmail = labServerInfo.getCompletedEmail();
                 this.hitFailedEmail = labServerInfo.getFailedEmail();
                 this.hcbAuthenticate = labServerInfo.isAuthenticate();
+
+                this.registered = true;
 
                 this.ShowMessageInfo(null);
             } else {

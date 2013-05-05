@@ -54,9 +54,6 @@ public class ExperimentManager extends LabExperimentManager {
              * Create local class instances just to check that all is in order
              */
             ExperimentResult experimentResult = new ExperimentResult((Configuration) this.labManagement.getLabConfiguration());
-            if (experimentResult == null) {
-                throw new NullPointerException(ExperimentResult.class.getSimpleName());
-            }
 
             /*
              * Create instances of the experiment engines

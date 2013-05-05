@@ -21,6 +21,7 @@ import uq.ilabs.library.lab.types.*;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.LabServerAPI;
 import uq.ilabs.servicebroker.database.ExperimentsDB;
+import uq.ilabs.servicebroker.database.types.ExperimentInfo;
 import uq.ilabs.servicebroker.engine.ConfigProperties;
 import uq.ilabs.servicebroker.engine.types.LabServerInfo;
 
@@ -47,6 +48,7 @@ public class ServiceBrokerServiceBean {
     private static final String STRLOG_ServiceBrokerGuid_arg = "ServiceBrokerGuid: %s";
     private static final String STRLOG_LabServerGuid_arg = "LabServerGuid: %s";
     private static final String STRLOG_ExperimentId_arg = " ExperimentId: %d";
+    private static final String STRLOG_NextExperimentId_arg = "Next ExperimentId: %d";
     /*
      * String constants for exception messages
      */
@@ -55,10 +57,11 @@ public class ServiceBrokerServiceBean {
     private static final String STRERR_CouponIdInvalid_arg = "CouponId %d is invalid";
     private static final String STRERR_CouponPasskeyNull = "CouponPasskey is null";
     private static final String STRERR_CouponPasskeyInvalid_arg = "CouponPasskey '%s' is invalid";
+    private static final String STRERR_LabServerUnknown_arg = "LabServer Unknown: %s";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private ConfigProperties configProperties;
-    private ExperimentsDB dbExperiments;
+    private ExperimentsDB dbExperimentsDB;
     private HashMap<String, LabServerAPI> mapLabServerAPI;
     //</editor-fold>
 
@@ -85,23 +88,19 @@ public class ServiceBrokerServiceBean {
 
             try {
                 /*
-                 * Create an instance of the database connection
-                 */
-                DBConnection dbConnection = new DBConnection(this.configProperties.getDbDatabase());
-                if (dbConnection == null) {
-                    throw new NullPointerException(DBConnection.class.getSimpleName());
-                }
-                dbConnection.setHost(this.configProperties.getDbHost());
-                dbConnection.setUser(this.configProperties.getDbUser());
-                dbConnection.setPassword(this.configProperties.getDbPassword());
-
-                /*
                  * Create instance of Experiments database API
                  */
-                this.dbExperiments = new ExperimentsDB(dbConnection);
-                if (this.dbExperiments == null) {
+                DBConnection dbConnection = this.configProperties.getDbConnection();
+                this.dbExperimentsDB = new ExperimentsDB(dbConnection);
+                if (this.dbExperimentsDB == null) {
                     throw new NullPointerException(ExperimentsDB.class.getSimpleName());
                 }
+
+                /*
+                 * Get the next experiment Id from the experiment database
+                 */
+                int nextExperimentId = this.dbExperimentsDB.GetNextExperimentId();
+                Logfile.Write(String.format(STRLOG_NextExperimentId_arg, nextExperimentId));
 
                 /*
                  * Initialise local variables
@@ -127,31 +126,22 @@ public class ServiceBrokerServiceBean {
 
         boolean success = false;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Get the LabServer for the specified experiment
              */
-            String labServerGuid = this.dbExperiments.RetrieveByExperimentId(experimentId);
-            if (labServerGuid != null) {
+            ExperimentInfo experimentInfo = this.dbExperimentsDB.RetrieveByExperimentId(experimentId);
+            if (experimentInfo != null) {
                 /*
                  * Pass to LabServer for processing
                  */
-                LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
+                LabServerAPI labServerAPI = GetLabServerAPI(experimentInfo.getLabServerGuid());
                 success = labServerAPI.Cancel(experimentId);
             }
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -174,9 +164,9 @@ public class ServiceBrokerServiceBean {
 
         edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Pass to LabServer for processing
              */
@@ -185,16 +175,7 @@ public class ServiceBrokerServiceBean {
             proxyWaitEstimate = this.ConvertType(waitEstimate);
 
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -218,32 +199,23 @@ public class ServiceBrokerServiceBean {
 
         edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Get the LabServer for the specified experiment
              */
-            String labServerGuid = this.dbExperiments.RetrieveByExperimentId(experimentId);
-            if (labServerGuid != null) {
+            ExperimentInfo experimentInfo = this.dbExperimentsDB.RetrieveByExperimentId(experimentId);
+            if (experimentInfo != null) {
                 /*
                  * Pass to LabServer for processing
                  */
-                LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
+                LabServerAPI labServerAPI = GetLabServerAPI(experimentInfo.getLabServerGuid());
                 LabExperimentStatus labExperimentStatus = labServerAPI.GetExperimentStatus(experimentId);
                 proxyLabExperimentStatus = this.ConvertType(labExperimentStatus);
             }
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -265,9 +237,9 @@ public class ServiceBrokerServiceBean {
 
         String labConfiguration = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Pass to LabServer for processing
              */
@@ -275,16 +247,7 @@ public class ServiceBrokerServiceBean {
             labConfiguration = labServerAPI.GetLabConfiguration(STR_UserGroup);
 
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -306,9 +269,9 @@ public class ServiceBrokerServiceBean {
 
         String labInfo = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Pass to LabServer for processing
              */
@@ -316,16 +279,7 @@ public class ServiceBrokerServiceBean {
             labInfo = labServerAPI.GetLabInfo();
 
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -348,9 +302,9 @@ public class ServiceBrokerServiceBean {
 
         edu.mit.ilab.LabStatus proxyLabStatus = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Pass to LabServer for processing
              */
@@ -359,16 +313,7 @@ public class ServiceBrokerServiceBean {
             proxyLabStatus = this.ConvertType(labStatus);
 
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -391,32 +336,23 @@ public class ServiceBrokerServiceBean {
 
         edu.mit.ilab.ResultReport proxyResultReport = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Get the LabServer for the specified experiment
              */
-            String labServerGuid = this.dbExperiments.RetrieveByExperimentId(experimentId);
-            if (labServerGuid != null) {
+            ExperimentInfo experimentInfo = this.dbExperimentsDB.RetrieveByExperimentId(experimentId);
+            if (experimentInfo != null) {
                 /*
                  * Pass to LabServer for processing
                  */
-                LabServerAPI labServerAPI = GetLabServerAPI(labServerGuid);
+                LabServerAPI labServerAPI = GetLabServerAPI(experimentInfo.getLabServerGuid());
                 ResultReport resultReport = labServerAPI.RetrieveResult(experimentId);
                 proxyResultReport = this.ConvertType(resultReport);
             }
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -441,13 +377,13 @@ public class ServiceBrokerServiceBean {
 
         edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Get the next experiment Id from the experiment database
              */
-            int experimentId = this.dbExperiments.GetNextExperimentId();
+            int experimentId = this.dbExperimentsDB.GetNextExperimentId();
 
             /*
              * Pass to LabServer for processing
@@ -463,19 +399,10 @@ public class ServiceBrokerServiceBean {
                 /*
                  * Add LabServer to the experiment database
                  */
-                this.dbExperiments.Add(labServerGuid);
+                this.dbExperimentsDB.Add(labServerGuid);
             }
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -498,9 +425,9 @@ public class ServiceBrokerServiceBean {
 
         edu.mit.ilab.ValidationReport proxyValidationReport = null;
 
-        this.Authenticate(sbAuthHeader);
-
         try {
+            this.Authenticate(sbAuthHeader);
+
             /*
              * Pass to LabServer for processing
              */
@@ -509,16 +436,7 @@ public class ServiceBrokerServiceBean {
             proxyValidationReport = this.ConvertType(validationReport);
 
         } catch (ProtocolException ex) {
-            /*
-             * Create a SOAPFaultException to be thrown back to the caller
-             */
-            try {
-                SOAPFault fault = SOAPFactory.newInstance().createFault();
-                fault.setFaultString(ex.getMessage());
-                throw new SOAPFaultException(fault);
-            } catch (SOAPException e) {
-                Logfile.WriteError(e.getMessage());
-            }
+            this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
         }
@@ -576,24 +494,24 @@ public class ServiceBrokerServiceBean {
                  * Check that AuthHeader is specified
                  */
                 if (sbAuthHeader == null) {
-                    throw new ProtocolException(STRERR_SbAuthHeaderNull);
+                    throw new RuntimeException(STRERR_SbAuthHeaderNull);
                 }
 
                 /*
                  * Verify the Coupon Id
                  */
                 if (sbAuthHeader.getCouponID() != this.configProperties.getCouponId()) {
-                    throw new ProtocolException(String.format(STRERR_CouponIdInvalid_arg, sbAuthHeader.getCouponID()));
+                    throw new RuntimeException(String.format(STRERR_CouponIdInvalid_arg, sbAuthHeader.getCouponID()));
                 }
 
                 /*
                  * Verify the Coupon Passkey
                  */
                 if (sbAuthHeader.getCouponPassKey() == null) {
-                    throw new ProtocolException(STRERR_CouponPasskeyNull);
+                    throw new RuntimeException(STRERR_CouponPasskeyNull);
                 }
                 if (sbAuthHeader.getCouponPassKey().equalsIgnoreCase(this.configProperties.getCouponPasskey()) == false) {
-                    throw new ProtocolException(String.format(STRERR_CouponPasskeyInvalid_arg, sbAuthHeader.getCouponPassKey()));
+                    throw new RuntimeException(String.format(STRERR_CouponPasskeyInvalid_arg, sbAuthHeader.getCouponPassKey()));
                 }
 
                 /*
@@ -601,19 +519,10 @@ public class ServiceBrokerServiceBean {
                  */
                 success = true;
 
-            } catch (ProtocolException ex) {
+            } catch (Exception ex) {
                 String message = String.format(STRERR_AccessDenied_arg, ex.getMessage());
                 Logfile.WriteError(message);
-
-                /*
-                 * Create a SOAPFaultException to be thrown back to the caller
-                 */
-                try {
-                    SOAPFault fault = SOAPFactory.newInstance().createFault();
-                    fault.setFaultString(message);
-                    throw new SOAPFaultException(fault);
-                } catch (SOAPException e) {
-                }
+                throw new ProtocolException(message);
             }
         } else {
             success = true;
@@ -639,17 +548,19 @@ public class ServiceBrokerServiceBean {
              * Get LabServer information
              */
             LabServerInfo labServerInfo = this.configProperties.GetLabServerInfo(labServerGuid);
-            if (labServerInfo != null) {
-                /*
-                 * Create an instance of the LabServer API for this service url
-                 */
-                labServerAPI = new LabServerAPI(labServerInfo.getServiceUrl());
-                labServerAPI.setIdentifier(this.configProperties.getServiceBrokerGuid());
-                labServerAPI.setPasskey(labServerInfo.getOutgoingPasskey());
+            if (labServerInfo == null) {
+                throw new ProtocolException(String.format(STRERR_LabServerUnknown_arg, labServerGuid));
             }
 
             /*
-             * Add the BatchLabServerAPI to the map for next time
+             * Create an instance of LabServerAPI for this LabServer
+             */
+            labServerAPI = new LabServerAPI(labServerInfo.getServiceUrl());
+            labServerAPI.setIdentifier(this.configProperties.getServiceBrokerGuid());
+            labServerAPI.setPasskey(labServerInfo.getOutgoingPasskey());
+
+            /*
+             * Add the LabServerAPI to the map for next time
              */
             this.mapLabServerAPI.put(labServerGuid, labServerAPI);
         }
@@ -657,7 +568,24 @@ public class ServiceBrokerServiceBean {
         return labServerAPI;
     }
 
+    /**
+     *
+     * @param message
+     */
+    private void ThrowSOAPFault(String message) {
+        /*
+         * Create a SOAPFaultException to be thrown back to the caller
+         */
+        try {
+            SOAPFault fault = SOAPFactory.newInstance().createFault();
+            fault.setFaultString(message);
+            throw new SOAPFaultException(fault);
+        } catch (SOAPException e) {
+            Logfile.WriteError(e.getMessage());
+        }
+    }
     //<editor-fold defaultstate="collapsed" desc="ConvertType">
+
     /**
      *
      * @param strings

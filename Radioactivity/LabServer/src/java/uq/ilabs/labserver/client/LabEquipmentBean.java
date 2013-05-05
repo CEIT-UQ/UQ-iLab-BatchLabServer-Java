@@ -414,9 +414,6 @@ public class LabEquipmentBean implements Serializable {
              * Get a proxy to the LabEquipment service
              */
             LabEquipmentAPI labEquipmentAPI = new LabEquipmentAPI(this.hitServiceUrl);
-            if (labEquipmentAPI == null) {
-                throw new NullPointerException(LabEquipmentAPI.class.getSimpleName());
-            }
             labEquipmentAPI.setIdentifier(labServerGuid);
             labEquipmentAPI.setPasskey(this.hitPasskey);
 

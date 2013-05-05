@@ -17,10 +17,13 @@ public class Consts extends LabConsts {
      */
     public static final String STRXML_SetupId_RadioactivityVsTime = "RadioactivityVsTime";
     public static final String STRXML_SetupId_RadioactivityVsDistance = "RadioactivityVsDistance";
+    public static final String STRXML_SetupId_RadioactivityVsAbsorber = "RadioactivityVsAbsorber";
     public static final String STRXML_SetupId_SimActivityVsTime = "SimActivityVsTime";
     public static final String STRXML_SetupId_SimActivityVsDistance = "SimActivityVsDistance";
+    public static final String STRXML_SetupId_SimActivityVsAbsorber = "SimActivityVsAbsorber";
     public static final String STRXML_SetupId_SimActivityVsTimeNoDelay = "SimActivityVsTimeNoDelay";
     public static final String STRXML_SetupId_SimActivityVsDistanceNoDelay = "SimActivityVsDistanceNoDelay";
+    public static final String STRXML_SetupId_SimActivityVsAbsorberNoDelay = "SimActivityVsAbsorberNoDelay";
     /*
      * XML elements in the configuration
      */
@@ -53,6 +56,7 @@ public class Consts extends LabConsts {
      */
     public static final String STRXML_DataType = "dataType";
     public static final String STRXML_DataVector = "dataVector";
+    public static final String STRXML_ATTR_AbsorberName = "absorberName";
     public static final String STRXML_ATTR_Distance = "distance";
     public static final String STRXML_ATTR_Units = "units";
 }

@@ -115,9 +115,6 @@ public class DriverEquipment extends DriverGeneric {
              * Create an instance of ExperimentSpecification
              */
             ExperimentSpecification experimentSpecification = new ExperimentSpecification(xmlSpecification);
-            if (experimentSpecification == null) {
-                throw new NullPointerException(ExperimentSpecification.ClassName());
-            }
 
             /*
              * Validate the experiment specification parameters

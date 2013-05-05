@@ -58,9 +58,6 @@ public class DriverSimActivityNoDelay extends DriverRadioactivity {
              * Create an instance of ExperimentSpecification
              */
             ExperimentSpecification experimentSpecification = new ExperimentSpecification(xmlSpecification);
-            if (experimentSpecification == null) {
-                throw new NullPointerException(ExperimentSpecification.ClassName());
-            }
 
             /*
              * Check the setup Id

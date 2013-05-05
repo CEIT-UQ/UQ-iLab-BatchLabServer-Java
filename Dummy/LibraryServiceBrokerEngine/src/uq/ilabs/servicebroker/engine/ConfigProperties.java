@@ -8,9 +8,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
+import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.servicebroker.engine.types.LabServerInfo;
 
@@ -32,8 +32,8 @@ public class ConfigProperties {
      * String constants for configuration properties
      */
     private static final String STRCFG_ServiceBrokerGuid = "ServiceBrokerGuid";
-    private static final String STRCFG_DBDatabase = "DBDatabase";
-    private static final String STRCFG_DBHost = "DBHost";
+    private static final String STRCFG_DBDriver = "DBDriver";
+    private static final String STRCFG_DBUrl = "DBUrl";
     private static final String STRCFG_DBUser = "DBUser";
     private static final String STRCFG_DBPassword = "DBPassword";
     private static final String STRCFG_Authenticating = "Authenticating";
@@ -44,14 +44,12 @@ public class ConfigProperties {
      * String constants for logfile messages
      */
     private static final String STRLOG_Filename_arg = "filename: %s";
+    private static final String STRLOG_LabServerInfo_arg5 = "LabServer %d - Guid: %s  ServiceUrl: %s  OutPasskey: %s  InPasskey: %s";
     /*
      * String constants for exception messages
      */
     private static final String STRERR_Filename = "filename";
-    private static final String STRERR_InputStream = "inputStream";
     private static final String STRERR_ServiceBrokerGuid = "serviceBrokerGuid";
-    private static final String STRERR_DBDatabase = "dbDatabase";
-    private static final String STRERR_DBHost = "dbHost";
     private static final String STRERR_LabServerGuid = "guid";
     private static final String STRERR_LabServerServiceUrl = "serviceUrl";
     private static final String STRERR_LabServerOutPasskey = "outPasskey";
@@ -65,35 +63,20 @@ public class ConfigProperties {
     private static final int INDEX_LabServerInPasskey = 3;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
+    private DBConnection dbConnection;
     private String serviceBrokerGuid;
-    private String dbHost;
-    private String dbDatabase;
-    private String dbUser;
-    private String dbPassword;
     private boolean authenticating;
     private boolean logAuthentication;
     private long couponId;
     private String couponPasskey;
     private ArrayList<LabServerInfo> labServers;
 
+    public DBConnection getDbConnection() {
+        return dbConnection;
+    }
+
     public String getServiceBrokerGuid() {
         return serviceBrokerGuid;
-    }
-
-    public String getDbHost() {
-        return dbHost;
-    }
-
-    public String getDbDatabase() {
-        return dbDatabase;
-    }
-
-    public String getDbUser() {
-        return dbUser;
-    }
-
-    public String getDbPassword() {
-        return dbPassword;
     }
 
     public boolean isAuthenticating() {
@@ -142,16 +125,39 @@ public class ConfigProperties {
              * Load the configuration properties from the specified file
              */
             InputStream inputStream = new FileInputStream(filename);
-            if (inputStream == null) {
-                throw new NullPointerException(STRERR_InputStream);
+            Properties configProperties = new Properties();
+            configProperties.loadFromXML(inputStream);
+
+            /*
+             * Get the database information
+             */
+            String dbDriver = configProperties.getProperty(STRCFG_DBDriver);
+            if (dbDriver.trim().isEmpty()) {
+                throw new IllegalArgumentException(STRCFG_DBDriver);
             }
-            Properties properties = new Properties();
-            properties.loadFromXML(inputStream);
+            String dbUrl = configProperties.getProperty(STRCFG_DBUrl);
+            if (dbUrl.trim().isEmpty()) {
+                throw new IllegalArgumentException(STRCFG_DBUrl);
+            }
+            String dbUser = configProperties.getProperty(STRCFG_DBUser);
+            dbUser = (dbUser.trim().isEmpty() == false) ? dbUser.trim() : null;
+            String dbPassword = configProperties.getProperty(STRCFG_DBPassword);
+            dbPassword = (dbPassword.trim().isEmpty() == false) ? dbPassword.trim() : null;
+
+            /*
+             * Create an instance of the database connection
+             */
+            this.dbConnection = new DBConnection(dbDriver, dbUrl);
+            if (this.dbConnection == null) {
+                throw new NullPointerException(DBConnection.class.getSimpleName());
+            }
+            this.dbConnection.setUser(dbUser);
+            this.dbConnection.setPassword(dbPassword);
 
             /*
              * Get the ServiceBroker Guid
              */
-            this.serviceBrokerGuid = properties.getProperty(STRCFG_ServiceBrokerGuid);
+            this.serviceBrokerGuid = configProperties.getProperty(STRCFG_ServiceBrokerGuid);
             if (this.serviceBrokerGuid == null) {
                 /*
                  * The entry does not exist
@@ -167,32 +173,16 @@ public class ConfigProperties {
             }
 
             /*
-             * Get the database information
-             */
-            this.dbHost = properties.getProperty(STRCFG_DBHost);
-            if (this.dbHost.trim().isEmpty()) {
-                throw new IllegalArgumentException(STRERR_DBHost);
-            }
-            this.dbDatabase = properties.getProperty(STRCFG_DBDatabase);
-            if (this.dbDatabase.trim().isEmpty()) {
-                throw new IllegalArgumentException(STRERR_DBDatabase);
-            }
-            this.dbUser = properties.getProperty(STRCFG_DBUser);
-            this.dbUser = (this.dbUser.trim().isEmpty() == false) ? this.dbUser.trim() : null;
-            this.dbPassword = properties.getProperty(STRCFG_DBPassword);
-            this.dbPassword = (this.dbPassword.trim().isEmpty() == false) ? this.dbPassword.trim() : null;
-
-            /*
              * Get LabClient authentication
              */
-            this.authenticating = Boolean.parseBoolean(properties.getProperty(STRCFG_Authenticating, Boolean.toString(true)));
-            this.logAuthentication = Boolean.parseBoolean(properties.getProperty(STRCFG_LogAuthentication, Boolean.toString(false)));
+            this.authenticating = Boolean.parseBoolean(configProperties.getProperty(STRCFG_Authenticating, Boolean.toString(true)));
+            this.logAuthentication = Boolean.parseBoolean(configProperties.getProperty(STRCFG_LogAuthentication, Boolean.toString(false)));
 
             /*
              * Get coupon Id and passkey for LabClient authentication
              */
-            this.couponId = Long.parseLong(properties.getProperty(STRCFG_CouponId));
-            this.couponPasskey = properties.getProperty(STRCFG_CouponPasskey);
+            this.couponId = Long.parseLong(configProperties.getProperty(STRCFG_CouponId));
+            this.couponPasskey = configProperties.getProperty(STRCFG_CouponPasskey);
 
             /*
              * Get the LabServer service information
@@ -202,7 +192,7 @@ public class ConfigProperties {
                 /*
                  * Get the LabServer info if it exists
                  */
-                String csvLabServerInfo = properties.getProperty(String.format(STR_LabServer_arg, i));
+                String csvLabServerInfo = configProperties.getProperty(String.format(STR_LabServer_arg, i));
                 if (csvLabServerInfo == null) {
                     break;
                 }
@@ -230,25 +220,27 @@ public class ConfigProperties {
                 /*
                  * Extract the outgoing passkey and check
                  */
-                String outgoingPasskey = splitLabServerInfo[INDEX_LabServerOutPasskey];
-                if (outgoingPasskey == null || outgoingPasskey.trim().isEmpty()) {
+                String outPasskey = splitLabServerInfo[INDEX_LabServerOutPasskey];
+                if (outPasskey == null || outPasskey.trim().isEmpty()) {
                     throw new NullPointerException(STRERR_LabServerOutPasskey);
                 }
-                outgoingPasskey = outgoingPasskey.trim();
+                outPasskey = outPasskey.trim();
 
                 /*
                  * Extract the incoming passkey and check
                  */
-                String incomingPasskey = splitLabServerInfo[INDEX_LabServerInPasskey];
-                if (incomingPasskey == null || incomingPasskey.trim().isEmpty()) {
+                String inPasskey = splitLabServerInfo[INDEX_LabServerInPasskey];
+                if (inPasskey == null || inPasskey.trim().isEmpty()) {
                     throw new NullPointerException(STRERR_LabServerInPasskey);
                 }
-                incomingPasskey = incomingPasskey.trim();
+                inPasskey = inPasskey.trim();
 
                 /*
                  * Store information
                  */
-                this.labServers.add(new LabServerInfo(guid, serviceUrl, outgoingPasskey, incomingPasskey));
+                this.labServers.add(new LabServerInfo(guid, serviceUrl, outPasskey, inPasskey));
+
+                Logfile.Write(String.format(STRLOG_LabServerInfo_arg5, i, guid, serviceUrl, outPasskey, inPasskey));
             }
         } catch (NullPointerException | IllegalArgumentException | IOException ex) {
             Logfile.WriteError(ex.toString());
@@ -267,18 +259,14 @@ public class ConfigProperties {
         LabServerInfo labServerInfo = null;
 
         /*
-         * Create an iterator to search for the specified guid
+         * Search for the specified guid
          */
-        Iterator iterator = this.labServers.iterator();
-        while (iterator.hasNext()) {
-            /*
-             * Get the next LabServer information and check guid
-             */
-            labServerInfo = (LabServerInfo) iterator.next();
-            if (labServerInfo.getGuid().equalsIgnoreCase(guid) == true) {
+        for (LabServerInfo _labServerInfo : this.labServers) {
+            if (_labServerInfo.getGuid().equalsIgnoreCase(guid) == true) {
                 /*
                  * Found it
                  */
+                labServerInfo = _labServerInfo;
                 break;
             }
         }

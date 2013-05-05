@@ -54,6 +54,7 @@
         </someParameter>
     </validation>
     <experimentSpecification>
+        <setupName />
         <setupId />
         <someParameter />
     </experimentSpecification>
@@ -64,8 +65,8 @@
         <experimentId />
         <sbName />
         <unitId />
-        <setupId />
         <setupName />
+        <setupId />
         <someParameter />
         <someResult />
     </experimentResult>

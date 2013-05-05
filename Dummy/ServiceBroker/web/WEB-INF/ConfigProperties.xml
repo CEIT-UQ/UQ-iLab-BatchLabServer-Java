@@ -6,10 +6,10 @@
     <!-- ServiceBrokerGuid: ServiceBroker's Globally Unique Identifer maximum 40 characters -->
     <entry key="ServiceBrokerGuid">196495303F294B13856D7E48872E51CC</entry>
 
-    <!-- DBHost: Database host -->
-    <entry key="DBHost">localhost</entry>
-    <!-- DBDatabase: Database name -->
-    <entry key="DBDatabase">Dummy_ServiceBroker</entry>
+    <!-- DBHost: Database driver -->
+    <entry key="DBDriver">org.postgresql.Driver</entry>
+    <!-- DBUrl: Database url which includes the database name -->
+    <entry key="DBUrl">jdbc:postgresql://localhost:5432/Dummy_ServiceBroker</entry>
     <!-- DBUser: Database user name, privileges need to be granted for this user to use the database -->
     <entry key="DBUser">ServiceBroker</entry>
     <!-- DBPassword: Database user's password -->
