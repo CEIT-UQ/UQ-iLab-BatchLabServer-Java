@@ -530,6 +530,11 @@ public class SetupBean implements Serializable {
                  */
                 this.selectedAbsorbersRendered = Boolean.toString(false);
                 this.selectedDistancesRendered = Boolean.toString(false);
+
+                /*
+                 * Select distance
+                 */
+                this.hsomDistance = selectedDistances[0];
                 break;
 
             case Consts.STRXML_SetupId_RadioactivityVsDistance:
@@ -546,6 +551,11 @@ public class SetupBean implements Serializable {
                  */
                 this.availableDistanceList.removeAll(Arrays.asList(selectedDistances));
                 this.selectedDistanceList.addAll(Arrays.asList(selectedDistances));
+
+                /*
+                 * Select distance
+                 */
+                this.hsomDistance = this.availableDistanceList.get(0);
                 break;
 
             case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
@@ -562,6 +572,11 @@ public class SetupBean implements Serializable {
                  */
                 this.availableAbsorberList.removeAll(Arrays.asList(selectedAbsorbers));
                 this.selectedAbsorberList.addAll(Arrays.asList(selectedAbsorbers));
+
+                /*
+                 * Select distance
+                 */
+                this.hsomDistance = selectedDistances[0];
                 break;
         }
 
@@ -570,7 +585,6 @@ public class SetupBean implements Serializable {
          */
         this.hsomSource = this.defaultSource;
         this.hsomAbsorber = this.defaultAbsorber;
-        this.hsomDistance = this.availableDistanceList.get(0);
 
         /*
          * Hide the information message
