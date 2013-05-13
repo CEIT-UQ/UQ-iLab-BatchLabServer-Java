@@ -84,28 +84,6 @@ public class ServiceBrokersDB {
 
     /**
      *
-     * @param guid
-     * @return String
-     */
-    public String GetNameByGuid(String guid) {
-        ServiceBrokerInfo serviceBrokerInfo = this.RetrieveByGuid(guid);
-        return (serviceBrokerInfo != null) ? serviceBrokerInfo.getName() : null;
-    }
-
-    /**
-     * Get the web service URL for the specified ServiceBroker's name. If the ServiceBroker's name was not found, null
-     * is returned.
-     *
-     * @param name The ServiceBroker's name.
-     * @return The web service URL.
-     */
-    public String GetServiceUrlByName(String name) {
-        ServiceBrokerInfo serviceBrokerInfo = this.RetrieveByName(name);
-        return (serviceBrokerInfo != null) ? serviceBrokerInfo.getServiceUrl() : null;
-    }
-
-    /**
-     *
      * @param serviceBrokerInfo
      * @return integer
      */
@@ -142,21 +120,17 @@ public class ServiceBrokersDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 id = (int) sqlStatement.getInt(1);
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
         }
 
@@ -192,16 +166,12 @@ public class ServiceBrokersDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 success = ((int) sqlStatement.getInt(1) == id);
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -238,8 +208,8 @@ public class ServiceBrokersDB {
      * @return ServiceBrokerInfo
      */
     public ServiceBrokerInfo RetrieveById(int id) {
-        ArrayList<ServiceBrokerInfo> list = this.RetrieveBy(STRCOL_Id, id, null);
-        return (list != null) ? list.get(0) : null;
+        ArrayList<ServiceBrokerInfo> arrayList = this.RetrieveBy(STRCOL_Id, id, null);
+        return (arrayList != null) ? arrayList.get(0) : null;
     }
 
     /**
@@ -248,8 +218,8 @@ public class ServiceBrokersDB {
      * @return ServiceBrokerInfo
      */
     public ServiceBrokerInfo RetrieveByName(String name) {
-        ArrayList<ServiceBrokerInfo> list = this.RetrieveBy(STRCOL_Name, 0, name);
-        return (list != null) ? list.get(0) : null;
+        ArrayList<ServiceBrokerInfo> arrayList = this.RetrieveBy(STRCOL_Name, 0, name);
+        return (arrayList != null) ? arrayList.get(0) : null;
     }
 
     /**
@@ -258,8 +228,8 @@ public class ServiceBrokersDB {
      * @return ServiceBrokerInfo
      */
     public ServiceBrokerInfo RetrieveByGuid(String guid) {
-        ArrayList<ServiceBrokerInfo> list = this.RetrieveBy(STRCOL_Guid, 0, guid);
-        return (list != null) ? list.get(0) : null;
+        ArrayList<ServiceBrokerInfo> arrayList = this.RetrieveBy(STRCOL_Guid, 0, guid);
+        return (arrayList != null) ? arrayList.get(0) : null;
     }
 
     /**
@@ -301,21 +271,17 @@ public class ServiceBrokersDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 success = ((int) sqlStatement.getInt(1) == serviceBrokerInfo.getId());
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
         }
 
@@ -336,10 +302,10 @@ public class ServiceBrokersDB {
         final String methodName = "GetList";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        String[] listArray = null;
+        String[] stringArray = null;
 
         try {
-            ArrayList<String> list = new ArrayList<>();
+            ArrayList<String> arrayList = new ArrayList<>();
             CallableStatement sqlStatement = null;
 
             try {
@@ -347,25 +313,21 @@ public class ServiceBrokersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = sqlConnection.prepareCall(STRSQLCMD_GetList);
-                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setString(2, strval);
 
                 /*
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
-
-                /*
-                 * Add result to the list
-                 */
                 while (resultSet.next() == true) {
-                    list.add(resultSet.getString(STRCOL_Name));
+                    arrayList.add(resultSet.getString(STRCOL_Name));
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -374,17 +336,17 @@ public class ServiceBrokersDB {
             /*
              * Convert the list to an array
              */
-            if (list.size() > 0) {
-                listArray = list.toArray(new String[0]);
+            if (arrayList.size() > 0) {
+                stringArray = arrayList.toArray(new String[0]);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Count_arg, (listArray != null) ? listArray.length : 0));
+                String.format(STRLOG_Count_arg, (stringArray != null) ? stringArray.length : 0));
 
-        return listArray;
+        return stringArray;
     }
 
     /**
@@ -398,7 +360,7 @@ public class ServiceBrokersDB {
         final String methodName = "RetrieveBy";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        ArrayList<ServiceBrokerInfo> list = new ArrayList<>();
+        ArrayList<ServiceBrokerInfo> arrayList = new ArrayList<>();
 
         try {
             CallableStatement sqlStatement = null;
@@ -408,7 +370,7 @@ public class ServiceBrokersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -416,12 +378,9 @@ public class ServiceBrokersDB {
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
-
-                /*
-                 * Process the results of the query - only want the first result
-                 */
                 while (resultSet.next() == true) {
                     ServiceBrokerInfo serviceBrokerInfo = new ServiceBrokerInfo();
+
                     serviceBrokerInfo.setId(resultSet.getInt(STRCOL_Id));
                     serviceBrokerInfo.setName(resultSet.getString(STRCOL_Name));
                     serviceBrokerInfo.setGuid(resultSet.getString(STRCOL_Guid));
@@ -444,15 +403,15 @@ public class ServiceBrokersDB {
                     }
 
                     /*
-                     * Add the info to the list
+                     * Add the ServiceBrokerInfo to the list
                      */
-                    list.add(serviceBrokerInfo);
+                    arrayList.add(serviceBrokerInfo);
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -462,8 +421,8 @@ public class ServiceBrokersDB {
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Count_arg, list.size()));
+                String.format(STRLOG_Count_arg, arrayList.size()));
 
-        return (list.size() > 0) ? list : null;
+        return (arrayList.size() > 0) ? arrayList : null;
     }
 }

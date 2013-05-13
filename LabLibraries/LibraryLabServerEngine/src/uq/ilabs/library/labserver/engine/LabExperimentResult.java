@@ -13,7 +13,7 @@ import uq.ilabs.library.lab.types.ResultReport;
 import uq.ilabs.library.lab.types.StatusCodes;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
-import uq.ilabs.library.labserver.engine.types.ExperimentResultInfo;
+import uq.ilabs.library.labserver.database.types.ExperimentResultInfo;
 import uq.ilabs.library.labserver.engine.types.LabExperimentInfo;
 
 /**
@@ -51,6 +51,7 @@ public class LabExperimentResult {
     protected int queueId;
     protected int experimentId;
     protected String sbName;
+    protected String setupName;
     protected String setupId;
     protected String userGroup;
     protected int priorityHint;
@@ -77,6 +78,10 @@ public class LabExperimentResult {
 
     public String getSbName() {
         return sbName;
+    }
+
+    public String getSetupName() {
+        return setupName;
     }
 
     public String getSetupId() {
@@ -207,13 +212,16 @@ public class LabExperimentResult {
             /*
              * Set local variables
              */
-            this.queueId = labExperimentInfo.getQueueId();
+            this.queueId = labExperimentInfo.getId();
             this.experimentId = labExperimentInfo.getExperimentId();
             this.sbName = labExperimentInfo.getSbName();
             this.userGroup = labExperimentInfo.getUserGroup();
             this.priorityHint = labExperimentInfo.getPriorityHint();
             this.unitId = labExperimentInfo.getUnitId();
             this.setupId = labExperimentInfo.getSetupId();
+            if ((this.setupName = labExperimentInfo.getSetupName()) == null) {
+                this.setupName = this.setupNames.getProperty(this.setupId);
+            }
 
             success = true;
         } catch (NullPointerException ex) {
@@ -247,9 +255,6 @@ public class LabExperimentResult {
              * Create an instance of ExperimentResultInfo
              */
             experimentResultInfo = new ExperimentResultInfo();
-            if (experimentResultInfo == null) {
-                throw new NullPointerException(ExperimentResultInfo.class.getSimpleName());
-            }
 
             /*
              * Fill in the result information
@@ -267,8 +272,9 @@ public class LabExperimentResult {
             experimentResultInfo.setXmlBlobExtension(this.resultReport.getXmlBlobExtension());
             experimentResultInfo.setWarningMessages(this.resultReport.getWarningMessages());
             experimentResultInfo.setErrorMessage(this.resultReport.getErrorMessage());
-            experimentResultInfo.setXmlExperimentResults(this.ToXmlString());
-
+            if (experimentResultInfo.getStatusCode() != StatusCodes.Cancelled) {
+                experimentResultInfo.setXmlExperimentResult(this.ToXmlString());
+            }
         } catch (NullPointerException ex) {
             Logfile.WriteError(ex.toString());
         }
@@ -307,11 +313,8 @@ public class LabExperimentResult {
             XmlUtilities.SetChildValue(this.nodeExperimentResult, LabConsts.STRXML_ExperimentId, this.experimentId);
             XmlUtilities.SetChildValue(this.nodeExperimentResult, LabConsts.STRXML_SbName, this.sbName);
             XmlUtilities.SetChildValue(this.nodeExperimentResult, LabConsts.STRXML_UnitId, this.unitId);
+            XmlUtilities.SetChildValue(this.nodeExperimentResult, LabConsts.STRXML_SetupName, this.setupName);
             XmlUtilities.SetChildValue(this.nodeExperimentResult, LabConsts.STRXML_SetupId, this.setupId);
-            String setupName = this.setupNames.getProperty(this.setupId);
-            if (setupName != null) {
-                XmlUtilities.SetChildValue(this.nodeExperimentResult, LabConsts.STRXML_SetupName, setupName);
-            }
 
             /*
              * Add result information to the XML document

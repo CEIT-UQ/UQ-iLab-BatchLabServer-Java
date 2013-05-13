@@ -12,6 +12,11 @@ import java.util.Calendar;
  */
 public class ServiceBrokerInfo {
 
+    public static final int MAXLEN_Name = 32;
+    public static final int MAXLEN_Guid = 40;
+    public static final int MAXLEN_OutPasskey = 40;
+    public static final int MAXLEN_InPasskey = 40;
+    public static final int MAXLEN_ServiceUrl = 256;
     /**
      * ServiceBroker's Id in the database
      */
@@ -25,6 +30,10 @@ public class ServiceBrokerInfo {
      */
     private String guid;
     /**
+     * URL of the ServiceBroker that will be notified of experiment completion
+     */
+    private String serviceUrl;
+    /**
      * The passkey sent to the LabServer in the SOAP header object. The passkey identifies the calling ServiceBroker to
      * the LabServer.
      */
@@ -35,12 +44,8 @@ public class ServiceBrokerInfo {
      */
     private String inPasskey;
     /**
-     * URL of the ServiceBroker that will be notified of experiment completion
-     */
-    private String serviceUrl;
-    /**
-     * Determines if calls from the ServiceBroker to the LabServer's web service is permitted. If true, the LabServer
-     * allows calls from the ServieBroker.
+     * Determines if calls from the ServiceBroker to the LabServer's web service are permitted. If true, the LabServer
+     * allows calls from the ServiceBroker.
      */
     private boolean permitted;
     /**
@@ -76,6 +81,14 @@ public class ServiceBrokerInfo {
         this.guid = guid;
     }
 
+    public String getServiceUrl() {
+        return serviceUrl;
+    }
+
+    public void setServiceUrl(String serviceUrl) {
+        this.serviceUrl = serviceUrl;
+    }
+
     public String getOutPasskey() {
         return outPasskey;
     }
@@ -90,14 +103,6 @@ public class ServiceBrokerInfo {
 
     public void setInPasskey(String inPasskey) {
         this.inPasskey = inPasskey;
-    }
-
-    public String getServiceUrl() {
-        return serviceUrl;
-    }
-
-    public void setServiceUrl(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
     }
 
     public boolean isPermitted() {
@@ -126,16 +131,5 @@ public class ServiceBrokerInfo {
 
     public ServiceBrokerInfo() {
         this.id = -1;
-    }
-
-    public ServiceBrokerInfo(String name, String guid, String outPasskey,
-            String inPasskey, String serviceUrl, boolean permitted) {
-        this.id = -1;
-        this.name = name;
-        this.guid = guid;
-        this.outPasskey = outPasskey;
-        this.inPasskey = inPasskey;
-        this.serviceUrl = serviceUrl;
-        this.permitted = permitted;
     }
 }

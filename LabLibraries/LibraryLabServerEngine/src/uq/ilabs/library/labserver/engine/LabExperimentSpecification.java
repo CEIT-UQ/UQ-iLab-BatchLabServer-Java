@@ -31,10 +31,23 @@ public class LabExperimentSpecification {
     protected Node nodeSpecification;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
+    protected String setupName;
     protected String setupId;
+
+    public String getSetupName() {
+        return setupName;
+    }
+
+    public void setSetupName(String setupName) {
+        this.setupName = setupName;
+    }
 
     public String getSetupId() {
         return setupId;
+    }
+
+    public void setSetupId(String setupId) {
+        this.setupId = setupId;
     }
     //</editor-fold>
 
@@ -63,6 +76,11 @@ public class LabExperimentSpecification {
              */
             Document document = XmlUtilities.GetDocumentFromString(xmlSpecification);
             Node nodeRoot = XmlUtilities.GetRootNode(document, LabConsts.STRXML_ExperimentSpecification);
+
+            /*
+             * Get the setup name, it may not exist
+             */
+            this.setupName = XmlUtilities.GetChildValue(nodeRoot, LabConsts.STRXML_SetupName, false);
 
             /*
              * Get the setup Id and check that it exists - search is case-sensitive

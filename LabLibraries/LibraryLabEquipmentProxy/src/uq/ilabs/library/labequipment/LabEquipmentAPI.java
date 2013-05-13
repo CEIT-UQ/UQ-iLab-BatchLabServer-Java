@@ -40,6 +40,10 @@ public class LabEquipmentAPI {
      */
     private static final String STRERR_ServiceUrl = "serviceUrl";
     private static final String STRERR_LabEquipmentUnaccessible = "LabEquipment is unaccessible!";
+    /*
+     * Constants
+     */
+    private static int INT_RetryCount = 3;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabEquipmentServiceSoap labEquipmentProxy;
@@ -48,6 +52,7 @@ public class LabEquipmentAPI {
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String identifier;
     private String passkey;
+    private int retryCount;
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
@@ -55,6 +60,14 @@ public class LabEquipmentAPI {
 
     public void setPasskey(String passkey) {
         this.passkey = passkey;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
     }
     //</editor-fold>
 
@@ -83,9 +96,6 @@ public class LabEquipmentAPI {
              * Create a proxy for the LabEquipment's web service and set the web service URL
              */
             LabEquipmentService labEquipmentService = new LabEquipmentService();
-            if (labEquipmentService == null) {
-                throw new NullPointerException(LabEquipmentService.class.getSimpleName());
-            }
             this.labEquipmentProxy = labEquipmentService.getLabEquipmentServiceSoap();
             ((BindingProvider) this.labEquipmentProxy).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
 
@@ -95,6 +105,11 @@ public class LabEquipmentAPI {
             ObjectFactory objectFactory = new ObjectFactory();
             JAXBElement<AuthHeader> jaxbElementAuthHeader = objectFactory.createAuthHeader(new AuthHeader());
             this.qnameAuthHeader = jaxbElementAuthHeader.getName();
+
+            /*
+             * Initialise local variables
+             */
+            this.retryCount = INT_RetryCount;
 
         } catch (NullPointerException | IllegalArgumentException ex) {
             Logfile.WriteError(ex.toString());
@@ -114,20 +129,26 @@ public class LabEquipmentAPI {
 
         LabEquipmentStatus labEquipmentStatus = null;
 
-        try {
-            /*
-             * Set the authentication information and call the web service
-             */
-            this.SetAuthHeader();
-            uq.ilabs.labequipment.LabEquipmentStatus proxyLabEquipmentStatus = this.labEquipmentProxy.getLabEquipmentStatus();
-            labEquipmentStatus = this.ConvertType(proxyLabEquipmentStatus);
+        int retries = this.retryCount;
+        while (true) {
+            try {
+                /*
+                 * Set the authentication information and call the web service
+                 */
+                this.SetAuthHeader();
+                uq.ilabs.labequipment.LabEquipmentStatus proxyLabEquipmentStatus = this.labEquipmentProxy.getLabEquipmentStatus();
+                labEquipmentStatus = this.ConvertType(proxyLabEquipmentStatus);
+                break;
 
-        } catch (SOAPFaultException ex) {
-            Logfile.Write(ex.getMessage());
-            throw new ProtocolException(ex.getFault().getFaultString());
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+            } catch (SOAPFaultException ex) {
+                Logfile.Write(ex.getMessage());
+                throw new ProtocolException(ex.getFault().getFaultString());
+            } catch (Exception ex) {
+                Logfile.WriteError(ex.toString());
+                if (--retries == 0) {
+                    throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+                }
+            }
         }
 
         return labEquipmentStatus;
@@ -143,19 +164,25 @@ public class LabEquipmentAPI {
 
         int timeUntilReady = -1;
 
-        try {
-            /*
-             * Set the authentication information and call the web service
-             */
-            this.SetAuthHeader();
-            timeUntilReady = this.labEquipmentProxy.getTimeUntilReady();
+        int retries = this.retryCount;
+        while (true) {
+            try {
+                /*
+                 * Set the authentication information and call the web service
+                 */
+                this.SetAuthHeader();
+                timeUntilReady = this.labEquipmentProxy.getTimeUntilReady();
+                break;
 
-        } catch (SOAPFaultException ex) {
-            Logfile.Write(ex.getMessage());
-            throw new ProtocolException(ex.getFault().getFaultString());
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+            } catch (SOAPFaultException ex) {
+                Logfile.Write(ex.getMessage());
+                throw new ProtocolException(ex.getFault().getFaultString());
+            } catch (Exception ex) {
+                Logfile.WriteError(ex.toString());
+                if (--retries == 0) {
+                    throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+                }
+            }
         }
 
         Logfile.WriteCompleted(STR_ClassName, methodName,
@@ -176,20 +203,26 @@ public class LabEquipmentAPI {
 
         ValidationReport validationReport = null;
 
-        try {
-            /*
-             * Set the authentication information and call the web service
-             */
-            this.SetAuthHeader();
-            uq.ilabs.labequipment.Validation proxyValidation = this.labEquipmentProxy.validate(xmlSpecification);
-            validationReport = this.ConvertType(proxyValidation);
+        int retries = this.retryCount;
+        while (true) {
+            try {
+                /*
+                 * Set the authentication information and call the web service
+                 */
+                this.SetAuthHeader();
+                uq.ilabs.labequipment.Validation proxyValidation = this.labEquipmentProxy.validate(xmlSpecification);
+                validationReport = this.ConvertType(proxyValidation);
+                break;
 
-        } catch (SOAPFaultException ex) {
-            Logfile.Write(ex.getMessage());
-            throw new ProtocolException(ex.getFault().getFaultString());
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+            } catch (SOAPFaultException ex) {
+                Logfile.Write(ex.getMessage());
+                throw new ProtocolException(ex.getFault().getFaultString());
+            } catch (Exception ex) {
+                Logfile.WriteError(ex.toString());
+                if (--retries == 0) {
+                    throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+                }
+            }
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
@@ -210,20 +243,26 @@ public class LabEquipmentAPI {
 
         ExecutionStatus executionStatus = null;
 
-        try {
-            /*
-             * Set the authentication information and call the web service
-             */
-            this.SetAuthHeader();
-            uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.labEquipmentProxy.startLabExecution(xmlSpecification);
-            executionStatus = this.ConvertType(proxyExecutionStatus);
+        int retries = this.retryCount;
+        while (true) {
+            try {
+                /*
+                 * Set the authentication information and call the web service
+                 */
+                this.SetAuthHeader();
+                uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.labEquipmentProxy.startLabExecution(xmlSpecification);
+                executionStatus = this.ConvertType(proxyExecutionStatus);
+                break;
 
-        } catch (SOAPFaultException ex) {
-            Logfile.Write(ex.getMessage());
-            throw new ProtocolException(ex.getFault().getFaultString());
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+            } catch (SOAPFaultException ex) {
+                Logfile.Write(ex.getMessage());
+                throw new ProtocolException(ex.getFault().getFaultString());
+            } catch (Exception ex) {
+                Logfile.WriteError(ex.toString());
+                if (--retries == 0) {
+                    throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+                }
+            }
         }
 
         return executionStatus;
@@ -239,20 +278,26 @@ public class LabEquipmentAPI {
 
         ExecutionStatus executionStatus = null;
 
-        try {
-            /*
-             * Set the authentication information and call the web service
-             */
-            this.SetAuthHeader();
-            uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.labEquipmentProxy.getLabExecutionStatus(executionId);
-            executionStatus = this.ConvertType(proxyExecutionStatus);
+        int retries = this.retryCount;
+        while (true) {
+            try {
+                /*
+                 * Set the authentication information and call the web service
+                 */
+                this.SetAuthHeader();
+                uq.ilabs.labequipment.ExecutionStatus proxyExecutionStatus = this.labEquipmentProxy.getLabExecutionStatus(executionId);
+                executionStatus = this.ConvertType(proxyExecutionStatus);
+                break;
 
-        } catch (SOAPFaultException ex) {
-            Logfile.Write(ex.getMessage());
-            throw new ProtocolException(ex.getFault().getFaultString());
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+            } catch (SOAPFaultException ex) {
+                Logfile.Write(ex.getMessage());
+                throw new ProtocolException(ex.getFault().getFaultString());
+            } catch (Exception ex) {
+                Logfile.WriteError(ex.toString());
+                if (--retries == 0) {
+                    throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+                }
+            }
         }
 
         return executionStatus;
@@ -269,19 +314,25 @@ public class LabEquipmentAPI {
 
         String labExecutionResults = null;
 
-        try {
-            /*
-             * Set the authentication information and call the web service
-             */
-            this.SetAuthHeader();
-            labExecutionResults = this.labEquipmentProxy.getLabExecutionResults(executionId);
+        int retries = this.retryCount;
+        while (true) {
+            try {
+                /*
+                 * Set the authentication information and call the web service
+                 */
+                this.SetAuthHeader();
+                labExecutionResults = this.labEquipmentProxy.getLabExecutionResults(executionId);
+                break;
 
-        } catch (SOAPFaultException ex) {
-            Logfile.Write(ex.getMessage());
-            throw new ProtocolException(ex.getFault().getFaultString());
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+            } catch (SOAPFaultException ex) {
+                Logfile.Write(ex.getMessage());
+                throw new ProtocolException(ex.getFault().getFaultString());
+            } catch (Exception ex) {
+                Logfile.WriteError(ex.toString());
+                if (--retries == 0) {
+                    throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+                }
+            }
         }
 
         return labExecutionResults;
@@ -298,19 +349,25 @@ public class LabEquipmentAPI {
 
         boolean success = false;
 
-        try {
-            /*
-             * Set the authentication information and call the web service
-             */
-            this.SetAuthHeader();
-            success = this.labEquipmentProxy.cancelLabExecution(executionId);
+        int retries = this.retryCount;
+        while (true) {
+            try {
+                /*
+                 * Set the authentication information and call the web service
+                 */
+                this.SetAuthHeader();
+                success = this.labEquipmentProxy.cancelLabExecution(executionId);
+                break;
 
-        } catch (SOAPFaultException ex) {
-            Logfile.Write(ex.getMessage());
-            throw new ProtocolException(ex.getFault().getFaultString());
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+            } catch (SOAPFaultException ex) {
+                Logfile.Write(ex.getMessage());
+                throw new ProtocolException(ex.getFault().getFaultString());
+            } catch (Exception ex) {
+                Logfile.WriteError(ex.toString());
+                if (--retries == 0) {
+                    throw new ProtocolException(STRERR_LabEquipmentUnaccessible);
+                }
+            }
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,

@@ -105,9 +105,6 @@ public class ServiceBrokerAPI {
              * Create a proxy for the web service and set the web service URL
              */
             ServiceBrokerService serviceBrokerService = new ServiceBrokerService();
-            if (serviceBrokerService == null) {
-                throw new NullPointerException(ServiceBrokerService.class.getSimpleName());
-            }
             this.serviceBrokerProxy = serviceBrokerService.getServiceBrokerServiceSoap();
             ((BindingProvider) this.serviceBrokerProxy).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
 

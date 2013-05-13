@@ -86,9 +86,6 @@ public class LabServerAPI {
              * Create a proxy for the LabServer's web service and set the web service URL
              */
             LabServerWebService labServerWebService = new LabServerWebService();
-            if (labServerWebService == null) {
-                throw new NullPointerException(LabServerWebService.class.getSimpleName());
-            }
             this.labServerProxy = labServerWebService.getLabServerWebServiceSoap();
             ((BindingProvider) this.labServerProxy).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
 

@@ -12,6 +12,13 @@ import java.util.Calendar;
  */
 public class UserInfo {
 
+    public static final int MAXLEN_Username = 32;
+    public static final int MAXLEN_FirstName = 64;
+    public static final int MAXLEN_LastName = 64;
+    public static final int MAXLEN_ContactEmail = 128;
+    public static final int MAXLEN_UserGroup = 64;
+    public static final int MAXLEN_Password = 40;
+    //
     private int userId;
     private String username;
     private String firstName;
@@ -23,36 +30,20 @@ public class UserInfo {
     private Calendar dateCreated;
     private Calendar dateModified;
 
-    public boolean isAccountLocked() {
-        return accountLocked;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setAccountLocked(boolean accountLocked) {
-        this.accountLocked = accountLocked;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public String getContactEmail() {
-        return contactEmail;
+    public String getUsername() {
+        return username;
     }
 
-    public void setContactEmail(String contactEmail) {
-        this.contactEmail = contactEmail;
-    }
-
-    public Calendar getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Calendar dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public Calendar getDateModified() {
-        return dateModified;
-    }
-
-    public void setDateModified(Calendar dateModified) {
-        this.dateModified = dateModified;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getFirstName() {
@@ -71,12 +62,12 @@ public class UserInfo {
         this.lastName = lastName;
     }
 
-    public String getPassword() {
-        return password;
+    public String getContactEmail() {
+        return contactEmail;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
     }
 
     public String getUserGroup() {
@@ -87,23 +78,40 @@ public class UserInfo {
         this.userGroup = userGroup;
     }
 
-    public int getUserId() {
-        return userId;
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public boolean isAccountLocked() {
+        return accountLocked;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public Calendar getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(Calendar dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public Calendar getDateModified() {
+        return dateModified;
+    }
+
+    public void setDateModified(Calendar dateModified) {
+        this.dateModified = dateModified;
     }
 
     public UserInfo() {
+        this.userId = -1;
     }
 
     public UserInfo(String username, String firstName, String lastName, String contactEmail, String userGroup, String password) {

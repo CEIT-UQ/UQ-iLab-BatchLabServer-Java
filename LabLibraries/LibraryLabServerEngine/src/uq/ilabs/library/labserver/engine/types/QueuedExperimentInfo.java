@@ -4,12 +4,14 @@
  */
 package uq.ilabs.library.labserver.engine.types;
 
+import uq.ilabs.library.labserver.database.types.ExperimentQueueInfo;
+
 /**
  * Information about the specified experiment in the queue.
  *
  * @author uqlpayne
  */
-public class QueuedExperimentInfo {
+public class QueuedExperimentInfo extends ExperimentQueueInfo {
 
     /**
      * The number of experiments currently in the queue.
@@ -24,17 +26,13 @@ public class QueuedExperimentInfo {
      * execution times of the experiments currently in the queue.
      */
     private int waitTime;
-    /**
-     * The information for this experiment in the queue
-     */
-    private LabExperimentInfo labExperimentInfo;
 
-    public LabExperimentInfo getLabExperimentInfo() {
-        return labExperimentInfo;
+    public int getQueueLength() {
+        return queueLength;
     }
 
-    public void setLabExperimentInfo(LabExperimentInfo labExperimentInfo) {
-        this.labExperimentInfo = labExperimentInfo;
+    public void setQueueLength(int queueLength) {
+        this.queueLength = queueLength;
     }
 
     public int getPosition() {
@@ -45,19 +43,35 @@ public class QueuedExperimentInfo {
         this.position = position;
     }
 
-    public int getQueueLength() {
-        return queueLength;
-    }
-
-    public void setQueueLength(int queueLength) {
-        this.queueLength = queueLength;
-    }
-
     public int getWaitTime() {
         return waitTime;
     }
 
     public void setWaitTime(int waitTime) {
         this.waitTime = waitTime;
+    }
+
+    /**
+     *
+     */
+    public QueuedExperimentInfo() {
+        super();
+    }
+
+    /**
+     *
+     * @param experimentQueueInfo
+     */
+    public QueuedExperimentInfo(ExperimentQueueInfo experimentQueueInfo) {
+        this.id = experimentQueueInfo.getId();
+        this.experimentId = experimentQueueInfo.getExperimentId();
+        this.sbName = experimentQueueInfo.getSbName();
+        this.userGroup = experimentQueueInfo.getUserGroup();
+        this.priorityHint = experimentQueueInfo.getPriorityHint();
+        this.xmlSpecification = experimentQueueInfo.getXmlSpecification();
+        this.estimatedExecTime = experimentQueueInfo.getEstimatedExecTime();
+        this.statusCode = experimentQueueInfo.getStatusCode();
+        this.unitId = experimentQueueInfo.getUnitId();
+        this.cancelled = experimentQueueInfo.isCancelled();
     }
 }

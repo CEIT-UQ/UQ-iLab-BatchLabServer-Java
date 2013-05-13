@@ -30,7 +30,6 @@ public class LabServerDB {
      * String constants for logfile messages
      */
     private static final String STRLOG_Id_arg = "Id: %d";
-    private static final String STRLOG_Name_arg = "Name: %s";
     private static final String STRLOG_Count_arg = "Count: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
     /*
@@ -97,12 +96,18 @@ public class LabServerDB {
      */
     public int Add(LabServerInfo labServerInfo) throws Exception {
         final String methodName = "Add";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Name_arg, labServerInfo.getName()));
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         int id = -1;
 
         try {
+            /*
+             * Check that parameters are valid
+             */
+            if (labServerInfo == null) {
+                throw new NullPointerException(LabServerInfo.class.getSimpleName());
+            }
+
             CallableStatement sqlStatement = null;
 
             try {
@@ -123,21 +128,17 @@ public class LabServerDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 id = (int) sqlStatement.getInt(1);
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
         }
@@ -176,16 +177,12 @@ public class LabServerDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 success = ((int) sqlStatement.getInt(1) == id);
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -206,17 +203,25 @@ public class LabServerDB {
      * @return String[]
      * @throws Exception
      */
-    public String[] GetListName() throws Exception {
+    public String[] GetListOfNames() throws Exception {
         return this.GetList(STRCOL_Name, null);
     }
 
     /**
-     * 
-     * @return
-     * @throws Exception
+     *
+     * @return @throws Exception
+     */
+    public ArrayList<LabServerInfo> RetrieveAll() throws Exception {
+        return this.RetrieveBy(null, 0, null);
+    }
+
+    /**
+     *
+     * @return @throws Exception
      */
     public LabServerInfo Retrieve() throws Exception {
-        return this.RetrieveBy(null, 0, null);
+        ArrayList<LabServerInfo> arrayList = this.RetrieveBy(null, 0, null);
+        return (arrayList != null) ? arrayList.get(0) : null;
     }
 
     /**
@@ -226,7 +231,8 @@ public class LabServerDB {
      * @throws Exception
      */
     public LabServerInfo RetrieveById(int id) throws Exception {
-        return this.RetrieveBy(STRCOL_Id, id, null);
+        ArrayList<LabServerInfo> arrayList = this.RetrieveBy(STRCOL_Id, id, null);
+        return (arrayList != null) ? arrayList.get(0) : null;
     }
 
     /**
@@ -236,7 +242,8 @@ public class LabServerDB {
      * @throws Exception
      */
     public LabServerInfo RetrieveByName(String name) throws Exception {
-        return this.RetrieveBy(STRCOL_Name, 0, name);
+        ArrayList<LabServerInfo> arrayList = this.RetrieveBy(STRCOL_Name, 0, name);
+        return (arrayList != null) ? arrayList.get(0) : null;
     }
 
     /**
@@ -247,8 +254,7 @@ public class LabServerDB {
      */
     public boolean Update(LabServerInfo labServerInfo) throws Exception {
         final String methodName = "Update";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Id_arg, labServerInfo.getId()));
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         boolean success = false;
 
@@ -286,16 +292,16 @@ public class LabServerDB {
                  * Get the result
                  */
                 success = ((int) sqlStatement.getInt(1) == labServerInfo.getId());
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
         }
@@ -318,10 +324,10 @@ public class LabServerDB {
         final String methodName = "GetList";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        String[] listArray = null;
+        String[] stringArray = null;
 
         try {
-            ArrayList<String> list = new ArrayList<>();
+            ArrayList<String> arrayList = new ArrayList<>();
             CallableStatement sqlStatement = null;
 
             try {
@@ -329,25 +335,21 @@ public class LabServerDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = sqlConnection.prepareCall(STRSQLCMD_GetList);
-                sqlStatement.setString(1, (columnName != null) ? columnName.toLowerCase() : null);
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setString(2, strval);
 
                 /*
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
-
-                /*
-                 * Add result to the list
-                 */
                 while (resultSet.next() == true) {
-                    list.add(resultSet.getString(STRCOL_Name));
+                    arrayList.add(resultSet.getString(STRCOL_Name));
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -356,8 +358,8 @@ public class LabServerDB {
             /*
              * Convert the list to an array
              */
-            if (list.size() > 0) {
-                listArray = list.toArray(new String[0]);
+            if (arrayList.size() > 0) {
+                stringArray = arrayList.toArray(new String[0]);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -365,9 +367,9 @@ public class LabServerDB {
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Count_arg, (listArray != null) ? listArray.length : 0));
+                String.format(STRLOG_Count_arg, (stringArray != null) ? stringArray.length : 0));
 
-        return listArray;
+        return stringArray;
     }
 
     /**
@@ -378,11 +380,11 @@ public class LabServerDB {
      * @return LabServerInfo
      * @throws Exception
      */
-    private LabServerInfo RetrieveBy(String columnName, int intval, String strval) throws Exception {
+    private ArrayList<LabServerInfo> RetrieveBy(String columnName, int intval, String strval) throws Exception {
         final String methodName = "RetrieveBy";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        LabServerInfo labServerInfo = null;
+        ArrayList<LabServerInfo> arrayList = new ArrayList<>();
 
         try {
             CallableStatement sqlStatement = null;
@@ -392,7 +394,7 @@ public class LabServerDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, (columnName != null) ? columnName.toLowerCase() : null);
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -400,12 +402,9 @@ public class LabServerDB {
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
+                while (resultSet.next() == true) {
+                    LabServerInfo labServerInfo = new LabServerInfo();
 
-                /*
-                 * Process the results of the query - only want the first result
-                 */
-                if (resultSet.next() == true) {
-                    labServerInfo = new LabServerInfo();
                     labServerInfo.setId(resultSet.getInt(STRCOL_Id));
                     labServerInfo.setName(resultSet.getString(STRCOL_Name));
                     labServerInfo.setGuid(resultSet.getString(STRCOL_Guid));
@@ -427,12 +426,17 @@ public class LabServerDB {
                         calendar.setTime(timestamp);
                         labServerInfo.setDateModified(calendar);
                     }
+
+                    /*
+                     * Add the LabServerInfo to the list
+                     */
+                    arrayList.add(labServerInfo);
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -442,8 +446,9 @@ public class LabServerDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_Count_arg, arrayList.size()));
 
-        return labServerInfo;
+        return (arrayList.size() > 0) ? arrayList : null;
     }
 }

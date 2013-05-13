@@ -29,7 +29,16 @@ public class LabExperimentSpecification {
     protected Node nodeSpecification;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
+    protected String setupName;
     protected String setupId;
+
+    public String getSetupName() {
+        return setupName;
+    }
+
+    public void setSetupName(String setupName) {
+        this.setupName = setupName;
+    }
 
     public String getSetupId() {
         return setupId;
@@ -69,6 +78,7 @@ public class LabExperimentSpecification {
             /*
              * Check that all required XML nodes exist
              */
+            XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_SetupName);
             XmlUtilities.GetChildNode(nodeRoot, LabConsts.STRXML_SetupId);
 
             /*
@@ -98,6 +108,7 @@ public class LabExperimentSpecification {
             /*
              * Add the lab experiment specification information to the XML document
              */
+            XmlUtilities.SetChildValue(this.nodeSpecification, LabConsts.STRXML_SetupName, this.setupName);
             XmlUtilities.SetChildValue(this.nodeSpecification, LabConsts.STRXML_SetupId, this.setupId);
 
             /*

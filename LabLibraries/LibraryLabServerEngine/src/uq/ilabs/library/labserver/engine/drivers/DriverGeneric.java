@@ -206,29 +206,28 @@ public class DriverGeneric {
                 /*
                  * Check if the experiment was cancelled
                  */
-                if (statusCode == StatusCodes.Cancelled) {
-                    /*
-                     * Yes, it was
-                     */
-                    this.labExperimentResult.getResultReport().setStatusCode(StatusCodes.Cancelled);
-                } else {
-                    /*
-                     * Get the actual execution time
-                     */
-                    int executionTime = (int) ((Calendar.getInstance().getTimeInMillis() - this.timeStarted.getTimeInMillis()) / 1000);
+                switch (statusCode) {
+                    case Cancelled:
+                        this.labExperimentResult.getResultReport().setStatusCode(StatusCodes.Cancelled);
+                        break;
 
-                    /*
-                     * Process the execution result
-                     */
-                    ResultReport resultReport = this.labExperimentResult.getResultReport();
-                    resultReport.setStatusCode(StatusCodes.Completed);
-                    resultReport.setXmlExperimentResults(STR_XmlExperimentResults);
-                    this.labExperimentResult.setExecutionTime(executionTime);
+                    default:
+                        /*
+                         * Process the execution result
+                         */
+                        ResultReport resultReport = new ResultReport(StatusCodes.Completed);
+                        resultReport.setXmlExperimentResults(STR_XmlExperimentResults);
+                        this.labExperimentResult.setResultReport(resultReport);
+
+                        /*
+                         * Set the actual execution time
+                         */
+                        int executionTime = (int) ((Calendar.getInstance().getTimeInMillis() - this.timeStarted.getTimeInMillis()) / 1000);
+                        this.labExperimentResult.setExecutionTime(executionTime);
+                        break;
                 }
             } catch (Exception ex) {
-                ResultReport resultReport = this.labExperimentResult.getResultReport();
-                resultReport.setStatusCode(StatusCodes.Failed);
-                resultReport.setErrorMessage(ex.getMessage());
+                this.labExperimentResult.setResultReport(new ResultReport(StatusCodes.Failed, ex.getMessage()));
             } finally {
                 this.labExperimentResult.setTimeCompleted(this.timeCompleted);
                 this.timeCompleted = null;

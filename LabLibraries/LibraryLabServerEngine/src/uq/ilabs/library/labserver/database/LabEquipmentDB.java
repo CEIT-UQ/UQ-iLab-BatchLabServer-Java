@@ -95,6 +95,13 @@ public class LabEquipmentDB {
         int id = -1;
 
         try {
+            /*
+             * Check that parameters are valid
+             */
+            if (labEquipmentInfo == null) {
+                throw new NullPointerException(LabEquipmentInfo.class.getSimpleName());
+            }
+
             CallableStatement sqlStatement = null;
 
             try {
@@ -111,21 +118,17 @@ public class LabEquipmentDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 id = (int) sqlStatement.getInt(1);
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
         }
 
@@ -161,16 +164,12 @@ public class LabEquipmentDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 success = ((int) sqlStatement.getInt(1) == id);
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -223,6 +222,13 @@ public class LabEquipmentDB {
         boolean success = false;
 
         try {
+            /*
+             * Check that parameters are valid
+             */
+            if (labEquipmentInfo == null) {
+                throw new NullPointerException(LabEquipmentInfo.class.getSimpleName());
+            }
+
             CallableStatement sqlStatement = null;
 
             try {
@@ -240,21 +246,17 @@ public class LabEquipmentDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 success = ((int) sqlStatement.getInt(1) == labEquipmentInfo.getId());
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
         }
 
@@ -276,7 +278,7 @@ public class LabEquipmentDB {
         final String methodName = "RetrieveBy";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        ArrayList<LabEquipmentInfo> list = new ArrayList<>();
+        ArrayList<LabEquipmentInfo> arrayList = new ArrayList<>();
 
         try {
             CallableStatement sqlStatement = null;
@@ -286,7 +288,7 @@ public class LabEquipmentDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -294,12 +296,9 @@ public class LabEquipmentDB {
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
-
-                /*
-                 * Process the results of the query
-                 */
                 while (resultSet.next() == true) {
                     LabEquipmentInfo labEquipmentInfo = new LabEquipmentInfo();
+
                     labEquipmentInfo.setId(resultSet.getInt(STRCOL_Id));
                     labEquipmentInfo.setServiceUrl(resultSet.getString(STRCOL_ServiceUrl));
                     labEquipmentInfo.setPasskey(resultSet.getString(STRCOL_Passkey));
@@ -321,13 +320,13 @@ public class LabEquipmentDB {
                     /*
                      * Add the LabEquipmentInfo to the list
                      */
-                    list.add(labEquipmentInfo);
+                    arrayList.add(labEquipmentInfo);
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -337,8 +336,8 @@ public class LabEquipmentDB {
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Count_arg, list.size()));
+                String.format(STRLOG_Count_arg, arrayList.size()));
 
-        return (list.size() > 0) ? list : null;
+        return (arrayList.size() > 0) ? arrayList : null;
     }
 }

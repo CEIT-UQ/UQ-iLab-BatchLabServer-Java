@@ -46,7 +46,6 @@ public class UsersDB {
     private static final String STRSQLCMD_Add = "{ ? = call Users_Add(?,?,?,?,?,?) }";
     private static final String STRSQLCMD_Delete = "{ ? = call Users_Delete(?) }";
     private static final String STRSQLCMD_GetList = "{ call Users_GetList(?,?) }";
-    private static final String STRSQLCMD_GetRecordCount = "{ ? = call Users_GetRecordCount() }";
     private static final String STRSQLCMD_RetrieveBy = "{ call Users_RetrieveBy(?,?,?) }";
     private static final String STRSQLCMD_Update = "{ ? = call Users_Update(?,?,?,?,?,?,?) }";
     //</editor-fold>
@@ -94,7 +93,7 @@ public class UsersDB {
         final String methodName = "Add";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        int userId = -1;
+        int id = -1;
 
         try {
             /*
@@ -123,29 +122,25 @@ public class UsersDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
-                userId = (int) sqlStatement.getInt(1);
-            } catch (Exception ex) {
-                throw ex;
+                id = (int) sqlStatement.getInt(1);
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_UserId_arg, userId));
+                String.format(STRLOG_UserId_arg, id));
 
-        return userId;
+        return id;
     }
 
     /**
@@ -175,16 +170,12 @@ public class UsersDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
-                success = ((int) sqlStatement.getInt(1) == userId);
-            } catch (Exception ex) {
-                throw ex;
+                success = (sqlStatement.getInt(1) == userId);
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -202,80 +193,21 @@ public class UsersDB {
 
     /**
      *
-     * @return String[]
-     * @throws Exception
+     * @return @throws Exception
      */
-    public String[] GetListUsername() throws Exception {
+    public String[] GetListOfUsernames() throws Exception {
         return this.GetList(STRCOL_Username, null);
     }
 
     /**
      *
-     * @param usergroup
-     * @return String[]
-     * @throws Exception
-     */
-    public String[] GetListUsergroup(String usergroup) throws Exception {
-        return this.GetList(STRCOL_UserGroup, usergroup);
-    }
-
-    /**
-     *
-     * @return @throws Exception
-     */
-    public int GetRecordCount() throws Exception {
-        final String methodName = "GetRecordCount";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
-
-        int count = -1;
-
-        try {
-            CallableStatement sqlStatement = null;
-
-            try {
-                /*
-                 * Prepare the stored procedure call
-                 */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_GetRecordCount);
-                sqlStatement.registerOutParameter(1, Types.BIGINT);
-
-                /*
-                 * Execute the stored procedure
-                 */
-                sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
-                count = (int) sqlStatement.getLong(1);
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                try {
-                    sqlStatement.close();
-                } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, methodName, ex);
-                }
-            }
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            throw ex;
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Count_arg, count));
-
-        return count;
-    }
-
-    /**
-     *
-     * @param username
+     * @param id
      * @return
      * @throws Exception
      */
-    public UserInfo RetrieveByUserId(int userId) throws Exception {
-        return this.RetrieveBy(STRCOL_UserId, userId, null);
+    public UserInfo RetrieveById(int userId) throws Exception {
+        ArrayList<UserInfo> arrayList = this.RetrieveBy(STRCOL_UserId, userId, null);
+        return arrayList != null ? (UserInfo) arrayList.get(0) : null;
     }
 
     /**
@@ -285,7 +217,8 @@ public class UsersDB {
      * @throws Exception
      */
     public UserInfo RetrieveByUsername(String username) throws Exception {
-        return this.RetrieveBy(STRCOL_Username, 0, username);
+        ArrayList<UserInfo> arrayList = this.RetrieveBy(STRCOL_Username, 0, username);
+        return arrayList != null ? (UserInfo) arrayList.get(0) : null;
     }
 
     /**
@@ -328,21 +261,17 @@ public class UsersDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
                 success = ((int) sqlStatement.getInt(1) == userInfo.getUserId());
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
         }
@@ -365,10 +294,10 @@ public class UsersDB {
         final String methodName = "GetList";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        String[] listArray = null;
+        String[] stringArray = null;
 
         try {
-            ArrayList<String> list = new ArrayList<>();
+            ArrayList<String> arrayList = new ArrayList<>();
             CallableStatement sqlStatement = null;
 
             try {
@@ -376,25 +305,24 @@ public class UsersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = sqlConnection.prepareCall(STRSQLCMD_GetList);
-                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setString(2, strval);
 
                 /*
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
-
-                /*
-                 * Add result to the list
-                 */
                 while (resultSet.next() == true) {
-                    list.add(resultSet.getString(STRCOL_Username));
+                    /*
+                     * Add String to the list
+                     */
+                    arrayList.add(resultSet.getString(columnName));
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -403,8 +331,8 @@ public class UsersDB {
             /*
              * Convert the list to an array
              */
-            if (list.size() > 0) {
-                listArray = list.toArray(new String[0]);
+            if (arrayList.size() > 0) {
+                stringArray = arrayList.toArray(new String[0]);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -412,9 +340,9 @@ public class UsersDB {
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Count_arg, (listArray != null) ? listArray.length : 0));
+                String.format(STRLOG_Count_arg, (stringArray != null) ? stringArray.length : 0));
 
-        return listArray;
+        return stringArray;
     }
 
     /**
@@ -425,11 +353,11 @@ public class UsersDB {
      * @return
      * @throws Exception
      */
-    private UserInfo RetrieveBy(String columnName, int intval, String strval) throws Exception {
+    private ArrayList<UserInfo> RetrieveBy(String columnName, int intval, String strval) throws Exception {
         final String methodName = "RetrieveBy";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        UserInfo userInfo = null;
+        ArrayList<UserInfo> arrayList = new ArrayList<>();
 
         try {
             CallableStatement sqlStatement = null;
@@ -439,7 +367,7 @@ public class UsersDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, (columnName != null ? columnName.toLowerCase() : null));
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -447,12 +375,9 @@ public class UsersDB {
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
+                while (resultSet.next() == true) {
+                    UserInfo userInfo = new UserInfo();
 
-                /*
-                 * Process the results of the query - only want the first result
-                 */
-                if (resultSet.next() == true) {
-                    userInfo = new UserInfo();
                     userInfo.setUserId(resultSet.getInt(STRCOL_UserId));
                     userInfo.setUsername(resultSet.getString(STRCOL_Username));
                     userInfo.setFirstName(resultSet.getString(STRCOL_FirstName));
@@ -474,12 +399,17 @@ public class UsersDB {
                         calendar.setTime(timestamp);
                         userInfo.setDateModified(calendar);
                     }
+
+                    /*
+                     * Add UserInfo to the list
+                     */
+                    arrayList.add(userInfo);
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -489,8 +419,9 @@ public class UsersDB {
             throw ex;
         }
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_Count_arg, arrayList.size()));
 
-        return userInfo;
+        return (arrayList.size() > 0) ? arrayList : null;
     }
 }

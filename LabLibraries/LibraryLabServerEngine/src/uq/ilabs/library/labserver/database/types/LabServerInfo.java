@@ -13,6 +13,13 @@ import uq.ilabs.library.labserver.engine.LabConsts;
  */
 public class LabServerInfo {
 
+    public static final int MAXLEN_Name = 32;
+    public static final int MAXLEN_Guid = 40;
+    public static final int MAXLEN_ServiceUrl = 256;
+    public static final int MAXLEN_ContactEmail = 128;
+    public static final int MAXLEN_CompletedEmail = 256;
+    public static final int MAXLEN_FailedEmail = 256;
+    //
     private int id;
     private String name;
     private String guid;

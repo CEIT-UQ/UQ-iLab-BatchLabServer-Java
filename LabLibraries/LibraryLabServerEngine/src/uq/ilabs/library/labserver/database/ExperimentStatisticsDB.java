@@ -2,7 +2,7 @@ package uq.ilabs.library.labserver.database;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Calendar;
 import java.util.logging.Level;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -11,8 +11,7 @@ import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
 import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
-import uq.ilabs.library.labserver.engine.types.ExperimentStatisticInfo;
-import uq.ilabs.library.labserver.engine.types.LabExperimentInfo;
+import uq.ilabs.library.labserver.database.types.ExperimentStatisticsInfo;
 import uq.ilabs.library.labserver.engine.types.QueuedExperimentInfo;
 
 /**
@@ -28,10 +27,10 @@ public class ExperimentStatisticsDB {
      * String constants for logfile messages
      */
     private static final String STRLOG_Id_arg = "Id: %d";
-    private static final String STRLOG_ExperimentIdSbName_arg2 = "ExperimentId: %d  SbName: '%s'";
-    private static final String STRLOG_ExperimentIdSbNameUnitId_arg3 = "ExperimentId: %d  SbName: '%s'  UnitId: %d";
     private static final String STRLOG_Count_arg = "Count: %d";
     private static final String STRLOG_Success_arg = "Success: %s";
+    private static final String STRLOG_ExperimentIdSbName_arg2 = "ExperimentId: %d  SbName: '%s'";
+    private static final String STRLOG_ExperimentIdSbNameUnitId_arg3 = "ExperimentId: %d  SbName: '%s'  UnitId: %d";
     /*
      * String constants for exception messages
      */
@@ -59,9 +58,9 @@ public class ExperimentStatisticsDB {
     private static final String STRSQLCMD_Add = "{ ? = call Statistics_Add(?,?,?,?,?,?,?) }";
     private static final String STRSQLCMD_Delete = "{ ? = call Statistics_Delete(?) }";
     private static final String STRSQLCMD_RetrieveBy = "{ call Statistics_RetrieveBy(?,?,?) }";
-    private static final String STRSQLCMD_UpdateCancelled = "{ call Statistics_UpdateCancelled(?,?) }";
-    private static final String STRSQLCMD_UpdateCompleted = "{ call Statistics_UpdateCompleted(?,?) }";
-    private static final String STRSQLCMD_UpdateStarted = "{ call Statistics_UpdateStarted(?,?,?) }";
+    private static final String STRSQLCMD_UpdateStarted = "{ ? = call Statistics_UpdateStarted(?,?,?) }";
+    private static final String STRSQLCMD_UpdateCompleted = "{ ? = call Statistics_UpdateCompleted(?,?) }";
+    private static final String STRSQLCMD_UpdateCancelled = "{ ? = call Statistics_UpdateCancelled(?,?) }";
     /*
      * String constants for XML elements
      */
@@ -137,214 +136,22 @@ public class ExperimentStatisticsDB {
      * @param queuedExperimentInfo
      * @return
      */
-    public int Submitted(QueuedExperimentInfo queuedExperimentInfo) {
+    public boolean Submitted(QueuedExperimentInfo queuedExperimentInfo) {
         final String methodName = "Submitted";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        int id = -1;
+        ExperimentStatisticsInfo experimentStatisticsInfo = new ExperimentStatisticsInfo();
+        experimentStatisticsInfo.setExperimentId(queuedExperimentInfo.getExperimentId());
+        experimentStatisticsInfo.setSbName(queuedExperimentInfo.getSbName());
+        experimentStatisticsInfo.setUserGroup(queuedExperimentInfo.getUserGroup());
+        experimentStatisticsInfo.setPriorityHint(queuedExperimentInfo.getPriorityHint());
+        experimentStatisticsInfo.setEstimatedExecTime(queuedExperimentInfo.getEstimatedExecTime());
+        experimentStatisticsInfo.setQueueLength(queuedExperimentInfo.getPosition() - 1);
+        experimentStatisticsInfo.setEstimatedWaitTime(queuedExperimentInfo.getWaitTime());
 
-        try {
-            /*
-             * Check that parameters are valid
-             */
-            if (queuedExperimentInfo == null) {
-                throw new NullPointerException(STRERR_QueuedExperimentInfo);
-            }
+        int id = this.Add(experimentStatisticsInfo);
 
-            LabExperimentInfo labExperimentInfo = queuedExperimentInfo.getLabExperimentInfo();
-            Logfile.Write(String.format(STRLOG_ExperimentIdSbName_arg2, labExperimentInfo.getExperimentId(), labExperimentInfo.getSbName()));
-
-            CallableStatement sqlStatement = null;
-
-            try {
-                /*
-                 * Prepare the stored procedure call
-                 */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
-                sqlStatement.registerOutParameter(1, Types.INTEGER);
-                sqlStatement.setInt(2, labExperimentInfo.getExperimentId());
-                sqlStatement.setString(3, labExperimentInfo.getSbName());
-                sqlStatement.setString(4, labExperimentInfo.getUserGroup());
-                sqlStatement.setInt(5, labExperimentInfo.getPriorityHint());
-                sqlStatement.setInt(6, labExperimentInfo.getEstExecutionTime());
-                sqlStatement.setInt(7, queuedExperimentInfo.getPosition() - 1);
-                sqlStatement.setInt(8, queuedExperimentInfo.getWaitTime());
-
-                /*
-                 * Execute the stored procedure
-                 */
-                sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
-                id = (int) sqlStatement.getInt(1);
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                try {
-                    sqlStatement.close();
-                } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, methodName, ex);
-                }
-            }
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Id_arg, id));
-
-        return id;
-    }
-
-    /**
-     *
-     * @param experimentId
-     * @param sbName
-     * @param unitId
-     * @return
-     */
-    public boolean Started(int experimentId, String sbName, int unitId) {
-        final String methodName = "Started";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_ExperimentIdSbNameUnitId_arg3, experimentId, sbName, unitId));
-
-        boolean success = false;
-
-        try {
-            CallableStatement sqlStatement = null;
-
-            try {
-                /*
-                 * Prepare the stored procedure call
-                 */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateStarted);
-                sqlStatement.setInt(1, experimentId);
-                sqlStatement.setString(2, sbName);
-                sqlStatement.setInt(3, unitId);
-
-                /*
-                 * Execute the stored procedure
-                 */
-                sqlStatement.execute();
-
-                success = true;
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                try {
-                    sqlStatement.close();
-                } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, methodName, ex);
-                }
-            }
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Success_arg, success));
-
-        return success;
-    }
-
-    /**
-     *
-     * @param experimentId
-     * @param sbName
-     * @return
-     */
-    public boolean Completed(int experimentId, String sbName) {
-        final String methodName = "Completed";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
-
-        boolean success = false;
-
-        try {
-            CallableStatement sqlStatement = null;
-
-            try {
-                /*
-                 * Prepare the stored procedure call
-                 */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateCompleted);
-                sqlStatement.setInt(1, experimentId);
-                sqlStatement.setString(2, sbName);
-
-                /*
-                 * Execute the stored procedure
-                 */
-                sqlStatement.execute();
-
-                success = true;
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                try {
-                    sqlStatement.close();
-                } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, methodName, ex);
-                }
-            }
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Success_arg, success));
-
-        return success;
-    }
-
-    /**
-     *
-     * @param experimentId
-     * @param sbName
-     * @return
-     */
-    public boolean Cancelled(int experimentId, String sbName) {
-        final String methodName = "Cancelled";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
-
-        boolean success = false;
-
-        try {
-            CallableStatement sqlStatement = null;
-
-            try {
-                /*
-                 * Prepare the stored procedure call
-                 */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateCancelled);
-                sqlStatement.setInt(1, experimentId);
-                sqlStatement.setString(2, sbName);
-
-                /*
-                 * Execute the stored procedure
-                 */
-                sqlStatement.execute();
-
-                success = true;
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                try {
-                    sqlStatement.close();
-                } catch (SQLException ex) {
-                    Logfile.WriteException(STR_ClassName, methodName, ex);
-                }
-            }
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Success_arg, success));
-
-        return success;
+        return id > 0;
     }
 
     /**
@@ -373,16 +180,12 @@ public class ExperimentStatisticsDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-
-                /*
-                 * Get the result
-                 */
-                success = ((int) sqlStatement.getInt(1) == id);
-            } catch (Exception ex) {
-                throw ex;
+                success = (sqlStatement.getInt(1) == id);
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -402,8 +205,8 @@ public class ExperimentStatisticsDB {
      * @param id
      * @return StatisticsInfo
      */
-    public ExperimentStatisticInfo RetrieveById(int id) {
-        ArrayList<ExperimentStatisticInfo> list = this.RetrieveBy(STRCOL_Id, id, null);
+    public ExperimentStatisticsInfo RetrieveById(int id) {
+        ArrayList<ExperimentStatisticsInfo> list = this.RetrieveBy(STRCOL_Id, id, null);
         return (list != null) ? list.get(0) : null;
     }
 
@@ -413,8 +216,8 @@ public class ExperimentStatisticsDB {
      * @param sbName
      * @return
      */
-    public ExperimentStatisticInfo RetrieveByExperimentId(int experimentId, String sbName) {
-        ArrayList<ExperimentStatisticInfo> list = this.RetrieveBy(STRCOL_ExperimentId, experimentId, sbName);
+    public ExperimentStatisticsInfo RetrieveByExperimentId(int experimentId, String sbName) {
+        ArrayList<ExperimentStatisticsInfo> list = this.RetrieveBy(STRCOL_ExperimentId, experimentId, sbName);
         return (list != null) ? list.get(0) : null;
     }
 
@@ -423,8 +226,8 @@ public class ExperimentStatisticsDB {
      * @param userGroup
      * @return
      */
-    public ExperimentStatisticInfo RetrieveByUserGroup(String userGroup) {
-        ArrayList<ExperimentStatisticInfo> list = this.RetrieveBy(STRCOL_UserGroup, 0, userGroup);
+    public ExperimentStatisticsInfo RetrieveByUserGroup(String userGroup) {
+        ArrayList<ExperimentStatisticsInfo> list = this.RetrieveBy(STRCOL_UserGroup, 0, userGroup);
         return (list != null) ? list.get(0) : null;
     }
 
@@ -432,7 +235,7 @@ public class ExperimentStatisticsDB {
      *
      * @return ArrayList<StatisticsInfo>
      */
-    public ArrayList<ExperimentStatisticInfo> RetrieveAll() {
+    public ArrayList<ExperimentStatisticsInfo> RetrieveAll() {
         return this.RetrieveBy(null, 0, null);
     }
 
@@ -460,16 +263,224 @@ public class ExperimentStatisticsDB {
         return xmlString;
     }
 
+    /**
+     *
+     * @param experimentId
+     * @param sbName
+     * @param unitId
+     * @return
+     */
+    public boolean UpdateStarted(int experimentId, String sbName, int unitId) {
+        final String methodName = "UpdateStarted";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_ExperimentIdSbNameUnitId_arg3, experimentId, sbName, unitId));
+
+        boolean success = false;
+
+        try {
+            CallableStatement sqlStatement = null;
+
+            try {
+                /*
+                 * Prepare the stored procedure call
+                 */
+                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateStarted);
+                sqlStatement.registerOutParameter(1, Types.INTEGER);
+                sqlStatement.setInt(2, experimentId);
+                sqlStatement.setString(3, sbName);
+                sqlStatement.setInt(4, unitId);
+
+                /*
+                 * Execute the stored procedure
+                 */
+                sqlStatement.execute();
+                success = (sqlStatement.getInt(1) != 0);
+            } finally {
+                try {
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
+                } catch (SQLException ex) {
+                    Logfile.WriteException(STR_ClassName, methodName, ex);
+                }
+            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_Success_arg, success));
+
+        return success;
+    }
+
+    /**
+     *
+     * @param experimentId
+     * @param sbName
+     * @return
+     */
+    public boolean UpdateCompleted(int experimentId, String sbName) {
+        final String methodName = "UpdateCompleted";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
+
+        boolean success = false;
+
+        try {
+            CallableStatement sqlStatement = null;
+
+            try {
+                /*
+                 * Prepare the stored procedure call
+                 */
+                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateCompleted);
+                sqlStatement.registerOutParameter(1, Types.INTEGER);
+                sqlStatement.setInt(2, experimentId);
+                sqlStatement.setString(3, sbName);
+
+                /*
+                 * Execute the stored procedure
+                 */
+                sqlStatement.execute();
+                success = (sqlStatement.getInt(1) != 0);
+            } finally {
+                try {
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
+                } catch (SQLException ex) {
+                    Logfile.WriteException(STR_ClassName, methodName, ex);
+                }
+            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_Success_arg, success));
+
+        return success;
+    }
+
+    /**
+     *
+     * @param experimentId
+     * @param sbName
+     * @return
+     */
+    public boolean UpdateCancelled(int experimentId, String sbName) {
+        final String methodName = "UpdateCancelled";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_ExperimentIdSbName_arg2, experimentId, sbName));
+
+        boolean success = false;
+
+        try {
+            CallableStatement sqlStatement = null;
+
+            try {
+                /*
+                 * Prepare the stored procedure call
+                 */
+                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateCancelled);
+                sqlStatement.registerOutParameter(1, Types.INTEGER);
+                sqlStatement.setInt(2, experimentId);
+                sqlStatement.setString(3, sbName);
+
+                /*
+                 * Execute the stored procedure
+                 */
+                sqlStatement.execute();
+                success = (sqlStatement.getInt(1) != 0);
+            } finally {
+                try {
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
+                } catch (SQLException ex) {
+                    Logfile.WriteException(STR_ClassName, methodName, ex);
+                }
+            }
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_Success_arg, success));
+
+        return success;
+    }
+
     //================================================================================================================//
+    /**
+     *
+     * @param experimentStatisticsInfo
+     * @return
+     */
+    public int Add(ExperimentStatisticsInfo experimentStatisticsInfo) {
+        final String methodName = "Add";
+        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
+
+        int id = -1;
+
+        try {
+            /*
+             * Check that parameters are valid
+             */
+            if (experimentStatisticsInfo == null) {
+                throw new NullPointerException(ExperimentStatisticsInfo.class.getSimpleName());
+            }
+
+            CallableStatement sqlStatement = null;
+
+            try {
+                /*
+                 * Prepare the stored procedure call
+                 */
+                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
+                sqlStatement.registerOutParameter(1, Types.INTEGER);
+                sqlStatement.setInt(2, experimentStatisticsInfo.getExperimentId());
+                sqlStatement.setString(3, experimentStatisticsInfo.getSbName());
+                sqlStatement.setString(4, experimentStatisticsInfo.getUserGroup());
+                sqlStatement.setInt(5, experimentStatisticsInfo.getPriorityHint());
+                sqlStatement.setInt(6, experimentStatisticsInfo.getEstimatedExecTime());
+                sqlStatement.setInt(7, experimentStatisticsInfo.getQueueLength());
+                sqlStatement.setInt(8, experimentStatisticsInfo.getEstimatedWaitTime());
+
+                /*
+                 * Execute the stored procedure
+                 */
+                sqlStatement.execute();
+                id = (int) sqlStatement.getInt(1);
+            } finally {
+                try {
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
+                } catch (SQLException ex) {
+                    Logfile.WriteException(STR_ClassName, methodName, ex);
+                }
+            }
+        } catch (NullPointerException | SQLException ex) {
+            Logfile.WriteError(ex.toString());
+        }
+
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
+                String.format(STRLOG_Id_arg, id));
+
+        return id;
+    }
+
     /**
      *
      * @return @throws Exception
      */
-    private ArrayList<ExperimentStatisticInfo> RetrieveBy(String columnName, int intval, String strval) {
+    private ArrayList<ExperimentStatisticsInfo> RetrieveBy(String columnName, int intval, String strval) {
         final String methodName = "RetrieveBy";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        ArrayList<ExperimentStatisticInfo> list = new ArrayList<>();
+        ArrayList<ExperimentStatisticsInfo> arrayList = new ArrayList<>();
 
         try {
             CallableStatement sqlStatement = null;
@@ -479,7 +490,7 @@ public class ExperimentStatisticsDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
-                sqlStatement.setString(1, (columnName != null) ? columnName.toLowerCase() : null);
+                sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
 
@@ -487,45 +498,59 @@ public class ExperimentStatisticsDB {
                  * Execute the stored procedure
                  */
                 ResultSet resultSet = sqlStatement.executeQuery();
-
-                /*
-                 * Process the results of the query
-                 */
                 while (resultSet.next() == true) {
-                    ExperimentStatisticInfo info = new ExperimentStatisticInfo();
-                    info.setId(resultSet.getInt(STRCOL_Id));
-                    info.setExperimentId(resultSet.getInt(STRCOL_ExperimentId));
-                    info.setSbName(resultSet.getString(STRCOL_SbName));
-                    info.setUserGroup(resultSet.getString(STRCOL_UserGroup));
-                    info.setPriorityHint(resultSet.getInt(STRCOL_PriorityHint));
-                    info.setEstimatedExecTime(resultSet.getInt(STRCOL_EstimatedExecTime));
-                    info.setTimeSubmitted(resultSet.getTimestamp(STRCOL_TimeSubmitted));
-                    info.setQueueLength(resultSet.getInt(STRCOL_QueueLength));
-                    info.setEstimatedWaitTime(resultSet.getInt(STRCOL_EstimatedWaitTime));
-                    info.setTimeStarted(resultSet.getTimestamp(STRCOL_TimeStarted));
-                    info.setUnitId(resultSet.getInt(STRCOL_UnitId));
-                    info.setTimeCompleted(resultSet.getTimestamp(STRCOL_TimeCompleted));
-                    info.setCancelled(resultSet.getBoolean(STRCOL_Cancelled));
+                    ExperimentStatisticsInfo experimentStatisticsInfo = new ExperimentStatisticsInfo();
+
+                    experimentStatisticsInfo.setId(resultSet.getInt(STRCOL_Id));
+                    experimentStatisticsInfo.setExperimentId(resultSet.getInt(STRCOL_ExperimentId));
+                    experimentStatisticsInfo.setSbName(resultSet.getString(STRCOL_SbName));
+                    experimentStatisticsInfo.setUserGroup(resultSet.getString(STRCOL_UserGroup));
+                    experimentStatisticsInfo.setPriorityHint(resultSet.getInt(STRCOL_PriorityHint));
+                    experimentStatisticsInfo.setEstimatedExecTime(resultSet.getInt(STRCOL_EstimatedExecTime));
+                    experimentStatisticsInfo.setQueueLength(resultSet.getInt(STRCOL_QueueLength));
+                    experimentStatisticsInfo.setEstimatedWaitTime(resultSet.getInt(STRCOL_EstimatedWaitTime));
+                    experimentStatisticsInfo.setUnitId(resultSet.getInt(STRCOL_UnitId));
+                    experimentStatisticsInfo.setCancelled(resultSet.getBoolean(STRCOL_Cancelled));
+
+                    Calendar calendar;
+                    Timestamp timestamp;
+                    if ((timestamp = resultSet.getTimestamp(STRCOL_TimeSubmitted)) != null) {
+                        calendar = Calendar.getInstance();
+                        calendar.setTime(timestamp);
+                        experimentStatisticsInfo.setTimeSubmitted(calendar);
+                    }
+                    if ((timestamp = resultSet.getTimestamp(STRCOL_TimeStarted)) != null) {
+                        calendar = Calendar.getInstance();
+                        calendar.setTime(timestamp);
+                        experimentStatisticsInfo.setTimeStarted(calendar);
+                    }
+                    if ((timestamp = resultSet.getTimestamp(STRCOL_TimeCompleted)) != null) {
+                        calendar = Calendar.getInstance();
+                        calendar.setTime(timestamp);
+                        experimentStatisticsInfo.setTimeCompleted(calendar);
+                    }
 
                     /*
                      * Calculate the actual execution time
                      */
-                    long startTime = info.getTimeStarted().getTime();
-                    if (startTime != 0) {
-                        long endTime = info.getTimeCompleted().getTime();
-                        info.setActualExecTime((int) ((endTime - startTime) / 1000));
+                    if (experimentStatisticsInfo.getTimeStarted() != null) {
+                        long startTime = experimentStatisticsInfo.getTimeStarted().getTimeInMillis();
+                        if (experimentStatisticsInfo.getTimeCompleted() != null) {
+                            long endTime = experimentStatisticsInfo.getTimeCompleted().getTimeInMillis();
+                            experimentStatisticsInfo.setActualExecTime((int) ((endTime - startTime) / 1000));
+                        }
                     }
 
                     /*
-                     * Add the info to the list
+                     * Add the ExperimentStatisticsInfo to the list
                      */
-                    list.add(info);
+                    arrayList.add(experimentStatisticsInfo);
                 }
-            } catch (Exception ex) {
-                throw ex;
             } finally {
                 try {
-                    sqlStatement.close();
+                    if (sqlStatement != null) {
+                        sqlStatement.close();
+                    }
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
@@ -536,9 +561,9 @@ public class ExperimentStatisticsDB {
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                String.format(STRLOG_Count_arg, list.size()));
+                String.format(STRLOG_Count_arg, arrayList.size()));
 
-        return (list.size() > 0) ? list : null;
+        return (arrayList.size() > 0) ? arrayList : null;
     }
 
     /**
@@ -547,7 +572,7 @@ public class ExperimentStatisticsDB {
      * @param statisticsInfoArray an array of experiment statistics information
      * @return an XML string containing the experiment statistics information. If an error occurred return null.
      */
-    private String ToXmlString(ArrayList<ExperimentStatisticInfo> statisticsInfoList) {
+    private String ToXmlString(ArrayList<ExperimentStatisticsInfo> statisticsInfoList) {
         final String methodName = "ToXmlString";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
@@ -577,10 +602,7 @@ public class ExperimentStatisticsDB {
             /*
              * Take the information for each experiment and put into the XML document
              */
-            Iterator iterator = statisticsInfoList.iterator();
-            while (iterator.hasNext()) {
-                ExperimentStatisticInfo info = (ExperimentStatisticInfo) iterator.next();
-
+            for (ExperimentStatisticsInfo info : statisticsInfoList) {
                 /*
                  * Make a copy of the experiment node copy and fill it with values from the experiment information
                  */

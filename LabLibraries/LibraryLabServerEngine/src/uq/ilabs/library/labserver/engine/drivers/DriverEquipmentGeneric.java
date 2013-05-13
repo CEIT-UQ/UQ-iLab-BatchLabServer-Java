@@ -202,39 +202,51 @@ public class DriverEquipmentGeneric extends DriverGeneric {
              */
             int timeout = executionStatus.getTimeRemaining() + 60;
             while (timeout > 0) {
-                /*
-                 * Check if execution has completed
-                 */
-                executionStatus = this.labEquipmentAPI.GetLabExecutionStatus(executionId);
-                if (executionStatus.getExecuteStatus() == ExecutionStatus.Status.Completed) {
-                    break;
-                }
-
-                /*
-                 * Not yet - get time remaining
-                 */
-                int executionTimeRemaining = executionStatus.getTimeRemaining();
-                Logfile.Write(String.format(STRLOG_ExecutionStatus_arg2,
-                        executionStatus.getExecuteStatus().toString(), executionTimeRemaining));
-
-                /*
-                 * Update the expected completion time, time now plus time remaining
-                 */
-                long timeNowInMillis = Calendar.getInstance().getTimeInMillis();
-                this.timeCompleted.setTimeInMillis(timeNowInMillis + executionTimeRemaining * 1000);
-
-                /*
-                 * Wait a bit and then check again
-                 */
                 int secondsToWait;
-                if (executionTimeRemaining > 40) {
-                    secondsToWait = 20;
-                } else if (executionTimeRemaining > 5) {
-                    secondsToWait = executionTimeRemaining / 2;
-                } else {
-                    secondsToWait = 2;
+
+                /*
+                 * There may be a temporary network issue that causes the web service call to fail. That is
+                 * not an experiment failure so don't fail the experiment but instead wait a bit and try again.
+                 */
+                try {
+                    /*
+                     * Check if execution has completed
+                     */
+                    executionStatus = this.labEquipmentAPI.GetLabExecutionStatus(executionId);
+                    if (executionStatus.getExecuteStatus() == ExecutionStatus.Status.Completed) {
+                        break;
+                    }
+
+                    /*
+                     * Not yet - get time remaining
+                     */
+                    int executionTimeRemaining = executionStatus.getTimeRemaining();
+                    Logfile.Write(String.format(STRLOG_ExecutionStatus_arg2,
+                            executionStatus.getExecuteStatus().toString(), executionTimeRemaining));
+
+                    /*
+                     * Update the expected completion time, time now plus time remaining
+                     */
+                    long timeNowInMillis = Calendar.getInstance().getTimeInMillis();
+                    this.timeCompleted.setTimeInMillis(timeNowInMillis + executionTimeRemaining * 1000);
+
+                    /*
+                     * Wait a bit and then check again
+                     */
+                    if (executionTimeRemaining > 40) {
+                        secondsToWait = 20;
+                    } else if (executionTimeRemaining > 5) {
+                        secondsToWait = executionTimeRemaining / 2;
+                    } else {
+                        secondsToWait = 2;
+                    }
+                } catch (Exception ex) {
+                    secondsToWait = 5;
                 }
 
+                /*
+                 * Wait for the specified amount of time
+                 */
                 for (int i = 0; i < secondsToWait; i++) {
                     if (debugTrace == true) {
                         System.out.println("[E]");
@@ -245,8 +257,11 @@ public class DriverEquipmentGeneric extends DriverGeneric {
                      * Check if the experiment has been cancelled
                      */
                     if (this.isCancelled() == true && this.statusCode != StatusCodes.Cancelled) {
-                        this.labEquipmentAPI.CancelLabExecution(executionId);
-                        this.statusCode = StatusCodes.Cancelled;
+                        try {
+                            this.labEquipmentAPI.CancelLabExecution(executionId);
+                            this.statusCode = StatusCodes.Cancelled;
+                        } catch (Exception ex) {
+                        }
                     }
                 }
 
@@ -276,9 +291,9 @@ public class DriverEquipmentGeneric extends DriverGeneric {
                     /*
                      * Process the execution result
                      */
-                    ResultReport resultReport = this.labExperimentResult.getResultReport();
-                    resultReport.setStatusCode(StatusCodes.Completed);
+                    ResultReport resultReport = new ResultReport(StatusCodes.Completed);
                     resultReport.setXmlExperimentResults(experimentResults);
+                    this.labExperimentResult.setResultReport(resultReport);
 
                     /*
                      * Set the actual execution time
@@ -288,7 +303,7 @@ public class DriverEquipmentGeneric extends DriverGeneric {
                     break;
 
                 case Cancelled:
-                    this.labExperimentResult.getResultReport().setStatusCode(StatusCodes.Cancelled);
+                    this.labExperimentResult.setResultReport(new ResultReport(StatusCodes.Cancelled));
                     break;
 
                 case Failed:
@@ -299,11 +314,8 @@ public class DriverEquipmentGeneric extends DriverGeneric {
                     break;
             }
         } catch (Exception ex) {
-            ResultReport resultReport = this.labExperimentResult.getResultReport();
-            resultReport.setStatusCode(StatusCodes.Failed);
-            resultReport.setErrorMessage(ex.getMessage());
+            this.labExperimentResult.setResultReport(new ResultReport(StatusCodes.Failed, ex.getMessage()));
         }
-
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_StatusCodeExecutionTime_arg2,

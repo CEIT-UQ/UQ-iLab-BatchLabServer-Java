@@ -23,46 +23,30 @@ public class DBConnection {
     /*
      * String constants
      */
-    public static final String STR_Driver = "org.postgresql.Driver";
-    public static final String STR_Url_arg3 = "jdbc:postgresql://%s:%d/%s";
     public static final String STR_User = "user";
     public static final String STR_Password = "password";
-    public static final String STR_DefaultHost = "localhost";
     public static final String STR_DefaultUser = "LabServer";
     public static final String STR_DefaultPassword = "ilab";
-    /*
-     * Constants
-     */
-    public static final int INT_DefaultPort = 5432;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
+    private String driver;
+    private String url;
     private Properties properties;
-    private String host;
-    private int port;
-    private String database;
 
-    public String getHost() {
-        return host;
+    public String getDriver() {
+        return driver;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setDriver(String driver) {
+        this.driver = driver;
     }
 
-    public int getPort() {
-        return port;
+    public String getUrl() {
+        return url;
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String getDatabase() {
-        return database;
-    }
-
-    public void setDatabase(String database) {
-        this.database = database;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getUser() {
@@ -80,10 +64,6 @@ public class DBConnection {
     public void setPassword(String password) {
         this.properties.setProperty(STR_Password, password);
     }
-
-    public String getUrl() {
-        return String.format(STR_Url_arg3, host, port, database);
-    }
     //</editor-fold>
 
     /**
@@ -91,16 +71,15 @@ public class DBConnection {
      * @param database
      * @throws Exception
      */
-    public DBConnection(String database) throws Exception {
+    public DBConnection(String driver, String url) throws Exception {
         final String methodName = "DBConnection";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         /*
          * Initial local variables
          */
-        this.database = database;
-        this.host = STR_DefaultHost;
-        this.port = INT_DefaultPort;
+        this.driver = driver;
+        this.url = url;
         this.properties = new Properties();
         this.properties.setProperty(STR_User, STR_DefaultUser);
         this.properties.setProperty(STR_Password, STR_DefaultPassword);
@@ -109,7 +88,7 @@ public class DBConnection {
          * Load the database driver to ensure that it exists
          */
         try {
-            Class.forName(STR_Driver);
+            Class.forName(this.driver);
         } catch (ClassNotFoundException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -128,7 +107,7 @@ public class DBConnection {
 
         Connection sqlConnection;
         try {
-            sqlConnection = DriverManager.getConnection(this.getUrl(), this.properties);
+            sqlConnection = DriverManager.getConnection(this.url, this.properties);
         } catch (SQLException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;

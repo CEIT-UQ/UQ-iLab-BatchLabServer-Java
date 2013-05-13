@@ -12,6 +12,9 @@ import java.util.Calendar;
  */
 public class LabEquipmentInfo {
 
+    public static final int MAXLEN_ServiceUrl = 256;
+    public static final int MAXLEN_Passkey = 40;
+    //
     private int id;
     private String serviceUrl;
     private String passkey;

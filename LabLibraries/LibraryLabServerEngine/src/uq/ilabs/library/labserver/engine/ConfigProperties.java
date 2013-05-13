@@ -24,8 +24,8 @@ public class ConfigProperties {
     /*
      * String constants for configuration properties
      */
-    private static final String STRCFG_DBDatabase = "DBDatabase";
-    private static final String STRCFG_DBHost = "DBHost";
+    private static final String STRCFG_DBDriver = "DBDriver";
+    private static final String STRCFG_DBUrl = "DBUrl";
     private static final String STRCFG_DBUser = "DBUser";
     private static final String STRCFG_DBPassword = "DBPassword";
     /*
@@ -36,9 +36,6 @@ public class ConfigProperties {
      * String constants for exception messages
      */
     private static final String STRERR_Filename = "filename";
-    private static final String STRERR_InputStream = "inputStream";
-    private static final String STRERR_DBDatabase = "dbDatabase";
-    private static final String STRERR_DBHost = "dbHost";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private DBConnection dbConnection;
@@ -105,22 +102,25 @@ public class ConfigProperties {
              * Load the configuration properties from the specified file
              */
             InputStream inputStream = new FileInputStream(filename);
-            if (inputStream == null) {
-                throw new NullPointerException(STRERR_InputStream);
-            }
             Properties configProperties = new Properties();
             configProperties.loadFromXML(inputStream);
 
             /*
              * Get the database information
              */
-            String dbHost = configProperties.getProperty(STRCFG_DBHost);
-            if (dbHost.trim().isEmpty()) {
-                throw new IllegalArgumentException(STRERR_DBHost);
+            String dbDriver = configProperties.getProperty(STRCFG_DBDriver);
+            if (dbDriver == null) {
+                throw new NullPointerException(STRCFG_DBDriver);
             }
-            String dbDatabase = configProperties.getProperty(STRCFG_DBDatabase);
-            if (dbDatabase.trim().isEmpty()) {
-                throw new IllegalArgumentException(STRERR_DBDatabase);
+            if (dbDriver.trim().isEmpty()) {
+                throw new IllegalArgumentException(STRCFG_DBDriver);
+            }
+            String dbUrl = configProperties.getProperty(STRCFG_DBUrl);
+            if (dbUrl == null) {
+                throw new NullPointerException(STRCFG_DBUrl);
+            }
+            if (dbUrl.trim().isEmpty()) {
+                throw new IllegalArgumentException(STRCFG_DBUrl);
             }
             String dbUser = configProperties.getProperty(STRCFG_DBUser);
             dbUser = (dbUser.trim().isEmpty() == false) ? dbUser.trim() : null;
@@ -130,11 +130,10 @@ public class ConfigProperties {
             /*
              * Create an instance of the database connection
              */
-            this.dbConnection = new DBConnection(dbDatabase);
+            this.dbConnection = new DBConnection(dbDriver, dbUrl);
             if (this.dbConnection == null) {
                 throw new NullPointerException(DBConnection.class.getSimpleName());
             }
-            this.dbConnection.setHost(dbHost);
             this.dbConnection.setUser(dbUser);
             this.dbConnection.setPassword(dbPassword);
 

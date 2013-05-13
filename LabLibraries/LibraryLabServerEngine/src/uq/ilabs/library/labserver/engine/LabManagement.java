@@ -118,19 +118,16 @@ public class LabManagement {
              */
             DBConnection dbConnection = this.configProperties.getDbConnection();
             LabServerDB labServerDB = new LabServerDB(dbConnection);
-            if (labServerDB == null) {
-                throw new NullPointerException(LabServerDB.class.getSimpleName());
-            }
 
             /*
              * Get the LabServer information
              */
-            String[] names = labServerDB.GetListName();
+            String[] names = labServerDB.GetListOfNames();
             if (names == null || names.length == 0) {
                 throw new RuntimeException(STRERR_LabServerNotRegistered);
             }
             this.labServerInfo = labServerDB.RetrieveByName(names[0]);
-            if (this.labServerInfo == null || this.labServerInfo.getGuid() == null) {
+            if (this.labServerInfo == null || this.labServerInfo.getGuid()== null) {
                 throw new RuntimeException(STRERR_LabServerNotRegistered);
             }
 
@@ -180,10 +177,8 @@ public class LabManagement {
              */
             this.labEquipmentServiceInfoList = new ArrayList<>();
             for (int i = 0; i < labEquipmentInfoList.size(); i++) {
-                LabEquipmentServiceInfo labEquipmentServiceInfo = new LabEquipmentServiceInfo(this.labServerInfo.getGuid(), labEquipmentInfoList.get(i));
-                if (labEquipmentServiceInfo == null) {
-                    throw new NullPointerException(LabEquipmentServiceInfo.class.getSimpleName());
-                }
+                LabEquipmentServiceInfo labEquipmentServiceInfo =
+                        new LabEquipmentServiceInfo(this.labServerInfo.getGuid(), labEquipmentInfoList.get(i));
                 this.labEquipmentServiceInfoList.add(labEquipmentServiceInfo);
             }
 

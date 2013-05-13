@@ -28,7 +28,6 @@ public class ConfigProperties {
      * String constants for exception messages
      */
     private static final String STRERR_Filename = "filename";
-    private static final String STRERR_InputStream = "inputStream";
     private static final String STRERR_LabServer = "labServer";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
@@ -93,9 +92,6 @@ public class ConfigProperties {
              * Load the configuration properties from the specified file
              */
             InputStream inputStream = new FileInputStream(filename);
-            if (inputStream == null) {
-                throw new NullPointerException(STRERR_InputStream);
-            }
             Properties configProperties = new Properties();
             configProperties.loadFromXML(inputStream);
 

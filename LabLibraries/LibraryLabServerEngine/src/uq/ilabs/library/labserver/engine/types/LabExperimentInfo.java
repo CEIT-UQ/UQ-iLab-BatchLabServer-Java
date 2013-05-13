@@ -5,117 +5,23 @@
 package uq.ilabs.library.labserver.engine.types;
 
 import uq.ilabs.library.lab.types.StatusCodes;
+import uq.ilabs.library.labserver.database.types.ExperimentQueueInfo;
 
 /**
  *
  * @author uqlpayne
  */
-public class LabExperimentInfo {
+public class LabExperimentInfo extends ExperimentQueueInfo {
 
-    private int queueId;
-    /**
-     * Experiment number (greater than zero).
-     */
-    private int experimentId;
-    /**
-     * ServiceBroker's name.
-     */
-    private String sbName;
-    /**
-     * User Group for the lab experiment.
-     */
-    private String userGroup;
-    /**
-     * Priority of the experiment - unused.
-     */
-    private int priorityHint;
-    /**
-     * Experiment specification in XML format.
-     */
-    private String xmlSpecification;
-    /**
-     * Estimated execution time of the experiment in seconds.
-     */
-    private int estExecutionTime;
-    /**
-     * Status of this experiment.
-     */
-    private StatusCodes statusCode;
-    /**
-     * The Id of the setup that will be used to execute this experiment
-     */
+    private String setupName;
     private String setupId;
-    /**
-     * The farm unit number that is executing this experiment.
-     */
-    private int unitId;
-    /**
-     * Flag to indicate if the experiment has been cancelled while waiting on the queue.
-     */
-    private boolean cancelled;
 
-    public int getQueueId() {
-        return queueId;
+    public String getSetupName() {
+        return setupName;
     }
 
-    public void setQueueId(int queueId) {
-        this.queueId = queueId;
-    }
-
-    public int getExperimentId() {
-        return experimentId;
-    }
-
-    public void setExperimentId(int experimentId) {
-        this.experimentId = experimentId;
-    }
-
-    public String getSbName() {
-        return sbName;
-    }
-
-    public void setSbName(String sbName) {
-        this.sbName = sbName;
-    }
-
-    public String getUserGroup() {
-        return userGroup;
-    }
-
-    public void setUserGroup(String userGroup) {
-        this.userGroup = userGroup;
-    }
-
-    public int getPriorityHint() {
-        return priorityHint;
-    }
-
-    public void setPriorityHint(int priorityHint) {
-        this.priorityHint = priorityHint;
-    }
-
-    public String getXmlSpecification() {
-        return xmlSpecification;
-    }
-
-    public void setXmlSpecification(String xmlSpecification) {
-        this.xmlSpecification = xmlSpecification;
-    }
-
-    public int getEstExecutionTime() {
-        return estExecutionTime;
-    }
-
-    public void setEstExecutionTime(int estExecutionTime) {
-        this.estExecutionTime = estExecutionTime;
-    }
-
-    public StatusCodes getStatusCode() {
-        return statusCode;
-    }
-
-    public void setStatusCode(StatusCodes statusCode) {
-        this.statusCode = statusCode;
+    public void setSetupName(String setupName) {
+        this.setupName = setupName;
     }
 
     public String getSetupId() {
@@ -126,31 +32,40 @@ public class LabExperimentInfo {
         this.setupId = setupId;
     }
 
-    public int getUnitId() {
-        return unitId;
-    }
-
-    public void setUnitId(int unitId) {
-        this.unitId = unitId;
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    public void setCancelled(boolean cancelled) {
-        this.cancelled = cancelled;
-    }
-
+    /**
+     *
+     */
     public LabExperimentInfo() {
         this(0, null);
     }
 
+    /**
+     *
+     * @param experimentId
+     * @param sbName
+     */
     public LabExperimentInfo(int experimentId, String sbName) {
         this.experimentId = experimentId;
         this.sbName = sbName;
         this.statusCode = StatusCodes.Unknown;
         this.unitId = -1;
         this.cancelled = false;
+    }
+
+    /**
+     *
+     * @param experimentQueueInfo
+     */
+    public LabExperimentInfo(ExperimentQueueInfo experimentQueueInfo) {
+        this.id = experimentQueueInfo.getId();
+        this.experimentId = experimentQueueInfo.getExperimentId();
+        this.sbName = experimentQueueInfo.getSbName();
+        this.userGroup = experimentQueueInfo.getUserGroup();
+        this.priorityHint = experimentQueueInfo.getPriorityHint();
+        this.xmlSpecification = experimentQueueInfo.getXmlSpecification();
+        this.estimatedExecTime = experimentQueueInfo.getEstimatedExecTime();
+        this.statusCode = experimentQueueInfo.getStatusCode();
+        this.unitId = experimentQueueInfo.getUnitId();
+        this.cancelled = experimentQueueInfo.isCancelled();
     }
 }

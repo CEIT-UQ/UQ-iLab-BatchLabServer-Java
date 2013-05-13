@@ -12,9 +12,11 @@ import uq.ilabs.library.lab.types.*;
 import uq.ilabs.library.lab.utilities.Delay;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.SmtpClient;
+import uq.ilabs.library.labserver.database.types.ExperimentQueueInfo;
+import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
 import uq.ilabs.library.labserver.engine.drivers.DriverEquipmentGeneric;
 import uq.ilabs.library.labserver.engine.drivers.DriverGeneric;
-import uq.ilabs.library.labserver.engine.types.ExperimentResultInfo;
+import uq.ilabs.library.labserver.database.types.ExperimentResultInfo;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
 import uq.ilabs.library.labserver.engine.types.LabExecutionInfo;
 import uq.ilabs.library.labserver.engine.types.LabExperimentInfo;
@@ -380,13 +382,13 @@ public class LabExperimentEngine implements Runnable {
                          * The specified experiment is currently running, create the experiment status information
                          */
                         experimentStatus = new ExperimentStatus(labExperimentInfo.getStatusCode());
-                        experimentStatus.setEstRuntime(labExperimentInfo.getEstExecutionTime());
+                        experimentStatus.setEstRuntime(labExperimentInfo.getEstimatedExecTime());
 
                         /*
                          * Calculate the time remaining for the experiment
                          */
                         long elapsedTime = (Calendar.getInstance().getTimeInMillis() - this.labExecutionInfo.getStartTime().getTimeInMillis()) / 1000;
-                        int remainingRuntime = labExperimentInfo.getEstExecutionTime() - (int) elapsedTime;
+                        int remainingRuntime = labExperimentInfo.getEstimatedExecTime() - (int) elapsedTime;
 
                         /*
                          * Remaining runtime cannot be negative and may have been underestimated. Don't say remaining
@@ -556,13 +558,19 @@ public class LabExperimentEngine implements Runnable {
                         /*
                          * Check if there is an experiment to run
                          */
-                        if ((labExperimentInfo = this.labManagement.getExperimentQueueDB().Dequeue(this.unitId)) == null) {
+                        ExperimentQueueInfo experimentQueueInfo = this.labManagement.getExperimentQueueDB().Dequeue(this.unitId);
+                        if (experimentQueueInfo == null) {
                             /*
                              * No experiment to run
                              */
                             thisState = States.Completed;
                             break;
                         }
+
+                        /*
+                         * Create an instance of LabExperimentInfo
+                         */
+                        labExperimentInfo = new LabExperimentInfo(experimentQueueInfo);
 
                         thisState = States.PrepareExperiment;
                         break;
@@ -719,7 +727,7 @@ public class LabExperimentEngine implements Runnable {
                 /*
                  * Update the statistics for starting the experiment
                  */
-                if (this.labManagement.getExperimentStatisticsDB().Started(
+                if (this.labManagement.getExperimentStatisticsDB().UpdateStarted(
                         labExperimentInfo.getExperimentId(), labExperimentInfo.getSbName(), this.unitId) == false) {
                     throw new RuntimeException(STRERR_FailedToUpdateStatisticsStarted);
                 }
@@ -742,6 +750,7 @@ public class LabExperimentEngine implements Runnable {
                     /*
                      * Experiment is now running
                      */
+                    labExperimentInfo.setSetupName(labExperimentSpecification.getSetupName());
                     labExperimentInfo.setSetupId(labExperimentSpecification.getSetupId());
                     labExperimentInfo.setUnitId(this.unitId);
                     labExperimentInfo.setStatusCode(StatusCodes.Running);
@@ -828,25 +837,25 @@ public class LabExperimentEngine implements Runnable {
             /*
              * Update experiment status in the queue table
              */
-            if (this.labManagement.getExperimentQueueDB().UpdateStatus(labExperimentInfo.getQueueId(), experimentResultInfo.getStatusCode()) == false) {
+            if (this.labManagement.getExperimentQueueDB().UpdateStatus(labExperimentInfo.getId(), experimentResultInfo.getStatusCode()) == false) {
                 throw new RuntimeException(STRERR_FailedToUpdateQueueStatus);
             }
 
             /*
              * Check experiment completion status for updating the statistics
              */
-            if (labExperimentInfo.getStatusCode() == StatusCodes.Cancelled) {
+            if (experimentResultInfo.getStatusCode() == StatusCodes.Cancelled) {
                 /*
                  * Update statistics for cancelled experiment
                  */
-                if (this.labManagement.getExperimentStatisticsDB().Cancelled(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
+                if (this.labManagement.getExperimentStatisticsDB().UpdateCancelled(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
                     throw new RuntimeException(STRERR_FailedToUpdateStatisticsCancelled);
                 }
             } else {
                 /*
                  * Update statistics for completed experiment
                  */
-                if (this.labManagement.getExperimentStatisticsDB().Completed(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
+                if (this.labManagement.getExperimentStatisticsDB().UpdateCompleted(experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()) == false) {
                     throw new RuntimeException(STRERR_FailedToUpdateStatisticsCompleted);
                 }
             }
@@ -878,9 +887,9 @@ public class LabExperimentEngine implements Runnable {
             /*
              * Notify the ServiceBroker so that the results can be retrieved
              */
-            String serviceUrl = this.labManagement.getServiceBrokersDB().GetServiceUrlByName(sbName);
-            ServiceBrokerAPI serviceBrokerAPI = new ServiceBrokerAPI(serviceUrl);
-            if (serviceBrokerAPI != null) {
+            ServiceBrokerInfo serviceBrokerInfo = this.labManagement.getServiceBrokersDB().RetrieveByName(sbName);
+            if (serviceBrokerInfo != null) {
+                ServiceBrokerAPI serviceBrokerAPI = new ServiceBrokerAPI(serviceBrokerInfo.getServiceUrl());
                 if ((success = serviceBrokerAPI.Notify(experimentId)) == true) {
                     success = this.labManagement.getExperimentResultsDB().UpdateNotified(experimentId, sbName);
                 }
