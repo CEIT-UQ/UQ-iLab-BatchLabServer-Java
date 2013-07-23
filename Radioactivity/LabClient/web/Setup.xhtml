@@ -50,7 +50,7 @@
                                             Source:
                                         </td>
                                         <td class="data">
-                                            <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomSource}" style="width: 130px;">
+                                            <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomSource}" title="Select source" style="width: 130px;">
                                                 <f:selectItems value="#{setupBean.availableSources}" />
                                             </h:selectOneMenu>
                                         </td>
@@ -62,16 +62,13 @@
                                             Absorber:
                                         </td>
                                         <td class="data">
-                                            <abbr title="Available absorbers">
-                                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomAbsorber}" style="width: 130px;">
-                                                    <f:selectItems value="#{setupBean.availableAbsorbers}" />
-                                                </h:selectOneMenu>
-                                            </abbr>
+                                            <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomAbsorber}" title="#{setupBean.availableAbsorbersTitle}" style="width: 130px;">
+                                                <f:selectItems value="#{setupBean.availableAbsorbers}" />
+                                            </h:selectOneMenu>
                                         </td>
                                         <td class="dataright">
-                                            <abbr title="Add absorber to selected absorbers">
-                                                <h:commandButton styleClass="hcommandButton" value="Add" action="#{setupBean.actionAddAbsorber()}" rendered="#{setupBean.selectedAbsorbersRendered}" disabled="#{setupBean.hcbAddAbsorberDisabled}" />
-                                            </abbr>
+                                            <h:commandButton styleClass="hcommandButton" value="Add" title="Add absorber to selected absorbers"
+                                                             action="#{setupBean.actionAddAbsorber()}" rendered="#{setupBean.selectedAbsorbersRendered}" disabled="#{setupBean.hcbAddAbsorberDisabled}" />
                                         </td>
                                     </tr>
                                     <tr >
@@ -80,16 +77,13 @@
                                                 Selected:
                                             </td>
                                             <td class="data">
-                                                <abbr title="Selected absorbers">
-                                                    <h:selectOneMenu styleClass="hselectOneMenu" style="width: 130px;">
-                                                        <f:selectItems value="#{setupBean.selectedAbsorbers}" />
-                                                    </h:selectOneMenu>
-                                                </abbr>
+                                                <h:selectOneMenu styleClass="hselectOneMenu" title="Selected absorbers" style="width: 130px;">
+                                                    <f:selectItems value="#{setupBean.selectedAbsorbers}" />
+                                                </h:selectOneMenu>
                                             </td>
                                             <td class="dataright">
-                                                <abbr title="Clear selected absorbers">
-                                                    <h:commandButton styleClass="hcommandButton" value="Clear" action="#{setupBean.actionClearAbsorberList()}" />
-                                                </abbr>
+                                                <h:commandButton styleClass="hcommandButton" value="Clear" title="Clear selected absorbers"
+                                                                 action="#{setupBean.actionClearAbsorberList()}" />
                                             </td>
                                         </h:panelGroup>
                                     </tr>
@@ -98,14 +92,13 @@
                                             Distance:
                                         </td>
                                         <td class="data">
-                                            <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomDistance}" style="width: 56px;">
+                                            <h:selectOneMenu styleClass="hselectOneMenu" value="#{setupBean.hsomDistance}" style="width: 56px;" title="#{setupBean.availableDistancesTitle}">
                                                 <f:selectItems value="#{setupBean.availableDistances}" />
                                             </h:selectOneMenu> (mm)
                                         </td>
                                         <td class="dataright">
-                                            <abbr title="Add distance to selected distances">
-                                                <h:commandButton styleClass="hcommandButton" value="Add" action="#{setupBean.actionAddDistance()}" rendered="#{setupBean.selectedDistancesRendered}" disabled="#{setupBean.hcbAddDistanceDisabled}" />
-                                            </abbr>
+                                            <h:commandButton styleClass="hcommandButton" value="Add" title="Add distance to selected distances"
+                                                             action="#{setupBean.actionAddDistance()}" rendered="#{setupBean.selectedDistancesRendered}" disabled="#{setupBean.hcbAddDistanceDisabled}" />
                                         </td>
                                     </tr>
                                     <tr>
@@ -114,16 +107,13 @@
                                                 Selected:
                                             </td>
                                             <td class="data">
-                                                <abbr title="Selected distances">
-                                                    <h:selectOneMenu styleClass="hselectOneMenu" style="width: 56px;">
-                                                        <f:selectItems value="#{setupBean.selectedDistances}" />
-                                                    </h:selectOneMenu>
-                                                </abbr>
+                                                <h:selectOneMenu styleClass="hselectOneMenu" title="Selected distances" style="width: 56px;">
+                                                    <f:selectItems value="#{setupBean.selectedDistances}" />
+                                                </h:selectOneMenu>
                                             </td>
                                             <td class="dataright">
-                                                <abbr title="Clear selected distances">
-                                                    <h:commandButton styleClass="hcommandButton" value="Clear" action="#{setupBean.actionClearDistanceList()}" />
-                                                </abbr>
+                                                <h:commandButton styleClass="hcommandButton" value="Clear" title="Clear selected distances"
+                                                                 action="#{setupBean.actionClearDistanceList()}" />
                                             </td>
                                         </h:panelGroup>
                                     </tr>
@@ -132,7 +122,7 @@
                                             Duration:
                                         </td>
                                         <td class="data">
-                                            <h:inputText styleClass="hinputtext" value="#{setupBean.hitDuration}" style="height: 16px; width: 50px" /> (secs)
+                                            <h:inputText styleClass="hinputtext" value="#{setupBean.hitDuration}" title="#{setupBean.hitDurationTitle}" style="height: 16px; width: 50px" /> (secs)
                                         </td>
                                         <td>
                                         </td>
@@ -142,7 +132,7 @@
                                             Trials:
                                         </td>
                                         <td class="data">
-                                            <h:inputText styleClass="hinputtext" value="#{setupBean.hitTrials}" style="height: 16px; width: 50px" />
+                                            <h:inputText styleClass="hinputtext" value="#{setupBean.hitTrials}" title="#{setupBean.hitTrialsTitle}" style="height: 16px; width: 50px" />
                                         </td>
                                         <td>
                                         </td>

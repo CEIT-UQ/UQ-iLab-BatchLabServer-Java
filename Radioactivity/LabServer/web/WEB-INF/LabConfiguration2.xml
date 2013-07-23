@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--<!DOCTYPE labConfiguration SYSTEM "LabConfiguration.dtd">-->
+<labConfiguration title="Radioactivity 2" version="4.0">
+    <navmenuPhoto>
+        <image>http://localhost:8080/RadioactivityLabServer/resources/img/radioactivity2.png</image>
+    </navmenuPhoto>
+    <labCamera>
+        <url />
+    </labCamera>
+    <labInfo>
+        <text />
+        <url />
+    </labInfo>
+    <configuration>
+        <setup id="RadioactivityVsTime">
+            <name>Radioactivity over Time</name>
+            <description>
+                <p>Measure radioactivity over time at a fixed distance from the source.</p>
+            </description>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="RadioactivityVsDistance">
+            <name>Radioactivity versus Distance</name>
+            <description>
+                <p>Measure radioactivity at various distances from the source.</p>
+            </description>
+            <distance>15,20,25,35,60</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="RadioactivityVsAbsorber">
+            <name>Radioactivity versus Absorber</name>
+            <description>
+                <p>Measure radioactivity through various absorbers at a fixed distance from the source.</p>
+            </description>
+            <absorberName>None,Paper,Aluminium Sheet,Lead Sheet,Aluminium Disc,Lead Disc</absorberName>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="RadioactivityVsAbsorber">
+            <name>Radioactivity versus Absorber Foils</name>
+            <description>
+                <p>Measure radioactivity through various absorbers at a fixed distance from the source.</p>
+            </description>
+            <absorberName>None,Alum.Foil x1,Alum.Foil x2,Alum.Foil x4,Alum.Foil x8,Alum.Foil x16,Alum.Foil x32,Alum.Foil x64,Alum.Foil x???</absorberName>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsTime">
+            <name>Radioactivity over Time (Simulated)</name>
+            <description>
+                <p>Measure radioactivity over time at a fixed distance from a simulated source.</p>
+            </description>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsDistance">
+            <name>Radioactivity versus Distance (Simulated)</name>
+            <description>
+                <p>Measure radioactivity at various distances from a simulated source.</p>
+            </description>
+            <distance>15,20,25,35,60</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsAbsorber">
+            <name>Radioactivity versus Absorber (Simulated)</name>
+            <description>
+                <p>Measure radioactivity through various absorbers at a fixed distance from the source.</p>
+            </description>
+            <absorberName>None,Paper,Aluminium Sheet,Lead Sheet,Aluminium Disc,Lead Disc</absorberName>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsAbsorber">
+            <name>Radioactivity versus Absorber Foils (Simulated)</name>
+            <description>
+                <p>Measure radioactivity through various absorbers at a fixed distance from the source.</p>
+            </description>
+            <absorberName>None,Alum.Foil x1,Alum.Foil x2,Alum.Foil x4,Alum.Foil x8,Alum.Foil x16,Alum.Foil x32,Alum.Foil x64,Alum.Foil x???</absorberName>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsTimeNoDelay">
+            <name>Radioactivity over Time (Simulated - No delays)</name>
+            <description>
+                <p>Measure radioactivity over time at a fixed distance from a simulated source. Equipment operation delays are not included.</p>
+            </description>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsDistanceNoDelay">
+            <name>Radioactivity versus Distance (Simulated - No delays)</name>
+            <description>
+                <p>Measure radioactivity at various distances from a simulated source. Equipment operation delays are not included.</p>
+            </description>
+            <distance>15,20,25,35,60</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsAbsorberNoDelay">
+            <name>Radioactivity versus Absorber (Simulated - No delays)</name>
+            <description>
+                <p>Measure radioactivity through various absorbers at a fixed distance from the source.</p>
+            </description>
+            <absorberName>None,Paper,Aluminium Sheet,Lead Sheet,Aluminium Disc,Lead Disc</absorberName>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <setup id="SimActivityVsAbsorberNoDelay">
+            <name>Radioactivity versus Absorber Foils (Simulated - No delays)</name>
+            <description>
+                <p>Measure radioactivity through various absorbers at a fixed distance from the source.</p>
+            </description>
+            <absorberName>None,Alum.Foil x1,Alum.Foil x2,Alum.Foil x4,Alum.Foil x8,Alum.Foil x16,Alum.Foil x32,Alum.Foil x64,Alum.Foil x???</absorberName>
+            <distance>20</distance>
+            <duration>5</duration>
+            <repeat>3</repeat>
+        </setup>
+        <sources default="Strontium-90">
+            <source>
+                <name>None</name>
+            </source>
+            <source>
+                <name>Americium-241</name>
+            </source>
+            <source>
+                <name>Strontium-90</name>
+            </source>
+            <source>
+                <name>Cobolt-60</name>
+            </source>
+        </sources>
+        <absorbers default="None">
+            <absorber>
+                <name>None</name>
+            </absorber>
+            <absorber>
+                <name>Paper</name>
+            </absorber>
+            <absorber>
+                <name>Aluminium Sheet</name>
+            </absorber>
+            <absorber>
+                <name>Lead Sheet</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x1</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x2</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x4</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x8</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x16</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x32</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x64</name>
+            </absorber>
+            <absorber>
+                <name>Alum.Foil x???</name>
+            </absorber>
+            <absorber>
+                <name>Aluminium Disc</name>
+            </absorber>
+            <absorber>
+                <name>Lead Disc</name>
+            </absorber>
+        </absorbers>
+        <distances>
+            <minimum>15</minimum>
+            <maximum>95</maximum>
+            <stepsize>5</stepsize>
+        </distances>
+    </configuration>
+    <validation>
+        <vdnDistance>
+            <minimum>14</minimum>
+            <maximum>95</maximum>
+        </vdnDistance>
+        <vdnDuration>
+            <minimum>1</minimum>
+            <maximum>10</maximum>
+        </vdnDuration>
+        <vdnRepeat>
+            <minimum>1</minimum>
+            <maximum>20</maximum>
+        </vdnRepeat>
+        <vdnTotaltime>
+            <minimum>1</minimum>
+            <maximum>1200</maximum>
+        </vdnTotaltime>
+    </validation>
+    <experimentSpecification>
+        <setupName />
+        <setupId />
+        <sourceName />
+        <absorberName />
+        <distance />
+        <duration />
+        <repeat />
+    </experimentSpecification>
+    <experimentResult>
+        <timestamp />
+        <title />
+        <version />
+        <experimentId />
+        <sbName />
+        <unitId />
+        <setupName />
+        <setupId />
+        <sourceName />
+        <absorberName />
+        <distance />
+        <duration />
+        <repeat />
+        <dataType />
+        <dataVector />
+    </experimentResult>
+</labConfiguration>

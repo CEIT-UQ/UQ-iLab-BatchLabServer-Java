@@ -19,7 +19,7 @@
     </context-param>
     <context-param>
         <param-name>XmlLabConfigurationPath</param-name>
-        <param-value>/WEB-INF/LabConfiguration.xml</param-value>
+        <param-value>/WEB-INF/LabConfiguration2.xml</param-value>
     </context-param>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>

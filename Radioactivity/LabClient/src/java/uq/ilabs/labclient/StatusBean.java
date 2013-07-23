@@ -216,7 +216,7 @@ public class StatusBean implements Serializable {
                  * Experiment is currently running, display time remaining
                  */
                 int seconds = (int) labExperimentStatus.getExperimentStatus().getEstRemainingRuntime();
-                ShowMessageInfo(String.format(STR_TimeRemainingIs, FormatTimeMessage(seconds)));
+                ShowMessageInfo(String.format(STR_TimeRemainingIs, this.labClientSession.FormatTimeMessage(seconds)));
             } else if (statusCode == StatusCodes.Waiting) {
                 /*
                  * Experiment is waiting to run, get queue position (zero-based)
@@ -224,7 +224,7 @@ public class StatusBean implements Serializable {
                 int position = labExperimentStatus.getExperimentStatus().getWaitEstimate().getEffectiveQueueLength();
                 int seconds = (int) labExperimentStatus.getExperimentStatus().getWaitEstimate().getEstWait();
                 seconds = (seconds < 0) ? 0 : seconds;
-                ShowMessageInfo(String.format(STR_QueuePositionRunIn_arg2, position, FormatTimeMessage(seconds)));
+                ShowMessageInfo(String.format(STR_QueuePositionRunIn_arg2, position, this.labClientSession.FormatTimeMessage(seconds)));
             } else if (statusCode == StatusCodes.Completed || statusCode == StatusCodes.Failed || statusCode == StatusCodes.Cancelled) {
                 /*
                  * Experiment status no longer needs to be checked
@@ -357,7 +357,7 @@ public class StatusBean implements Serializable {
                  */
                 WaitEstimate waitEstimate = this.labClientSession.getServiceBrokerAPI().GetEffectiveQueueLength();
                 this.holQueueStatusMessage = String.format(STR_QueueStatusMessage_arg2,
-                        waitEstimate.getEffectiveQueueLength(), FormatTimeMessage((int) waitEstimate.getEstWait()));
+                        waitEstimate.getEffectiveQueueLength(), this.labClientSession.FormatTimeMessage((int) waitEstimate.getEstWait()));
             } else {
                 this.holQueueStatusMessage = STR_QueueStatusNotAvailable;
             }
@@ -366,47 +366,6 @@ public class StatusBean implements Serializable {
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
-    }
-
-    /**
-     *
-     * @param seconds
-     * @return
-     */
-    private String FormatTimeMessage(int seconds) {
-        /*
-         * Convert to minutes and seconds
-         */
-        int minutes = seconds / 60;
-        seconds -= minutes * 60;
-
-        String message = "";
-        try {
-            if (minutes > 0) {
-                /*
-                 * Display minutes
-                 */
-                message += String.format(STR_MinutesAnd_arg2, minutes, FormatPlural(minutes));
-            }
-            /*
-             * Display seconds
-             */
-            message += String.format(STR_Seconds_arg2, seconds, FormatPlural(seconds));
-        } catch (Exception ex) {
-            message = ex.getMessage();
-            Logfile.WriteError(ex.toString());
-        }
-
-        return message;
-    }
-
-    /**
-     *
-     * @param value
-     * @return
-     */
-    private String FormatPlural(int value) {
-        return (value == 1) ? "" : "s";
     }
 
     /**

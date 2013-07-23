@@ -91,7 +91,7 @@ public class ExperimentResult extends LabExperimentResult {
              * Get the radioactivity counts into a two dimensional array. Each data vector contains the trial counts for
              * a particular distance and is provided as a comma-seperated-value string.
              */
-            String csvStrings[] = XmlUtilities.GetChildValues(this.nodeExperimentResult, Consts.STRXML_DataVector, false);
+            String[] csvStrings = XmlUtilities.GetChildValues(this.nodeExperimentResult, Consts.STRXML_DataVector, false);
             this.dataVectors = new int[csvStrings.length][];
             for (int i = 0; i < this.dataVectors.length; i++) {
                 csvStringSplit = csvStrings[i].split(Consts.STR_CsvSplitter);

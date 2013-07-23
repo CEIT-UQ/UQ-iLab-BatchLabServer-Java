@@ -36,10 +36,13 @@ public class SetupBean implements Serializable {
     /*
      * String constants
      */
+    private static final String STR_SelectAbsorber = "Select absorber";
+    private static final String STR_AvailableAbsorbers = "Available absorbers";
+    private static final String STR_SelectDistance = "Select distance";
+    private static final String STR_AvailableDistances = "Available distances";
+    private static final String STR_HintRange_arg2 = "Range: %d to %d";
     private static final String STR_SpecificationValid_arg = "Specification is valid. Execution time will be %s.";
     private static final String STR_SubmissionSuccessful_arg2 = "Submission was successful. Experiment # is %d and execution time is %s.";
-    private static final String STR_MinutesAnd_arg2 = "%d minute%s and ";
-    private static final String STR_Seconds_arg2 = "%d second%s";
     private static final String STR_ExperimentNumberHasBeenSubmitted_arg = "Experiment %d has been submitted.";
     private static final String STR_ExperimentNumbersHaveBeenSubmitted_arg = "Experiments %s have been submitted.";
     /*
@@ -117,6 +120,10 @@ public class SetupBean implements Serializable {
     private boolean hcbAddAbsorberDisabled;
     private String selectedDistancesRendered;
     private boolean hcbAddDistanceDisabled;
+    private String availableAbsorbersTitle;
+    private String availableDistancesTitle;
+    private String hitDurationTitle;
+    private String hitTrialsTitle;
 
     public String getHsomSource() {
         return hsomSource;
@@ -194,7 +201,23 @@ public class SetupBean implements Serializable {
         return hcbAddDistanceDisabled;
     }
 
+    public String getAvailableAbsorbersTitle() {
+        return availableAbsorbersTitle;
+    }
+
+    public String getAvailableDistancesTitle() {
+        return availableDistancesTitle;
+    }
+
+    public String getHitDurationTitle() {
+        return hitDurationTitle;
+    }
+
+    public String getHitTrialsTitle() {
+        return hitTrialsTitle;
+    }
     //</editor-fold>
+
     /**
      * Creates a new instance of SetupBean
      */
@@ -405,7 +428,7 @@ public class SetupBean implements Serializable {
             /*
              * Validation was accepted
              */
-            String message = String.format(STR_SpecificationValid_arg, FormatTimeMessage((int) validationReport.getEstRuntime()));
+            String message = String.format(STR_SpecificationValid_arg, this.labClientSession.FormatTimeMessage((int) validationReport.getEstRuntime()));
             ShowMessageInfo(message);
 
         } catch (Exception ex) {
@@ -453,7 +476,7 @@ public class SetupBean implements Serializable {
              * Submission was accepted
              */
             String message = String.format(STR_SubmissionSuccessful_arg2,
-                    clientSubmissionReport.getExperimentId(), FormatTimeMessage((int) validationReport.getEstRuntime()));
+                    clientSubmissionReport.getExperimentId(), this.labClientSession.FormatTimeMessage((int) validationReport.getEstRuntime()));
             ShowMessageInfo(message);
 
             /*
@@ -489,7 +512,7 @@ public class SetupBean implements Serializable {
         this.hotSetupDescription = setupInfo.getDescription();
 
         /*
-         * Get the selecected and default values for the specified setup
+         * Get the selected and default values for the specified setup
          */
         String[] selectedAbsorbers = null;
         String[] selectedDistances = null;
@@ -503,20 +526,38 @@ public class SetupBean implements Serializable {
             String csvDistances = XmlUtilities.GetChildValue(nodeRoot, Consts.STRXML_Distance);
             selectedDistances = csvDistances.split(Consts.STR_CsvSplitter);
 
-            String csvAbsorbers = XmlUtilities.GetChildValue(nodeRoot, Consts.STRXML_AbsorberName);
-            selectedAbsorbers = csvAbsorbers.split(Consts.STR_CsvSplitter);
+            try {
+                /*
+                 * Absorber default values may not exist
+                 */
+                String csvAbsorbers = XmlUtilities.GetChildValue(nodeRoot, Consts.STRXML_AbsorberName);
+                selectedAbsorbers = csvAbsorbers.split(Consts.STR_CsvSplitter);
+            } catch (Exception ex) {
+            }
+
+            /*
+             * Validation boundary values
+             */
+            document = XmlUtilities.GetDocumentFromString(this.labClientSession.getXmlValidation());
+            nodeRoot = XmlUtilities.GetRootNode(document, Consts.STRXML_Validation);
+
+            Node nodeValidationRange = XmlUtilities.GetChildNode(nodeRoot, Consts.STRXML_ValidationDuration);
+            int minimum = XmlUtilities.GetChildValueAsInt(nodeValidationRange, Consts.STRXML_Minimum);
+            int maximum = XmlUtilities.GetChildValueAsInt(nodeValidationRange, Consts.STRXML_Maximum);
+            this.hitDurationTitle = String.format(STR_HintRange_arg2, minimum, maximum);
+
+            nodeValidationRange = XmlUtilities.GetChildNode(nodeRoot, Consts.STRXML_ValidationRepeat);
+            minimum = XmlUtilities.GetChildValueAsInt(nodeValidationRange, Consts.STRXML_Minimum);
+            maximum = XmlUtilities.GetChildValueAsInt(nodeValidationRange, Consts.STRXML_Maximum);
+            this.hitTrialsTitle = String.format(STR_HintRange_arg2, minimum, maximum);
         } catch (Exception ex) {
         }
 
         /*
          * Clear selected lists and populate available lists
          */
-        this.selectedAbsorberList.clear();
-        this.selectedDistanceList.clear();
-        this.availableAbsorberList.clear();
-        this.availableDistanceList.clear();
-        this.availableAbsorberList.addAll(Arrays.asList(this.allAbsorbers));
-        this.availableDistanceList.addAll(Arrays.asList(this.allDistances));
+        this.actionClearAbsorberList();
+        this.actionClearDistanceList();
 
         /*
          * Show/hide the page controls for the specified setup
@@ -530,6 +571,12 @@ public class SetupBean implements Serializable {
                  */
                 this.selectedAbsorbersRendered = Boolean.toString(false);
                 this.selectedDistancesRendered = Boolean.toString(false);
+
+                /*
+                 * Update hints
+                 */
+                this.availableAbsorbersTitle = STR_SelectAbsorber;
+                this.availableDistancesTitle = STR_SelectDistance;
 
                 /*
                  * Select distance
@@ -547,6 +594,12 @@ public class SetupBean implements Serializable {
                 this.selectedDistancesRendered = Boolean.toString(true);
 
                 /*
+                 * Update hints
+                 */
+                this.availableAbsorbersTitle = STR_SelectAbsorber;
+                this.availableDistancesTitle = STR_AvailableDistances;
+
+                /*
                  * Populate selected distances
                  */
                 this.availableDistanceList.removeAll(Arrays.asList(selectedDistances));
@@ -555,7 +608,7 @@ public class SetupBean implements Serializable {
                 /*
                  * Select distance
                  */
-                this.hsomDistance = this.availableDistanceList.get(0);
+                this.hsomDistance = this.selectedDistanceList.get(0);
                 break;
 
             case Consts.STRXML_SetupId_RadioactivityVsAbsorber:
@@ -566,6 +619,12 @@ public class SetupBean implements Serializable {
                  */
                 this.selectedAbsorbersRendered = Boolean.toString(true);
                 this.selectedDistancesRendered = Boolean.toString(false);
+
+                /*
+                 * Update hints
+                 */
+                this.availableAbsorbersTitle = STR_AvailableAbsorbers;
+                this.availableDistancesTitle = STR_SelectDistance;
 
                 /*
                  * Populate selected absorbers
@@ -657,43 +716,6 @@ public class SetupBean implements Serializable {
         String xmlSpecification = experimentSpecification.ToXmlString();
 
         return xmlSpecification;
-    }
-
-    /**
-     *
-     * @param seconds
-     * @return
-     */
-    private String FormatTimeMessage(int seconds) {
-        /*
-         * Convert to minutes and seconds
-         */
-        int minutes = seconds / 60;
-        seconds -= minutes * 60;
-
-        String message = "";
-        try {
-            if (minutes > 0) {
-                /* Display minutes */
-                message += String.format(STR_MinutesAnd_arg2, minutes, FormatPlural(minutes));
-            }
-            /* Display seconds */
-            message += String.format(STR_Seconds_arg2, seconds, FormatPlural(seconds));
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            message = ex.getMessage();
-        }
-
-        return message;
-    }
-
-    /**
-     *
-     * @param value
-     * @return
-     */
-    private String FormatPlural(int value) {
-        return (value == 1) ? "" : "s";
     }
 
     /**

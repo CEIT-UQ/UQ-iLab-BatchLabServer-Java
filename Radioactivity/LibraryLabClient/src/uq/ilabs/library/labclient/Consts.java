@@ -38,6 +38,13 @@ public class Consts extends LabConsts {
     public static final String STRXML_Maximum = "maximum";
     public static final String STRXML_Stepsize = "stepsize";
     /*
+     * XML elements in the validation
+     */
+    public static final String STRXML_ValidationDistance = "vdnDistance";
+    public static final String STRXML_ValidationDuration = "vdnDuration";
+    public static final String STRXML_ValidationRepeat = "vdnRepeat";
+    public static final String STRXML_ValidationTotaltime = "vdnTotaltime";
+    /*
      * XML elements in the experiment specification
      */
     public static final String STRXML_SourceName = "sourceName";
