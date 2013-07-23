@@ -105,10 +105,13 @@ public class AuthenticateToServiceBroker implements SOAPHandler<SOAPMessageConte
          */
         SOAPMessage soapMessage = messageContext.getMessage();
         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
-        SOAPHeader soapHeader = soapEnvelope.addHeader();
+        SOAPHeader soapHeader = soapEnvelope.getHeader();
+        if (soapHeader == null) {
+            soapHeader = soapEnvelope.addHeader();
+        }
 
         /*
-         * Get the authentication header information
+         * Get authentication header information from the context and process
          */
         Object object = messageContext.get(qNameSbAuthHeader.getLocalPart());
         if (object != null && object instanceof SbAuthHeader) {
