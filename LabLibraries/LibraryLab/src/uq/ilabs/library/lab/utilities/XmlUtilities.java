@@ -428,15 +428,18 @@ public class XmlUtilities {
     }
 
     /**
-     * Get the value of the child node with the specified name from the given parent node. The value may be an empty
-     * string.
+     * Get the value of the child node with the specified name from the given parent node.
      *
      * @param parentNode The parent node.
      * @param childName The name of the child node.
      * @return The value of the child node as a string.
-     * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
-     * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> </ul>
+     * @throws XmlUtilitiesException If any of the following errors occur:
+     * <ul>
+     * <li><code>parentNode</code> is null</li>
+     * <li><code>parentNode</code> is not an element node</li>
+     * <li><code>childName</code> is null or an empty string</li>
+     * <li>The child node does not exist</li>
+     * </ul>
      */
     public static String GetChildValue(Node parentNode, String childName) throws XmlUtilitiesException {
         return GetChildValue(parentNode, childName, true);
@@ -447,12 +450,16 @@ public class XmlUtilities {
      *
      * @param parentNode The parent node.
      * @param childName The name of the child node to match.
-     * @param allowEmpty If true, the child node can have no value.
+     * @param mustExist If false, the child node can have no value.
      * @return The value of the child node as a string.
-     * @throws XmlUtilitiesException If any of the following errors occur: <ul> <li><code>parentNode</code> is null</li>
-     * <li><code>parentNode</code> is not an element node</li> <li><code>childName</code> is null or an empty
-     * string</li> <li>The child node does not exist</li> <li>The child node does not contain a value * * * * * * * *
-     * and <code>allowEmpty</code> is false</li> </ul>
+     * @throws XmlUtilitiesException If any of the following errors occur:
+     * <ul>
+     * <li><code>parentNode</code> is null</li>
+     * <li><code>parentNode</code> is not an element node</li>
+     * <li><code>childName</code> is null or an empty string</li>
+     * <li>The child node does not exist</li>
+     * <li>The child node does not contain a value and <code>mustExist</code> is true</li>
+     * </ul>
      */
     public static String GetChildValue(Node parentNode, String childName, boolean mustExist) throws XmlUtilitiesException {
         /*

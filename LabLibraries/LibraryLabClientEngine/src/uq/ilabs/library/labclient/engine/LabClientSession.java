@@ -26,8 +26,13 @@ import uq.ilabs.library.servicebroker.ServiceBrokerAPI;
 public class LabClientSession implements Serializable {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
-    private static final String STR_ClassName = LabExperimentResult.class.getName();
+    private static final String STR_ClassName = LabClientSession.class.getName();
     private static final Level logLevel = Level.INFO;
+    /*
+     * String constants
+     */
+    private static final String STR_MinutesAnd_arg2 = "%d minute%s and ";
+    private static final String STR_Seconds_arg2 = "%d second%s";
     /*
      * String constants for logfile messages
      */
@@ -41,12 +46,9 @@ public class LabClientSession implements Serializable {
     private String labCameraUrl;
     private String labInfoText;
     private String labInfoUrl;
-    private String feedbackEmailUrl;
-    private boolean multiSubmit;
     private String navmenuPhotoUrl;
     private String title;
     private String version;
-    private ServiceBrokerAPI serviceBrokerAPI;
     private String xmlConfiguration;
     private String xmlSpecification;
     private String xmlValidation;
@@ -54,6 +56,9 @@ public class LabClientSession implements Serializable {
     private String[] setupNames;
     private int[] submittedIds;
     private int[] completedIds;
+    private String feedbackEmailUrl;
+    private boolean multiSubmit;
+    private ServiceBrokerAPI serviceBrokerAPI;
 
     public String getLabCameraUrl() {
         return labCameraUrl;
@@ -67,22 +72,6 @@ public class LabClientSession implements Serializable {
         return labInfoUrl;
     }
 
-    public String getFeedbackEmailUrl() {
-        return feedbackEmailUrl;
-    }
-
-    public void setFeedbackEmailUrl(String feedbackEmailUrl) {
-        this.feedbackEmailUrl = feedbackEmailUrl;
-    }
-
-    public boolean isMultiSubmit() {
-        return multiSubmit;
-    }
-
-    public void setMultiSubmit(boolean multiSubmit) {
-        this.multiSubmit = multiSubmit;
-    }
-
     public String getNavmenuPhotoUrl() {
         return navmenuPhotoUrl;
     }
@@ -93,14 +82,6 @@ public class LabClientSession implements Serializable {
 
     public String getVersion() {
         return version;
-    }
-
-    public ServiceBrokerAPI getServiceBrokerAPI() {
-        return serviceBrokerAPI;
-    }
-
-    public void setServiceBrokerAPI(ServiceBrokerAPI serviceBrokerAPI) {
-        this.serviceBrokerAPI = serviceBrokerAPI;
     }
 
     public String getXmlConfiguration() {
@@ -129,6 +110,30 @@ public class LabClientSession implements Serializable {
 
     public int[] getCompletedIds() {
         return completedIds;
+    }
+
+    public String getFeedbackEmailUrl() {
+        return feedbackEmailUrl;
+    }
+
+    public void setFeedbackEmailUrl(String feedbackEmailUrl) {
+        this.feedbackEmailUrl = feedbackEmailUrl;
+    }
+
+    public boolean isMultiSubmit() {
+        return multiSubmit;
+    }
+
+    public void setMultiSubmit(boolean multiSubmit) {
+        this.multiSubmit = multiSubmit;
+    }
+
+    public ServiceBrokerAPI getServiceBrokerAPI() {
+        return serviceBrokerAPI;
+    }
+
+    public void setServiceBrokerAPI(ServiceBrokerAPI serviceBrokerAPI) {
+        this.serviceBrokerAPI = serviceBrokerAPI;
     }
     //</editor-fold>
 
@@ -349,5 +354,42 @@ public class LabClientSession implements Serializable {
         }
 
         return ids;
+    }
+
+    /**
+     *
+     * @param seconds
+     * @return
+     */
+    public String FormatTimeMessage(int seconds) {
+        /*
+         * Convert to minutes and seconds
+         */
+        int minutes = seconds / 60;
+        seconds -= minutes * 60;
+
+        String message = "";
+        try {
+            if (minutes > 0) {
+                /* Display minutes */
+                message += String.format(STR_MinutesAnd_arg2, minutes, FormatPlural(minutes));
+            }
+            /* Display seconds */
+            message += String.format(STR_Seconds_arg2, seconds, FormatPlural(seconds));
+        } catch (Exception ex) {
+            Logfile.WriteError(ex.toString());
+            message = ex.getMessage();
+        }
+
+        return message;
+    }
+
+    /**
+     *
+     * @param value
+     * @return
+     */
+    private String FormatPlural(int value) {
+        return (value == 1) ? "" : "s";
     }
 }

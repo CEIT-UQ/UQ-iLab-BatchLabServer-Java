@@ -96,9 +96,6 @@ public class ConfigProperties {
              * Load the configuration properties from the specified file
              */
             InputStream inputStream = new FileInputStream(filename);
-            if (inputStream == null) {
-                throw new NullPointerException(InputStream.class.getSimpleName());
-            }
             Properties configProperties = new Properties();
             configProperties.loadFromXML(inputStream);
 
