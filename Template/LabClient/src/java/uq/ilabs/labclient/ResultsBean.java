@@ -33,7 +33,7 @@ public class ResultsBean implements Serializable {
      * String constants
      */
     private static final String STR_ResultStatus_arg2 = "Experiment %d - %s";
-    private static final String STR_CsvFilename_arg2 = "%s_%s";
+    private static final String STR_CsvFilename_arg2 = "%s_%d";
     /*
      * String constants for exception messages
      */
@@ -137,9 +137,9 @@ public class ResultsBean implements Serializable {
              * Not a postback, initialise page controls
              */
             this.ShowMessageInfo(null);
+            this.PopulateCompletedIds();
             this.hcbSaveDisabled = true;
             this.hpgResultsRendered = false;
-            this.PopulateCompletedIds();
         }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
@@ -153,8 +153,8 @@ public class ResultsBean implements Serializable {
         final String methodName = "actionRetrieve";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        this.hpgResultsRendered = false;
         this.hcbSaveDisabled = true;
+        this.hpgResultsRendered = false;
 
         try {
             int experimentId;

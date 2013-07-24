@@ -37,8 +37,6 @@ public class SetupBean implements Serializable {
     private static final String STR_HintRange_arg2 = "Range: %d to %d";
     private static final String STR_SpecificationValid_arg = "Specification is valid. Execution time will be %s.";
     private static final String STR_SubmissionSuccessful_arg2 = "Submission was successful. Experiment # is %d and execution time is %s.";
-    private static final String STR_MinutesAnd_arg2 = "%d minute%s and ";
-    private static final String STR_Seconds_arg2 = "%d second%s";
     private static final String STR_ExperimentNumberHasBeenSubmitted_arg = "Experiment %d has been submitted.";
     private static final String STR_ExperimentNumbersHaveBeenSubmitted_arg = "Experiments %s have been submitted.";
     /*
@@ -64,7 +62,7 @@ public class SetupBean implements Serializable {
     private String holMessage;
     private String holMessageClass;
     private String hitSomeParameter;
-    private String attrRange;
+    private String hitSomeParameterTitle;
 
     public String[] getSetupNames() {
         return setupNames;
@@ -102,8 +100,8 @@ public class SetupBean implements Serializable {
         this.hitSomeParameter = hitSomeParameter;
     }
 
-    public String getAttrRange() {
-        return attrRange;
+    public String getHitSomeParameterTitle() {
+        return hitSomeParameterTitle;
     }
     //</editor-fold>
 
@@ -202,7 +200,7 @@ public class SetupBean implements Serializable {
             /*
              * Validation was accepted
              */
-            String message = String.format(STR_SpecificationValid_arg, FormatTimeMessage((int) validationReport.getEstRuntime()));
+            String message = String.format(STR_SpecificationValid_arg, this.labClientSession.FormatTimeMessage((int) validationReport.getEstRuntime()));
             ShowMessageInfo(message);
 
         } catch (Exception ex) {
@@ -250,7 +248,7 @@ public class SetupBean implements Serializable {
              * Submission was accepted
              */
             String message = String.format(STR_SubmissionSuccessful_arg2,
-                    clientSubmissionReport.getExperimentId(), FormatTimeMessage((int) validationReport.getEstRuntime()));
+                    clientSubmissionReport.getExperimentId(), this.labClientSession.FormatTimeMessage((int) validationReport.getEstRuntime()));
             ShowMessageInfo(message);
 
             /*
@@ -294,7 +292,7 @@ public class SetupBean implements Serializable {
             Node nodeValidation = XmlUtilities.GetChildNode(nodeRoot, Consts.STRXML_SomeParameter);
             int minimum = XmlUtilities.GetChildValueAsInt(nodeValidation, Consts.STRXML_ValidationMinimum);
             int maximum = XmlUtilities.GetChildValueAsInt(nodeValidation, Consts.STRXML_ValidationMaximum);
-            this.attrRange = String.format(STR_HintRange_arg2, minimum, maximum);
+            this.hitSomeParameterTitle = String.format(STR_HintRange_arg2, minimum, maximum);
         } catch (Exception ex) {
         }
 
@@ -328,43 +326,6 @@ public class SetupBean implements Serializable {
         String xmlSpecification = experimentSpecification.ToXmlString();
 
         return xmlSpecification;
-    }
-
-    /**
-     *
-     * @param seconds
-     * @return
-     */
-    private String FormatTimeMessage(int seconds) {
-        /*
-         * Convert to minutes and seconds
-         */
-        int minutes = seconds / 60;
-        seconds -= minutes * 60;
-
-        String message = "";
-        try {
-            if (minutes > 0) {
-                /* Display minutes */
-                message += String.format(STR_MinutesAnd_arg2, minutes, FormatPlural(minutes));
-            }
-            /* Display seconds */
-            message += String.format(STR_Seconds_arg2, seconds, FormatPlural(seconds));
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-            message = ex.getMessage();
-        }
-
-        return message;
-    }
-
-    /**
-     *
-     * @param value
-     * @return
-     */
-    private String FormatPlural(int value) {
-        return (value == 1) ? "" : "s";
     }
 
     /**

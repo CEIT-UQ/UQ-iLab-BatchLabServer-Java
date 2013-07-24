@@ -96,8 +96,10 @@ public class LabClientServlet extends HttpServlet {
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 for (String key : parameterMap.keySet()) {
                     if (key.equalsIgnoreCase(Consts.STRREQ_CouponId)) {
+                        /* Used with Batch ServiceBroker */
                         couponId = Integer.parseInt(request.getParameter(key));
                     } else if (key.equalsIgnoreCase(Consts.STRREQ_Coupon_Id)) {
+                        /* Used with Merged ServiceBroker */
                         couponId = Integer.parseInt(request.getParameter(key));
                     } else if (key.equalsIgnoreCase(Consts.STRREQ_Passkey)) {
                         passkey = request.getParameter(key);
