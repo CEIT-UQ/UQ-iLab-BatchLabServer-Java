@@ -34,9 +34,9 @@ public class ExperimentsDB {
     /*
      * String constants for SQL processing
      */
-    private static final String STRSQLCMD_Add = "{ call Experiments_Add(?) }";
+    private static final String STRSQLCMD_Add = "{ ? = call Experiments_Add(?) }";
     private static final String STRSQLCMD_Delete = "{ ? = call Experiments_Delete(?) }";
-    private static final String STRSQLCMD_GetNextExperimentId = "{ call Experiments_GetNextExperimentId() }";
+    private static final String STRSQLCMD_GetNextExperimentId = "{ ? = call Experiments_GetNextExperimentId() }";
     private static final String STRSQLCMD_RetrieveBy = "{ call Experiments_RetrieveBy(?,?,?) }";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
@@ -92,19 +92,14 @@ public class ExperimentsDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
-                sqlStatement.setString(1, labServerGuid);
+                sqlStatement.registerOutParameter(1, Types.INTEGER);
+                sqlStatement.setString(2, labServerGuid);
 
                 /*
                  * Execute the stored procedure
                  */
-                ResultSet resultSet = sqlStatement.executeQuery();
-
-                /*
-                 * Process the results of the query - only want the first result
-                 */
-                if (resultSet.next() == true) {
-                    experimentId = resultSet.getInt(1);
-                }
+                sqlStatement.execute();
+                experimentId = sqlStatement.getInt(1);
             } catch (Exception ex) {
                 throw ex;
             } finally {
@@ -153,7 +148,7 @@ public class ExperimentsDB {
                  * Execute the stored procedure
                  */
                 sqlStatement.execute();
-                success = ((int) sqlStatement.getInt(1) == id);
+                success = (sqlStatement.getInt(1) == id);
             } finally {
                 try {
                     if (sqlStatement != null) {
@@ -192,14 +187,13 @@ public class ExperimentsDB {
                  * Prepare the stored procedure call
                  */
                 sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_GetNextExperimentId);
+                sqlStatement.registerOutParameter(1, Types.INTEGER);
 
                 /*
                  * Execute the stored procedure
                  */
-                ResultSet resultSet = sqlStatement.executeQuery();
-                if (resultSet.next() == true) {
-                    experimentId = resultSet.getInt(1);
-                }
+                sqlStatement.execute();
+                experimentId = sqlStatement.getInt(1);
             } finally {
                 try {
                     if (sqlStatement != null) {
