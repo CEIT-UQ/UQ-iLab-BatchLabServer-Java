@@ -6,4 +6,4 @@ SELECT ServiceBrokers_Add ('localhost',  '196495303F294B13856D7E48872E51CC', 'FD
 /*
  * (Username, FirstName, LastName, ContactEmail, UserGroup, Password)  Default password is: ilab
  */
-SELECT Users_Add ('manager', 'LabServer', 'Manager', 'ilab-admin@itee.uq.edu.au', 'Manager', '3759F4FF14D8494DF3B58671FF9251A9D0C41D54');
+SELECT Users_Add ('manager', 'LabServer', 'Manager', 'manager@your.email.domain', 'Manager', '3759F4FF14D8494DF3B58671FF9251A9D0C41D54');
