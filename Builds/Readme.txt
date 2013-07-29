@@ -1,1 +1,1 @@
-See Documents/GettingStarted.htm
+See Documents/GettingStarted.pdf
