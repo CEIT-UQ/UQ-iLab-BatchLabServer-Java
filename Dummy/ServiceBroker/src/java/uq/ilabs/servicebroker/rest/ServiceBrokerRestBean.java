@@ -2,19 +2,19 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package uq.ilabs.servicebroker.service;
+package uq.ilabs.servicebroker.rest;
 
-import edu.mit.ilab.SbAuthHeader;
+import edu.mit.ilab.rest.SbAuthHeader;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
-import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFactory;
-import javax.xml.soap.SOAPFault;
 import javax.xml.ws.ProtocolException;
-import javax.xml.ws.soap.SOAPFaultException;
-import uq.ilabs.library.lab.types.*;
+import uq.ilabs.library.lab.types.LabExperimentStatus;
+import uq.ilabs.library.lab.types.LabStatus;
+import uq.ilabs.library.lab.types.ResultReport;
+import uq.ilabs.library.lab.types.SubmissionReport;
+import uq.ilabs.library.lab.types.ValidationReport;
+import uq.ilabs.library.lab.types.WaitEstimate;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.LabServerAPI;
 import uq.ilabs.servicebroker.ServiceBrokerBean;
@@ -27,21 +27,18 @@ import uq.ilabs.servicebroker.engine.ConfigProperties;
  * @author uqlpayne
  */
 @Singleton
-@LocalBean
-public class ServiceBrokerServiceBean {
-
+public class ServiceBrokerRestBean {
     //<editor-fold defaultstate="collapsed" desc="Constants">
-    private static final String STR_ClassName = ServiceBrokerServiceBean.class.getName();
+
+    private static final String STR_ClassName = ServiceBrokerRestBean.class.getName();
     private static final Level logLevel = Level.FINE;
     /*
      * String constants for logfile messages
      */
     private static final String STRLOG_SbAuthHeaderNull = "SbAuthHeader: null";
     private static final String STRLOG_CouponIdPasskey_arg2 = "CouponId: %d  CouponPasskey: '%s'";
-    private static final String STRLOG_ServiceBrokerGuid_arg = "ServiceBrokerGuid: %s";
     private static final String STRLOG_LabServerGuid_arg = "LabServerGuid: %s";
     private static final String STRLOG_ExperimentId_arg = " ExperimentId: %d";
-    private static final String STRLOG_NextExperimentId_arg = "Next ExperimentId: %d";
     /*
      * String constants for exception messages
      */
@@ -50,20 +47,14 @@ public class ServiceBrokerServiceBean {
     private static final String STRERR_CouponIdInvalid_arg = "CouponId %d is invalid";
     private static final String STRERR_CouponPasskeyNull = "CouponPasskey is null";
     private static final String STRERR_CouponPasskeyInvalid_arg = "CouponPasskey '%s' is invalid";
-    private static final String STRERR_LabServerUnknown_arg = "LabServer Unknown: %s";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private ConfigProperties configProperties;
     private ExperimentsDB experimentsDB;
     //</editor-fold>
 
-    /**
-     * Constructor - Seems that this gets called when the project is deployed which is unexpected. To get around this,
-     * check to see if the ServiceBroker has been initialised and the configuration properties set. Can't do logging
-     * until the ServiceBroker has been initialised and the logger created.
-     */
-    public ServiceBrokerServiceBean() {
-        final String methodName = "ServiceBrokerServiceBean";
+    public ServiceBrokerRestBean() {
+        final String methodName = "ServiceBrokerRestBean";
 
         /*
          * Check if initialisation needs to be done
@@ -83,6 +74,7 @@ public class ServiceBrokerServiceBean {
 
     /**
      *
+     * @param httpHeaders
      * @param experimentId
      * @return boolean
      */
@@ -123,13 +115,13 @@ public class ServiceBrokerServiceBean {
      * @param sbAuthHeader
      * @param labServerGuid
      * @param priorityHint
-     * @return edu.mit.ilab.WaitEstimate
+     * @return edu.mit.ilab.rest.WaitEstimate
      */
-    public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(SbAuthHeader sbAuthHeader, String labServerGuid, int priorityHint) {
+    public edu.mit.ilab.rest.WaitEstimate getEffectiveQueueLength(SbAuthHeader sbAuthHeader, String labServerGuid, int priorityHint) {
         final String methodName = "getEffectiveQueueLength";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
+        edu.mit.ilab.rest.WaitEstimate proxyWaitEstimate = null;
 
         try {
             this.Authenticate(sbAuthHeader);
@@ -157,14 +149,14 @@ public class ServiceBrokerServiceBean {
      *
      * @param sbAuthHeader
      * @param experimentId
-     * @return edu.mit.ilab.LabExperimentStatus
+     * @return edu.mit.ilab.rest.LabExperimentStatus
      */
-    public edu.mit.ilab.LabExperimentStatus getExperimentStatus(SbAuthHeader sbAuthHeader, int experimentId) {
+    public edu.mit.ilab.rest.LabExperimentStatus getExperimentStatus(SbAuthHeader sbAuthHeader, int experimentId) {
         final String methodName = "getExperimentStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
-        edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
+        edu.mit.ilab.rest.LabExperimentStatus proxyLabExperimentStatus = null;
 
         try {
             this.Authenticate(sbAuthHeader);
@@ -260,14 +252,14 @@ public class ServiceBrokerServiceBean {
      *
      * @param sbAuthHeader
      * @param labServerGuid
-     * @return edu.mit.ilab.LabStatus
+     * @return edu.mit.ilab.rest.LabStatus
      */
-    public edu.mit.ilab.LabStatus getLabStatus(SbAuthHeader sbAuthHeader, String labServerGuid) {
+    public edu.mit.ilab.rest.LabStatus getLabStatus(SbAuthHeader sbAuthHeader, String labServerGuid) {
         final String methodName = "getLabStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_LabServerGuid_arg, labServerGuid));
 
-        edu.mit.ilab.LabStatus proxyLabStatus = null;
+        edu.mit.ilab.rest.LabStatus proxyLabStatus = null;
 
         try {
             this.Authenticate(sbAuthHeader);
@@ -294,14 +286,14 @@ public class ServiceBrokerServiceBean {
      *
      * @param sbAuthHeader
      * @param experimentId
-     * @return edu.mit.ilab.ResultReport
+     * @return edu.mit.ilab.rest.ResultReport
      */
-    public edu.mit.ilab.ResultReport retrieveResult(SbAuthHeader sbAuthHeader, int experimentId) {
+    public edu.mit.ilab.rest.ResultReport retrieveResult(SbAuthHeader sbAuthHeader, int experimentId) {
         final String methodName = "retrieveResult";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
-        edu.mit.ilab.ResultReport proxyResultReport = null;
+        edu.mit.ilab.rest.ResultReport proxyResultReport = null;
 
         try {
             this.Authenticate(sbAuthHeader);
@@ -336,13 +328,13 @@ public class ServiceBrokerServiceBean {
      * @param experimentSpecification
      * @param priorityHint
      * @param emailNotification
-     * @return edu.mit.ilab.ClientSubmissionReport
+     * @return edu.mit.ilab.rest.ClientSubmissionReport
      */
-    public edu.mit.ilab.ClientSubmissionReport submit(SbAuthHeader sbAuthHeader, String labServerGuid, String experimentSpecification, int priorityHint, boolean emailNotification) {
+    public edu.mit.ilab.rest.ClientSubmissionReport submit(SbAuthHeader sbAuthHeader, String labServerGuid, String experimentSpecification, int priorityHint, boolean emailNotification) {
         final String methodName = "submit";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
+        edu.mit.ilab.rest.ClientSubmissionReport proxyClientSubmissionReport = null;
 
         try {
             this.Authenticate(sbAuthHeader);
@@ -384,13 +376,13 @@ public class ServiceBrokerServiceBean {
      * @param sbAuthHeader
      * @param labServerGuid
      * @param experimentSpecification
-     * @return edu.mit.ilab.ValidationReport
+     * @return edu.mit.ilab.rest.ValidationReport
      */
-    public edu.mit.ilab.ValidationReport validate(SbAuthHeader sbAuthHeader, String labServerGuid, String experimentSpecification) {
+    public edu.mit.ilab.rest.ValidationReport validate(SbAuthHeader sbAuthHeader, String labServerGuid, String experimentSpecification) {
         final String methodName = "validate";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        edu.mit.ilab.ValidationReport proxyValidationReport = null;
+        edu.mit.ilab.rest.ValidationReport proxyValidationReport = null;
 
         try {
             this.Authenticate(sbAuthHeader);
@@ -423,12 +415,12 @@ public class ServiceBrokerServiceBean {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_ExperimentId_arg, experimentId));
 
-        if (sbAuthHeader == null) {
-            sbAuthHeader = new SbAuthHeader();
-        }
-        sbAuthHeader.setCouponID(this.configProperties.getCouponId());
-        sbAuthHeader.setCouponPassKey(this.configProperties.getCouponPasskey());
-        this.retrieveResult(sbAuthHeader, experimentId);
+//        if (sbAuthHeader == null) {
+//            sbAuthHeader = new SbAuthHeader();
+//        }
+//        sbAuthHeader.setCouponID(this.configProperties.getCouponId());
+//        sbAuthHeader.setCouponPassKey(this.configProperties.getCouponPasskey());
+//        this.retrieveResult(sbAuthHeader, experimentId);
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -497,21 +489,7 @@ public class ServiceBrokerServiceBean {
         return success;
     }
 
-    /**
-     *
-     * @param message
-     */
     private void ThrowSOAPFault(String message) {
-        /*
-         * Create a SOAPFaultException to be thrown back to the caller
-         */
-        try {
-            SOAPFault fault = SOAPFactory.newInstance().createFault();
-            fault.setFaultString(message);
-            throw new SOAPFaultException(fault);
-        } catch (SOAPException e) {
-            Logfile.WriteError(e.getMessage());
-        }
     }
 
     /**

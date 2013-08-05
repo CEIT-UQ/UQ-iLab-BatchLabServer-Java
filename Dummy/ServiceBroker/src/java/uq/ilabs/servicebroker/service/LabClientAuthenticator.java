@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -21,8 +19,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.servicebroker.engine.ConfigProperties;
-import uq.ilabs.servicebroker.engine.LabConsts;
+import uq.ilabs.servicebroker.ServiceBrokerBean;
 
 /**
  *
@@ -31,16 +28,11 @@ import uq.ilabs.servicebroker.engine.LabConsts;
 public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
-    private static final String STR_ClassName = LabClientAuthenticator.class.getName();
     /*
      * String constants
      */
     private static final String STR_CouponId = "couponID";
     private static final String STR_CouponPasskey = "couponPassKey";
-    /*
-     * String constants for logfile messages
-     */
-    private static final String STRLOG_LoggingLevel_arg = "LoggingLevel: %s";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private static ObjectFactory objectFactory;
@@ -58,21 +50,27 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
          * Process the header info for an inbound message if authentication is required
          */
         if ((Boolean) messageContext.get(SOAPMessageContext.MESSAGE_OUTBOUND_PROPERTY) == false) {
-            try {
+            /*
+             * Check if ServiceBrokerBean has been initialised
+             */
+            if (ServiceBrokerBean.isInitialised() == false) {
+                ServiceBrokerBean.Initialise((ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT));
+            }
+
+            /*
+             * Check if an instance of ObjectFactory has been created
+             */
+            if (objectFactory == null) {
+                objectFactory = new ObjectFactory();
+                
                 /*
-                 * Check if initialisation parameters have been read from the web.xml file
+                 * Get the authentication header names
                  */
-                if (ServiceBrokerService.isInitialised() == false) {
-                    this.GetInitParameters((ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT));
+                JAXBElement<SbAuthHeader> jaxbElement = objectFactory.createSbAuthHeader(new SbAuthHeader());
+                qnameSbAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
+            }
 
-                    /*
-                     * Get the authentication header names
-                     */
-                    objectFactory = new ObjectFactory();
-                    JAXBElement<SbAuthHeader> jaxbElement = objectFactory.createSbAuthHeader(new SbAuthHeader());
-                    qnameSbAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
-                }
-
+            try {
                 /*
                  * Write the SOAP message to system output
                  */
@@ -188,53 +186,5 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
         }
 
         return sbAuthHeader;
-    }
-
-    /**
-     *
-     * @param servletContext
-     */
-    private void GetInitParameters(ServletContext servletContext) {
-        final String methodName = "GetInitParameters";
-
-        try {
-            /*
-             * Get the path for the logfiles and logging level
-             */
-            String logFilesPath = servletContext.getInitParameter(LabConsts.STRPRM_LogFilesPath);
-            logFilesPath = servletContext.getRealPath(logFilesPath);
-            String logLevel = servletContext.getInitParameter(LabConsts.STRPRM_LogLevel);
-
-            /*
-             * Create an instance of the logger and set the logging level
-             */
-            Logger logger = Logfile.CreateLogger(logFilesPath);
-            Level level = Level.INFO;
-            try {
-                level = Level.parse(logLevel);
-            } catch (Exception ex) {
-            }
-            logger.setLevel(level);
-
-            Logfile.WriteCalled(STR_ClassName, methodName,
-                    String.format(STRLOG_LoggingLevel_arg, logger.getLevel().toString()));
-
-            /*
-             * Get configuration properties from the file
-             */
-            String xmlConfigPropertiesPath = servletContext.getInitParameter(LabConsts.STRPRM_XmlConfigPropertiesPath);
-            ConfigProperties configProperties = new ConfigProperties(servletContext.getRealPath(xmlConfigPropertiesPath));
-
-            /*
-             * Save to the ServiceBroker service
-             */
-            ServiceBrokerService.setConfigProperties(configProperties);
-
-            ServiceBrokerService.setInitialised(true);
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-        }
-
-        Logfile.WriteCompleted(STR_ClassName, methodName);
     }
 }
