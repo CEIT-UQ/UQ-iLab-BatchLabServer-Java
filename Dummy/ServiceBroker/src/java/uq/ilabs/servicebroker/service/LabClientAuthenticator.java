@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import javax.ejb.EJB;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -37,6 +38,8 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private static ObjectFactory objectFactory;
     private static String qnameSbAuthHeaderLocalPart;
+    @EJB
+    private ServiceBrokerBean serviceBrokerBean;
     //</editor-fold>
 
     @Override
@@ -51,23 +54,22 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
          */
         if ((Boolean) messageContext.get(SOAPMessageContext.MESSAGE_OUTBOUND_PROPERTY) == false) {
             /*
-             * Check if ServiceBrokerBean has been initialised
-             */
-            if (ServiceBrokerBean.isInitialised() == false) {
-                ServiceBrokerBean.Initialise((ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT));
-            }
-
-            /*
              * Check if an instance of ObjectFactory has been created
              */
             if (objectFactory == null) {
-                objectFactory = new ObjectFactory();
-                
                 /*
-                 * Get the authentication header names
+                 * Create instance of ObjectFactory and get the authentication header names
                  */
+                objectFactory = new ObjectFactory();
                 JAXBElement<SbAuthHeader> jaxbElement = objectFactory.createSbAuthHeader(new SbAuthHeader());
                 qnameSbAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
+            }
+
+            /*
+             * Check if ServiceBrokerBean has been initialised
+             */
+            if (this.serviceBrokerBean.isInitialised() == false) {
+                this.serviceBrokerBean.Initialise((ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT));
             }
 
             try {

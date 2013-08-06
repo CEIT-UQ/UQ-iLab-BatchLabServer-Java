@@ -4,13 +4,6 @@
  */
 package uq.ilabs.servicebroker.rest;
 
-import edu.mit.ilab.rest.ClientSubmissionReport;
-import edu.mit.ilab.rest.LabExperimentStatus;
-import edu.mit.ilab.rest.LabStatus;
-import edu.mit.ilab.rest.ResultReport;
-import edu.mit.ilab.rest.SbAuthHeader;
-import edu.mit.ilab.rest.ValidationReport;
-import edu.mit.ilab.rest.WaitEstimate;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.PathParam;
@@ -23,6 +16,13 @@ import javax.enterprise.context.RequestScoped;
 import javax.servlet.ServletContext;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.HttpHeaders;
+import uq.ilabs.library.lab.types.ClientSubmissionReport;
+import uq.ilabs.library.lab.types.LabExperimentStatus;
+import uq.ilabs.library.lab.types.LabStatus;
+import uq.ilabs.library.lab.types.ResultReport;
+import uq.ilabs.library.lab.types.SbAuthHeader;
+import uq.ilabs.library.lab.types.ValidationReport;
+import uq.ilabs.library.lab.types.WaitEstimate;
 import uq.ilabs.servicebroker.ServiceBrokerBean;
 
 /**
@@ -39,7 +39,7 @@ public class ServiceBrokerRestResource {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     @EJB
-    ServiceBrokerRestBean serviceBrokerRestBean;
+    private ServiceBrokerBean serviceBrokerBean;
     @Context
     private HttpHeaders httpHeaders;
     @Context
@@ -63,7 +63,7 @@ public class ServiceBrokerRestResource {
     @Produces("text/plain")
     public String putCancel(@PathParam("experimentId") int experimentId) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        boolean success = this.serviceBrokerRestBean.cancel(sbAuthHeader, experimentId);
+        boolean success = this.serviceBrokerBean.cancel(sbAuthHeader, experimentId);
         return Boolean.toString(success);
     }
 
@@ -79,7 +79,7 @@ public class ServiceBrokerRestResource {
     @Produces("application/xml")
     public String getEffectiveQueueLength(@PathParam("labServerId") String labServerId, @PathParam("priorityHint") int priorityHint) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        WaitEstimate waitEstimate = this.serviceBrokerRestBean.getEffectiveQueueLength(sbAuthHeader, labServerId, priorityHint);
+        WaitEstimate waitEstimate = this.serviceBrokerBean.getEffectiveQueueLength(sbAuthHeader, labServerId, priorityHint);
         return waitEstimate.ToXmlString();
     }
 
@@ -94,7 +94,7 @@ public class ServiceBrokerRestResource {
     @Produces("application/xml")
     public String getExperimentStatus(@PathParam("experimentId") int experimentId) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        LabExperimentStatus labExperimentStatus = this.serviceBrokerRestBean.getExperimentStatus(sbAuthHeader, experimentId);
+        LabExperimentStatus labExperimentStatus = this.serviceBrokerBean.getExperimentStatus(sbAuthHeader, experimentId);
         return labExperimentStatus.ToXmlString();
     }
 
@@ -109,7 +109,7 @@ public class ServiceBrokerRestResource {
     @Produces("application/xml")
     public String getLabConfiguration(@PathParam("labServerId") String labServerId) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        return this.serviceBrokerRestBean.getLabConfiguration(sbAuthHeader, labServerId);
+        return this.serviceBrokerBean.getLabConfiguration(sbAuthHeader, labServerId);
     }
 
     /**
@@ -123,7 +123,7 @@ public class ServiceBrokerRestResource {
     @Produces("text/plain")
     public String getLabInfo(@PathParam("labServerId") String labServerId) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        return this.serviceBrokerRestBean.getLabInfo(sbAuthHeader, labServerId);
+        return this.serviceBrokerBean.getLabInfo(sbAuthHeader, labServerId);
     }
 
     /**
@@ -137,7 +137,7 @@ public class ServiceBrokerRestResource {
     @Produces("application/xml")
     public String getLabStatus(@PathParam("labServerId") String labServerId) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        LabStatus labStatus = this.serviceBrokerRestBean.getLabStatus(sbAuthHeader, labServerId);
+        LabStatus labStatus = this.serviceBrokerBean.getLabStatus(sbAuthHeader, labServerId);
         return labStatus.ToXmlString();
     }
 
@@ -152,7 +152,7 @@ public class ServiceBrokerRestResource {
     @Produces("application/xml")
     public String getRetrieveResult(@PathParam("experimentId") int experimentId) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        ResultReport resultReport = this.serviceBrokerRestBean.retrieveResult(sbAuthHeader, experimentId);
+        ResultReport resultReport = this.serviceBrokerBean.retrieveResult(sbAuthHeader, experimentId);
         return resultReport.ToXmlString();
     }
 
@@ -171,7 +171,7 @@ public class ServiceBrokerRestResource {
     @Produces("application/xml")
     public String postSubmit(@PathParam("labServerId") String labServerId, @PathParam("priorityHint") int priorityHint, @PathParam("emailNotification") boolean emailNotification, String xmlSpecification) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        ClientSubmissionReport clientSubmissionReport = this.serviceBrokerRestBean.submit(sbAuthHeader, labServerId, xmlSpecification, priorityHint, emailNotification);
+        ClientSubmissionReport clientSubmissionReport = this.serviceBrokerBean.submit(sbAuthHeader, labServerId, xmlSpecification, priorityHint, emailNotification);
         return clientSubmissionReport.ToXmlString();
     }
 
@@ -188,7 +188,7 @@ public class ServiceBrokerRestResource {
     @Produces("application/xml")
     public String postValidate(@PathParam("labServerId") String labServerId, String xmlSpecification) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        ValidationReport validationReport = this.serviceBrokerRestBean.validate(sbAuthHeader, labServerId, xmlSpecification);
+        ValidationReport validationReport = this.serviceBrokerBean.validate(sbAuthHeader, labServerId, xmlSpecification);
         return validationReport.ToXmlString();
     }
 
@@ -201,7 +201,7 @@ public class ServiceBrokerRestResource {
     @PUT
     public void putNotify(@PathParam("experimentId") int experimentId) {
         SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-        this.serviceBrokerRestBean.notify(sbAuthHeader, experimentId);
+        this.serviceBrokerBean.notify(sbAuthHeader, experimentId);
     }
 
     //================================================================================================================//
@@ -213,8 +213,8 @@ public class ServiceBrokerRestResource {
         /*
          * Check if ServiceBrokerBean has been initialised
          */
-        if (ServiceBrokerBean.isInitialised() == false) {
-            ServiceBrokerBean.Initialise(this.servletContext);
+        if (this.serviceBrokerBean.isInitialised() == false) {
+            this.serviceBrokerBean.Initialise(this.servletContext);
         }
 
         /*
@@ -224,8 +224,8 @@ public class ServiceBrokerRestResource {
         try {
             int couponId = Integer.parseInt(this.httpHeaders.getHeaderString(SbAuthHeader.STR_CouponId));
             sbAuthHeader = new SbAuthHeader();
-            sbAuthHeader.setCouponID(couponId);
-            sbAuthHeader.setCouponPassKey(this.httpHeaders.getHeaderString(SbAuthHeader.STR_CouponPasskey));
+            sbAuthHeader.setCouponId(couponId);
+            sbAuthHeader.setCouponPasskey(this.httpHeaders.getHeaderString(SbAuthHeader.STR_CouponPasskey));
         } catch (NumberFormatException ex) {
         }
 

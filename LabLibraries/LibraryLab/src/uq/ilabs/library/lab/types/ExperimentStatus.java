@@ -1,51 +1,38 @@
 package uq.ilabs.library.lab.types;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+
 /**
  *
  * @author uqlpayne
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "ExperimentStatus", propOrder = {
+    "statusCode",
+    "waitEstimate",
+    "estRuntime",
+    "estRemainingRuntime"
+})
 public class ExperimentStatus {
 
-    /**
-     * Indicates the status of this experiment.
-     */
-    private StatusCodes statusCode;
-    /**
-     *
-     */
-    private WaitEstimate waitEstimate;
-    /**
-     * Estimated runtime (in seconds) of this experiment. [OPTIONAL, less than 0 if not used].
-     */
-    private double estRuntime;
-    /**
-     * Estimated remaining run time (in seconds) of this experiment, if the experiment is
-     * currently running. [OPTIONAL, less than 0 if not used].
-     */
-    private double estRemainingRuntime;
-
-    public double getEstRemainingRuntime() {
-        return estRemainingRuntime;
-    }
-
-    public void setEstRemainingRuntime(double estRemainingRuntime) {
-        this.estRemainingRuntime = estRemainingRuntime;
-    }
-
-    public double getEstRuntime() {
-        return estRuntime;
-    }
-
-    public void setEstRuntime(double estRuntime) {
-        this.estRuntime = estRuntime;
-    }
+    @XmlElement(name = "statusCode")
+    protected int statusCode;
+    @XmlElement(name = "wait")
+    protected WaitEstimate waitEstimate;
+    @XmlElement(name = "estRuntime")
+    protected double estRuntime;
+    @XmlElement(name = "estRemainingRuntime")
+    protected double estRemainingRuntime;
 
     public StatusCodes getStatusCode() {
-        return statusCode;
+        return StatusCodes.ToStatusCode(statusCode);
     }
 
     public void setStatusCode(StatusCodes statusCode) {
-        this.statusCode = statusCode;
+        this.statusCode = statusCode.getValue();
     }
 
     public WaitEstimate getWaitEstimate() {
@@ -56,12 +43,28 @@ public class ExperimentStatus {
         this.waitEstimate = waitEstimate;
     }
 
+    public double getEstRuntime() {
+        return estRuntime;
+    }
+
+    public void setEstRuntime(double estRuntime) {
+        this.estRuntime = estRuntime;
+    }
+
+    public double getEstRemainingRuntime() {
+        return estRemainingRuntime;
+    }
+
+    public void setEstRemainingRuntime(double estRemainingRuntime) {
+        this.estRemainingRuntime = estRemainingRuntime;
+    }
+
     public ExperimentStatus() {
         this(StatusCodes.Unknown);
     }
 
     public ExperimentStatus(StatusCodes statusCode) {
-        this.statusCode = statusCode;
+        this.statusCode = statusCode.getValue();
         this.waitEstimate = new WaitEstimate();
         this.estRuntime = 0.0;
         this.estRemainingRuntime = 0.0;

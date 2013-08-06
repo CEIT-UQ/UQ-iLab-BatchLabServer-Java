@@ -1,8 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package edu.mit.ilab.rest;
+package uq.ilabs.library.lab.types;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +8,23 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
+ * <p>Java class for ArrayOfString complex type.
  *
- * @author uqlpayne
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ *
+ * <pre>
+ * &lt;complexType name="ArrayOfString">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="string" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ArrayOfString", propOrder = {
@@ -35,7 +46,7 @@ public class ArrayOfString {
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getStringList().add(newItem);
+     *    getString().add(newItem);
      * </pre>
      *
      *
@@ -44,7 +55,7 @@ public class ArrayOfString {
      *
      *
      */
-    public List<String> getStringList() {
+    public List<String> getString() {
         if (string == null) {
             string = new ArrayList<>();
         }

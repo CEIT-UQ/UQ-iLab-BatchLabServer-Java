@@ -17,6 +17,7 @@ import uq.ilabs.library.lab.types.ClientSubmissionReport;
 import uq.ilabs.library.lab.types.LabExperimentStatus;
 import uq.ilabs.library.lab.types.LabStatus;
 import uq.ilabs.library.lab.types.ResultReport;
+import uq.ilabs.library.lab.types.SbAuthHeader;
 import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.types.WaitEstimate;
 import uq.ilabs.library.lab.utilities.Logfile;
@@ -145,7 +146,7 @@ public class ServiceBrokerAPI {
             String txtResponse = builder.put(Entity.entity("", MediaType.TEXT_PLAIN), String.class);
 
             /*
-             * Parse the response string and convert to return type
+             * Parse the response string
              */
             cancelled = Boolean.parseBoolean(txtResponse);
 
@@ -191,10 +192,9 @@ public class ServiceBrokerAPI {
             String xmlResponse = builder.get(String.class);
 
             /*
-             * Parse the XML response string and convert to return type
+             * Parse the XML response string
              */
-            edu.mit.ilab.rest.WaitEstimate proxyWaitEstimate = edu.mit.ilab.rest.WaitEstimate.XmlParse(xmlResponse);
-            waitEstimate = ConvertTypes.Convert(proxyWaitEstimate);
+            waitEstimate = WaitEstimate.XmlParse(xmlResponse);
 
         } catch (ClientErrorException ex) {
             Logfile.Write(ex.getMessage());
@@ -230,10 +230,9 @@ public class ServiceBrokerAPI {
             String xmlResponse = builder.get(String.class);
 
             /*
-             * Parse the XML response string and convert to return type
+             * Parse the XML response string
              */
-            edu.mit.ilab.rest.LabExperimentStatus proxyLabExperimentStatus = edu.mit.ilab.rest.LabExperimentStatus.XmlParse(xmlResponse);
-            labExperimentStatus = ConvertTypes.Convert(proxyLabExperimentStatus);
+            labExperimentStatus = LabExperimentStatus.XmlParse(xmlResponse);
 
         } catch (ClientErrorException ex) {
             Logfile.Write(ex.getMessage());
@@ -332,10 +331,9 @@ public class ServiceBrokerAPI {
             String xmlResponse = builder.get(String.class);
 
             /*
-             * Parse the XML response string and convert to return type
+             * Parse the XML response string
              */
-            edu.mit.ilab.rest.LabStatus proxyLabStatus = edu.mit.ilab.rest.LabStatus.XmlParse(xmlResponse);
-            labStatus = ConvertTypes.Convert(proxyLabStatus);
+            labStatus = LabStatus.XmlParse(xmlResponse);
 
         } catch (ClientErrorException ex) {
             Logfile.Write(ex.getMessage());
@@ -371,10 +369,9 @@ public class ServiceBrokerAPI {
             String xmlResponse = builder.get(String.class);
 
             /*
-             * Parse the XML response string and convert to return type
+             * Parse the XML response string
              */
-            edu.mit.ilab.rest.ResultReport proxyResultReport = edu.mit.ilab.rest.ResultReport.XmlParse(xmlResponse);
-            resultReport = ConvertTypes.Convert(proxyResultReport);
+            resultReport = ResultReport.XmlParse(xmlResponse);
 
         } catch (ClientErrorException ex) {
             Logfile.Write(ex.getMessage());
@@ -421,10 +418,9 @@ public class ServiceBrokerAPI {
             String xmlResponse = builder.post(Entity.entity(experimentSpecification, MediaType.APPLICATION_XML), String.class);
 
             /*
-             * Parse the XML response string and convert to return type
+             * Parse the XML response string
              */
-            edu.mit.ilab.rest.ClientSubmissionReport proxyClientSubmissionReport = edu.mit.ilab.rest.ClientSubmissionReport.XmlParse(xmlResponse);
-            clientSubmissionReport = ConvertTypes.Convert(proxyClientSubmissionReport);
+            clientSubmissionReport = ClientSubmissionReport.XmlParse(xmlResponse);
 
         } catch (ClientErrorException ex) {
             Logfile.Write(ex.getMessage());
@@ -460,10 +456,9 @@ public class ServiceBrokerAPI {
             String xmlResponse = builder.post(Entity.entity(experimentSpecification, MediaType.APPLICATION_XML), String.class);
 
             /*
-             * Parse the XML response string and convert to return type
+             * Parse the XML response string
              */
-            edu.mit.ilab.rest.ValidationReport proxyValidationReport = edu.mit.ilab.rest.ValidationReport.XmlParse(xmlResponse);
-            validationReport = ConvertTypes.Convert(proxyValidationReport);
+            validationReport = ValidationReport.XmlParse(xmlResponse);
 
         } catch (ClientErrorException ex) {
             Logfile.Write(ex.getMessage());
@@ -524,8 +519,8 @@ public class ServiceBrokerAPI {
      * @return Builder
      */
     private Builder SetSbAuthHeader(Builder builder) {
-        builder = builder.header(edu.mit.ilab.rest.SbAuthHeader.STR_CouponId, this.couponId);
-        builder = builder.header(edu.mit.ilab.rest.SbAuthHeader.STR_CouponPasskey, this.couponPasskey);
+        builder = builder.header(SbAuthHeader.STR_CouponId, this.couponId);
+        builder = builder.header(SbAuthHeader.STR_CouponPasskey, this.couponPasskey);
         return builder;
     }
 }

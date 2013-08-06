@@ -5,6 +5,7 @@
 package uq.ilabs.library.lab.database;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -29,16 +30,16 @@ public class DBConnection {
     public static final String STR_DefaultPassword = "ilab";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    private String driver;
+    private String driverName;
     private String url;
     private Properties properties;
 
-    public String getDriver() {
-        return driver;
+    public String getDriverName() {
+        return driverName;
     }
 
-    public void setDriver(String driver) {
-        this.driver = driver;
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
     }
 
     public String getUrl() {
@@ -71,14 +72,14 @@ public class DBConnection {
      * @param database
      * @throws Exception
      */
-    public DBConnection(String driver, String url) throws Exception {
+    public DBConnection(String driverName, String url) throws Exception {
         final String methodName = "DBConnection";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         /*
          * Initial local variables
          */
-        this.driver = driver;
+        this.driverName = driverName;
         this.url = url;
         this.properties = new Properties();
         this.properties.setProperty(STR_User, STR_DefaultUser);
@@ -88,7 +89,7 @@ public class DBConnection {
          * Load the database driver to ensure that it exists
          */
         try {
-            Class.forName(this.driver);
+            Class.forName(this.driverName);
         } catch (ClassNotFoundException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;
@@ -116,5 +117,19 @@ public class DBConnection {
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
         return sqlConnection;
+    }
+
+    /**
+     * Deregister the loaded driver
+     */
+    public void DeRegister() {
+        try {
+            Driver driver = DriverManager.getDriver(this.url);
+            if (driver != null) {
+                DriverManager.deregisterDriver(driver);
+            }
+        } catch (SQLException ex) {
+            Logfile.WriteError(ex.toString());
+        }
     }
 }

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.mit.ilab.rest;
+package uq.ilabs.library.lab.types;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;

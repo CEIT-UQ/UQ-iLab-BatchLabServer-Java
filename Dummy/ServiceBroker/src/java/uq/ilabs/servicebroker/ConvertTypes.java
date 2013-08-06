@@ -2,9 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package uq.ilabs.servicebroker.rest;
+package uq.ilabs.servicebroker;
 
 import java.util.Arrays;
+import uq.ilabs.library.lab.types.ClientSubmissionReport;
 import uq.ilabs.library.lab.types.ExperimentStatus;
 import uq.ilabs.library.lab.types.LabExperimentStatus;
 import uq.ilabs.library.lab.types.LabStatus;
@@ -22,14 +23,14 @@ public class ConvertTypes {
     /**
      *
      * @param strings
-     * @return edu.mit.ilab.rest.ArrayOfString
+     * @return edu.mit.ilab.ArrayOfString
      */
-    public static edu.mit.ilab.rest.ArrayOfString Convert(String[] strings) {
-        edu.mit.ilab.rest.ArrayOfString arrayOfString = null;
+    public static edu.mit.ilab.ArrayOfString Convert(String[] strings) {
+        edu.mit.ilab.ArrayOfString arrayOfString = null;
 
         if (strings != null) {
-            arrayOfString = new edu.mit.ilab.rest.ArrayOfString();
-            arrayOfString.getStringList().addAll(Arrays.asList(strings));
+            arrayOfString = new edu.mit.ilab.ArrayOfString();
+            arrayOfString.getString().addAll(Arrays.asList(strings));
         }
 
         return arrayOfString;
@@ -37,14 +38,33 @@ public class ConvertTypes {
 
     /**
      *
-     * @param experimentStatus
-     * @return edu.mit.ilab.rest.ExperimentStatus
+     * @param clientSubmissionReport
+     * @return edu.mit.ilab.ClientSubmissionReport
      */
-    public static edu.mit.ilab.rest.ExperimentStatus Convert(ExperimentStatus experimentStatus) {
-        edu.mit.ilab.rest.ExperimentStatus proxyExperimentStatus = null;
+    public static edu.mit.ilab.ClientSubmissionReport Convert(ClientSubmissionReport clientSubmissionReport) {
+        edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
+
+        if (clientSubmissionReport != null) {
+            proxyClientSubmissionReport = new edu.mit.ilab.ClientSubmissionReport();
+            proxyClientSubmissionReport.setExperimentID(clientSubmissionReport.getExperimentId());
+            proxyClientSubmissionReport.setMinTimeToLive(clientSubmissionReport.getMinTimeToLive());
+            proxyClientSubmissionReport.setVReport(Convert(clientSubmissionReport.getValidationReport()));
+            proxyClientSubmissionReport.setWait(Convert(clientSubmissionReport.getWaitEstimate()));
+        }
+
+        return proxyClientSubmissionReport;
+    }
+
+    /**
+     *
+     * @param experimentStatus
+     * @return edu.mit.ilab.ExperimentStatus
+     */
+    public static edu.mit.ilab.ExperimentStatus Convert(ExperimentStatus experimentStatus) {
+        edu.mit.ilab.ExperimentStatus proxyExperimentStatus = null;
 
         if (experimentStatus != null) {
-            proxyExperimentStatus = new edu.mit.ilab.rest.ExperimentStatus();
+            proxyExperimentStatus = new edu.mit.ilab.ExperimentStatus();
             proxyExperimentStatus.setEstRemainingRuntime(experimentStatus.getEstRemainingRuntime());
             proxyExperimentStatus.setEstRuntime(experimentStatus.getEstRuntime());
             proxyExperimentStatus.setStatusCode(experimentStatus.getStatusCode().getValue());
@@ -57,13 +77,13 @@ public class ConvertTypes {
     /**
      *
      * @param labExperimentStatus
-     * @return edu.mit.ilab.rest.LabExperimentStatus
+     * @return edu.mit.ilab.LabExperimentStatus
      */
-    public static edu.mit.ilab.rest.LabExperimentStatus Convert(LabExperimentStatus labExperimentStatus) {
-        edu.mit.ilab.rest.LabExperimentStatus proxyLabExperimentStatus = null;
+    public static edu.mit.ilab.LabExperimentStatus Convert(LabExperimentStatus labExperimentStatus) {
+        edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
 
         if (labExperimentStatus != null) {
-            proxyLabExperimentStatus = new edu.mit.ilab.rest.LabExperimentStatus();
+            proxyLabExperimentStatus = new edu.mit.ilab.LabExperimentStatus();
             proxyLabExperimentStatus.setMinTimetoLive(labExperimentStatus.getMinTimetoLive());
             proxyLabExperimentStatus.setStatusReport(Convert(labExperimentStatus.getExperimentStatus()));
         }
@@ -74,13 +94,13 @@ public class ConvertTypes {
     /**
      *
      * @param labStatus
-     * @return edu.mit.ilab.rest.LabStatus
+     * @return edu.mit.ilab.LabStatus
      */
-    public static edu.mit.ilab.rest.LabStatus Convert(LabStatus labStatus) {
-        edu.mit.ilab.rest.LabStatus proxyLabStatus = null;
+    public static edu.mit.ilab.LabStatus Convert(LabStatus labStatus) {
+        edu.mit.ilab.LabStatus proxyLabStatus = null;
 
         if (labStatus != null) {
-            proxyLabStatus = new edu.mit.ilab.rest.LabStatus();
+            proxyLabStatus = new edu.mit.ilab.LabStatus();
             proxyLabStatus.setOnline(labStatus.isOnline());
             proxyLabStatus.setLabStatusMessage(labStatus.getLabStatusMessage());
         }
@@ -91,13 +111,13 @@ public class ConvertTypes {
     /**
      *
      * @param resultReport
-     * @return edu.mit.ilab.rest.ResultReport
+     * @return edu.mit.ilab.ResultReport
      */
-    public static edu.mit.ilab.rest.ResultReport Convert(ResultReport resultReport) {
-        edu.mit.ilab.rest.ResultReport proxyResultReport = null;
+    public static edu.mit.ilab.ResultReport Convert(ResultReport resultReport) {
+        edu.mit.ilab.ResultReport proxyResultReport = null;
 
         if (resultReport != null) {
-            proxyResultReport = new edu.mit.ilab.rest.ResultReport();
+            proxyResultReport = new edu.mit.ilab.ResultReport();
             proxyResultReport.setErrorMessage(resultReport.getErrorMessage());
             proxyResultReport.setExperimentResults(resultReport.getXmlExperimentResults());
             proxyResultReport.setStatusCode(resultReport.getStatusCode().getValue());
@@ -112,16 +132,16 @@ public class ConvertTypes {
     /**
      *
      * @param submissionReport
-     * @return edu.mit.ilab.rest.ClientSubmissionReport
+     * @return edu.mit.ilab.ClientSubmissionReport
      */
-    public static edu.mit.ilab.rest.ClientSubmissionReport Convert(SubmissionReport submissionReport) {
-        edu.mit.ilab.rest.ClientSubmissionReport proxyClientSubmissionReport = null;
+    public static edu.mit.ilab.ClientSubmissionReport Convert(SubmissionReport submissionReport) {
+        edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
 
         if (submissionReport != null) {
             /*
              * Convert to the return type
              */
-            proxyClientSubmissionReport = new edu.mit.ilab.rest.ClientSubmissionReport();
+            proxyClientSubmissionReport = new edu.mit.ilab.ClientSubmissionReport();
             proxyClientSubmissionReport.setExperimentID((int) submissionReport.getExperimentId());
             proxyClientSubmissionReport.setMinTimeToLive(submissionReport.getMinTimeToLive());
             proxyClientSubmissionReport.setVReport(Convert(submissionReport.getValidationReport()));
@@ -134,13 +154,13 @@ public class ConvertTypes {
     /**
      *
      * @param validationReport
-     * @return edu.mit.ilab.rest.ValidationReport
+     * @return edu.mit.ilab.ValidationReport
      */
-    public static edu.mit.ilab.rest.ValidationReport Convert(ValidationReport validationReport) {
-        edu.mit.ilab.rest.ValidationReport proxyValidationReport = null;
+    public static edu.mit.ilab.ValidationReport Convert(ValidationReport validationReport) {
+        edu.mit.ilab.ValidationReport proxyValidationReport = null;
 
         if (validationReport != null) {
-            proxyValidationReport = new edu.mit.ilab.rest.ValidationReport();
+            proxyValidationReport = new edu.mit.ilab.ValidationReport();
             proxyValidationReport.setAccepted(validationReport.isAccepted());
             proxyValidationReport.setErrorMessage(validationReport.getErrorMessage());
             proxyValidationReport.setEstRuntime(validationReport.getEstRuntime());
@@ -153,13 +173,13 @@ public class ConvertTypes {
     /**
      *
      * @param waitEstimate
-     * @return edu.mit.ilab.rest.WaitEstimate
+     * @return edu.mit.ilab.WaitEstimate
      */
-    public static edu.mit.ilab.rest.WaitEstimate Convert(WaitEstimate waitEstimate) {
-        edu.mit.ilab.rest.WaitEstimate proxyWaitEstimate = null;
+    public static edu.mit.ilab.WaitEstimate Convert(WaitEstimate waitEstimate) {
+        edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
 
         if (waitEstimate != null) {
-            proxyWaitEstimate = new edu.mit.ilab.rest.WaitEstimate();
+            proxyWaitEstimate = new edu.mit.ilab.WaitEstimate();
             proxyWaitEstimate.setEffectiveQueueLength(waitEstimate.getEffectiveQueueLength());
             proxyWaitEstimate.setEstWait(waitEstimate.getEstWait());
         }
