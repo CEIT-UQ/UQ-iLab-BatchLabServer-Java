@@ -19,7 +19,6 @@ import uq.ilabs.library.lab.types.SbAuthHeader;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.servicebroker.ConvertTypes;
 import uq.ilabs.servicebroker.ServiceBrokerBean;
-import uq.ilabs.servicebroker.engine.ConfigProperties;
 
 /**
  *
@@ -42,26 +41,6 @@ public class ServiceBrokerService {
     @EJB
     private ServiceBrokerBean serviceBrokerBean;
     private static String qnameSbAuthHeaderLocalPart;
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Properties">
-    private static boolean initialised = false;
-    private static ConfigProperties configProperties;
-
-    public static boolean isInitialised() {
-        return initialised;
-    }
-
-    public static void setInitialised(boolean initialised) {
-        ServiceBrokerService.initialised = initialised;
-    }
-
-    public static ConfigProperties getConfigProperties() {
-        return configProperties;
-    }
-
-    public static void setConfigProperties(ConfigProperties configProperties) {
-        ServiceBrokerService.configProperties = configProperties;
-    }
     //</editor-fold>
 
     /**
@@ -245,7 +224,6 @@ public class ServiceBrokerService {
      * @param experimentID
      */
     public void notify(int experimentID) {
-
         try {
             SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
             this.serviceBrokerBean.notify(sbAuthHeader, experimentID);
@@ -253,7 +231,6 @@ public class ServiceBrokerService {
             this.ThrowSOAPFault(ex.getMessage());
         } catch (Exception ex) {
         }
-
     }
 
     //================================================================================================================//
