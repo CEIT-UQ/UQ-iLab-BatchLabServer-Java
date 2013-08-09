@@ -5,20 +5,15 @@
 package uq.ilabs.library.labserver;
 
 import java.util.logging.Level;
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.ProtocolException;
 import javax.xml.ws.soap.SOAPFaultException;
 import uq.ilabs.labserver.AuthHeader;
 import uq.ilabs.labserver.LabServerWebService;
 import uq.ilabs.labserver.LabServerWebServiceSoap;
-import uq.ilabs.labserver.ObjectFactory;
-import uq.ilabs.library.lab.types.ExperimentStatus;
 import uq.ilabs.library.lab.types.LabExperimentStatus;
 import uq.ilabs.library.lab.types.LabStatus;
 import uq.ilabs.library.lab.types.ResultReport;
-import uq.ilabs.library.lab.types.StatusCodes;
 import uq.ilabs.library.lab.types.SubmissionReport;
 import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.types.WaitEstimate;
@@ -45,7 +40,6 @@ public class LabServerAPI {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private LabServerWebServiceSoap labServerProxy;
-    private QName qnameAuthHeader;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String identifier;
@@ -88,13 +82,6 @@ public class LabServerAPI {
             LabServerWebService labServerWebService = new LabServerWebService();
             this.labServerProxy = labServerWebService.getLabServerWebServiceSoap();
             ((BindingProvider) this.labServerProxy).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
-
-            /*
-             * Get authentication header QName
-             */
-            ObjectFactory objectFactory = new ObjectFactory();
-            JAXBElement<AuthHeader> jaxbElementAuthHeader = objectFactory.createAuthHeader(new AuthHeader());
-            this.qnameAuthHeader = jaxbElementAuthHeader.getName();
 
         } catch (NullPointerException | IllegalArgumentException ex) {
             Logfile.WriteError(ex.toString());
@@ -153,7 +140,7 @@ public class LabServerAPI {
              */
             this.SetAuthHeader();
             uq.ilabs.labserver.WaitEstimate proxyWaitEstimate = this.labServerProxy.getEffectiveQueueLength(userGroup, priorityHint);
-            waitEstimate = this.ConvertType(proxyWaitEstimate);
+            waitEstimate = ConvertTypes.Convert(proxyWaitEstimate);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -185,7 +172,7 @@ public class LabServerAPI {
              */
             this.SetAuthHeader();
             uq.ilabs.labserver.LabExperimentStatus proxyLabExperimentStatus = this.labServerProxy.getExperimentStatus(experimentId);
-            labExperimentStatus = this.ConvertType(proxyLabExperimentStatus);
+            labExperimentStatus = ConvertTypes.Convert(proxyLabExperimentStatus);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -277,7 +264,7 @@ public class LabServerAPI {
              */
             this.SetAuthHeader();
             uq.ilabs.labserver.LabStatus proxyLabStatus = this.labServerProxy.getLabStatus();
-            labStatus = this.ConvertType(proxyLabStatus);
+            labStatus = ConvertTypes.Convert(proxyLabStatus);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -309,7 +296,7 @@ public class LabServerAPI {
              */
             this.SetAuthHeader();
             uq.ilabs.labserver.ResultReport proxyResultReport = this.labServerProxy.retrieveResult(experimentId);
-            resultReport = this.ConvertType(proxyResultReport);
+            resultReport = ConvertTypes.Convert(proxyResultReport);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -344,7 +331,7 @@ public class LabServerAPI {
              */
             this.SetAuthHeader();
             uq.ilabs.labserver.SubmissionReport proxySubmissionReport = this.labServerProxy.submit(experimentId, experimentSpecification, userGroup, priorityHint);
-            submissionReport = this.ConvertType(proxySubmissionReport);
+            submissionReport = ConvertTypes.Convert(proxySubmissionReport);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -377,7 +364,7 @@ public class LabServerAPI {
              */
             this.SetAuthHeader();
             uq.ilabs.labserver.ValidationReport proxyValidationReport = this.labServerProxy.validate(experimentSpecification, userGroup);
-            validationReport = this.ConvertType(proxyValidationReport);
+            validationReport = ConvertTypes.Convert(proxyValidationReport);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -407,152 +394,6 @@ public class LabServerAPI {
         /*
          * Pass the authentication header to the message handler through the message context
          */
-        ((BindingProvider) this.labServerProxy).getRequestContext().put(this.qnameAuthHeader.getLocalPart(), authHeader);
+        ((BindingProvider) this.labServerProxy).getRequestContext().put(QnameFactory.getAuthHeaderName().getLocalPart(), authHeader);
     }
-
-    //<editor-fold defaultstate="collapsed" desc="ConvertType">
-    /**
-     *
-     * @param arrayOfString
-     * @return String[]
-     */
-    private String[] ConvertType(uq.ilabs.labserver.ArrayOfString arrayOfString) {
-        String[] strings = null;
-
-        if (arrayOfString != null) {
-            strings = arrayOfString.getString().toArray(new String[0]);
-        }
-
-        return strings;
-    }
-
-    /**
-     *
-     * @param proxySubmissionReport
-     * @return SubmissionReport
-     */
-    private SubmissionReport ConvertType(uq.ilabs.labserver.SubmissionReport proxySubmissionReport) {
-        SubmissionReport submissionReport = null;
-
-        if (proxySubmissionReport != null) {
-            submissionReport = new SubmissionReport();
-            submissionReport.setExperimentId(proxySubmissionReport.getExperimentID());
-            submissionReport.setMinTimeToLive(proxySubmissionReport.getMinTimeToLive());
-            submissionReport.setValidationReport(this.ConvertType(proxySubmissionReport.getVReport()));
-            submissionReport.setWaitEstimate(this.ConvertType(proxySubmissionReport.getWait()));
-        }
-
-        return submissionReport;
-    }
-
-    /**
-     *
-     * @param proxyExperimentStatus
-     * @return ExperimentStatus
-     */
-    private ExperimentStatus ConvertType(uq.ilabs.labserver.ExperimentStatus proxyExperimentStatus) {
-        ExperimentStatus experimentStatus = null;
-
-        if (proxyExperimentStatus != null) {
-            experimentStatus = new ExperimentStatus();
-            experimentStatus.setEstRemainingRuntime(proxyExperimentStatus.getEstRemainingRuntime());
-            experimentStatus.setEstRuntime(proxyExperimentStatus.getEstRuntime());
-            experimentStatus.setStatusCode(StatusCodes.ToStatusCode(proxyExperimentStatus.getStatusCode()));
-            experimentStatus.setWaitEstimate(this.ConvertType(proxyExperimentStatus.getWait()));
-        }
-
-        return experimentStatus;
-    }
-
-    /**
-     *
-     * @param proxyLabExperimentStatus
-     * @return LabExperimentStatus
-     */
-    private LabExperimentStatus ConvertType(uq.ilabs.labserver.LabExperimentStatus proxyLabExperimentStatus) {
-        LabExperimentStatus labExperimentStatus = null;
-
-        if (proxyLabExperimentStatus != null) {
-            labExperimentStatus = new LabExperimentStatus();
-            labExperimentStatus.setMinTimetoLive(proxyLabExperimentStatus.getMinTimetoLive());
-            labExperimentStatus.setExperimentStatus(this.ConvertType(proxyLabExperimentStatus.getStatusReport()));
-        }
-
-        return labExperimentStatus;
-    }
-
-    /**
-     *
-     * @param proxyLabStatus
-     * @return LabStatus
-     */
-    private LabStatus ConvertType(uq.ilabs.labserver.LabStatus proxyLabStatus) {
-        LabStatus labStatus = null;
-
-        if (proxyLabStatus != null) {
-            labStatus = new LabStatus();
-            labStatus.setOnline(proxyLabStatus.isOnline());
-            labStatus.setLabStatusMessage(proxyLabStatus.getLabStatusMessage());
-        }
-
-        return labStatus;
-    }
-
-    /**
-     *
-     * @param proxyResultReport
-     * @return ResultReport
-     */
-    private ResultReport ConvertType(uq.ilabs.labserver.ResultReport proxyResultReport) {
-        ResultReport resultReport = null;
-
-        if (proxyResultReport != null) {
-            resultReport = new ResultReport();
-            resultReport.setErrorMessage(proxyResultReport.getErrorMessage());
-            resultReport.setXmlExperimentResults(proxyResultReport.getExperimentResults());
-            resultReport.setStatusCode(StatusCodes.ToStatusCode(proxyResultReport.getStatusCode()));
-            resultReport.setXmlBlobExtension(proxyResultReport.getXmlBlobExtension());
-            resultReport.setXmlResultExtension(proxyResultReport.getXmlResultExtension());
-            resultReport.setWarningMessages(this.ConvertType(proxyResultReport.getWarningMessages()));
-        }
-
-        return resultReport;
-    }
-
-    /**
-     *
-     * @param proxyValidationReport
-     * @return ValidationReport
-     */
-    private ValidationReport ConvertType(uq.ilabs.labserver.ValidationReport proxyValidationReport) {
-        ValidationReport validationReport = null;
-
-        if (proxyValidationReport != null) {
-            validationReport = new ValidationReport();
-            validationReport.setAccepted(proxyValidationReport.isAccepted());
-            validationReport.setErrorMessage(proxyValidationReport.getErrorMessage());
-            validationReport.setEstRuntime(proxyValidationReport.getEstRuntime());
-            validationReport.setWarningMessages(ConvertType(proxyValidationReport.getWarningMessages()));
-        }
-
-        return validationReport;
-    }
-
-    /**
-     *
-     * @param proxyWaitEstimate
-     * @return WaitEstimate
-     */
-    private WaitEstimate ConvertType(uq.ilabs.labserver.WaitEstimate proxyWaitEstimate) {
-        WaitEstimate waitEstimate = null;
-
-        if (proxyWaitEstimate != null) {
-            waitEstimate = new WaitEstimate();
-            waitEstimate.setEffectiveQueueLength(proxyWaitEstimate.getEffectiveQueueLength());
-            waitEstimate.setEstWait(proxyWaitEstimate.getEstWait());
-        }
-
-        return waitEstimate;
-    }
-    //</editor-fold>
 }

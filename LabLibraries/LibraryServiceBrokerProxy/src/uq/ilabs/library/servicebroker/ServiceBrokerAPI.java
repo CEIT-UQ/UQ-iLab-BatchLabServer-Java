@@ -47,7 +47,6 @@ public class ServiceBrokerAPI {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
     private ServiceBrokerServiceSoap serviceBrokerProxy;
-    private QName qnameSbAuthHeader;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private long couponId;
@@ -107,13 +106,6 @@ public class ServiceBrokerAPI {
             ServiceBrokerService serviceBrokerService = new ServiceBrokerService();
             this.serviceBrokerProxy = serviceBrokerService.getServiceBrokerServiceSoap();
             ((BindingProvider) this.serviceBrokerProxy).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
-
-            /*
-             * Get authentication header QName
-             */
-            ObjectFactory objectFactory = new ObjectFactory();
-            JAXBElement<SbAuthHeader> jaxbElementSbAuthHeader = objectFactory.createSbAuthHeader(new SbAuthHeader());
-            this.qnameSbAuthHeader = jaxbElementSbAuthHeader.getName();
 
         } catch (NullPointerException | IllegalArgumentException ex) {
             Logfile.WriteError(ex.toString());
@@ -179,7 +171,7 @@ public class ServiceBrokerAPI {
              */
             this.SetSbAuthHeader();
             uq.ilabs.servicebroker.WaitEstimate proxyWaitEstimate = this.serviceBrokerProxy.getEffectiveQueueLength(this.labServerId, priorityHint);
-            waitEstimate = this.ConvertType(proxyWaitEstimate);
+            waitEstimate = ConvertTypes.Convert(proxyWaitEstimate);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -211,7 +203,7 @@ public class ServiceBrokerAPI {
              */
             this.SetSbAuthHeader();
             uq.ilabs.servicebroker.LabExperimentStatus proxyLabExperimentStatus = this.serviceBrokerProxy.getExperimentStatus(experimentId);
-            labExperimentStatus = this.ConvertType(proxyLabExperimentStatus);
+            labExperimentStatus = ConvertTypes.Convert(proxyLabExperimentStatus);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -302,7 +294,7 @@ public class ServiceBrokerAPI {
              */
             this.SetSbAuthHeader();
             uq.ilabs.servicebroker.LabStatus proxyLabStatus = this.serviceBrokerProxy.getLabStatus(this.labServerId);
-            labStatus = this.ConvertType(proxyLabStatus);
+            labStatus = ConvertTypes.Convert(proxyLabStatus);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -334,7 +326,7 @@ public class ServiceBrokerAPI {
              */
             this.SetSbAuthHeader();
             uq.ilabs.servicebroker.ResultReport proxyResultReport = this.serviceBrokerProxy.retrieveResult(experimentId);
-            resultReport = this.ConvertType(proxyResultReport);
+            resultReport = ConvertTypes.Convert(proxyResultReport);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -377,7 +369,7 @@ public class ServiceBrokerAPI {
              */
             this.SetSbAuthHeader();
             uq.ilabs.servicebroker.ClientSubmissionReport proxyClientSubmissionReport = this.serviceBrokerProxy.submit(this.labServerId, experimentSpecification, priorityHint, emailNotification);
-            clientSubmissionReport = this.ConvertType(proxyClientSubmissionReport);
+            clientSubmissionReport = ConvertTypes.Convert(proxyClientSubmissionReport);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -409,7 +401,7 @@ public class ServiceBrokerAPI {
              */
             this.SetSbAuthHeader();
             uq.ilabs.servicebroker.ValidationReport proxyValidationReport = this.serviceBrokerProxy.validate(this.labServerId, experimentSpecification);
-            validationReport = this.ConvertType(proxyValidationReport);
+            validationReport = ConvertTypes.Convert(proxyValidationReport);
 
         } catch (SOAPFaultException ex) {
             Logfile.Write(ex.getMessage());
@@ -468,152 +460,6 @@ public class ServiceBrokerAPI {
         /*
          * Pass the authentication header to the message handler through the message context
          */
-        ((BindingProvider) this.serviceBrokerProxy).getRequestContext().put(this.qnameSbAuthHeader.getLocalPart(), sbAuthHeader);
+        ((BindingProvider) this.serviceBrokerProxy).getRequestContext().put(QnameFactory.getSbAuthHeaderName().getLocalPart(), sbAuthHeader);
     }
-
-    //<editor-fold defaultstate="collapsed" desc="ConvertType">
-    /**
-     *
-     * @param arrayOfString
-     * @return String[]
-     */
-    private String[] ConvertType(uq.ilabs.servicebroker.ArrayOfString arrayOfString) {
-        String[] strings = null;
-
-        if (arrayOfString != null) {
-            strings = arrayOfString.getString().toArray(new String[0]);
-        }
-
-        return strings;
-    }
-
-    /**
-     *
-     * @param proxyClientSubmissionReport
-     * @return ClientSubmissionReport
-     */
-    private ClientSubmissionReport ConvertType(uq.ilabs.servicebroker.ClientSubmissionReport proxyClientSubmissionReport) {
-        ClientSubmissionReport clientSubmissionReport = null;
-
-        if (proxyClientSubmissionReport != null) {
-            clientSubmissionReport = new ClientSubmissionReport();
-            clientSubmissionReport.setExperimentId(proxyClientSubmissionReport.getExperimentID());
-            clientSubmissionReport.setMinTimeToLive(proxyClientSubmissionReport.getMinTimeToLive());
-            clientSubmissionReport.setValidationReport(this.ConvertType(proxyClientSubmissionReport.getVReport()));
-            clientSubmissionReport.setWaitEstimate(this.ConvertType(proxyClientSubmissionReport.getWait()));
-        }
-
-        return clientSubmissionReport;
-    }
-
-    /**
-     *
-     * @param proxyExperimentStatus
-     * @return ExperimentStatus
-     */
-    private ExperimentStatus ConvertType(uq.ilabs.servicebroker.ExperimentStatus proxyExperimentStatus) {
-        ExperimentStatus experimentStatus = null;
-
-        if (proxyExperimentStatus != null) {
-            experimentStatus = new ExperimentStatus();
-            experimentStatus.setEstRemainingRuntime(proxyExperimentStatus.getEstRemainingRuntime());
-            experimentStatus.setEstRuntime(proxyExperimentStatus.getEstRuntime());
-            experimentStatus.setStatusCode(StatusCodes.ToStatusCode(proxyExperimentStatus.getStatusCode()));
-            experimentStatus.setWaitEstimate(this.ConvertType(proxyExperimentStatus.getWait()));
-        }
-
-        return experimentStatus;
-    }
-
-    /**
-     *
-     * @param proxyLabExperimentStatus
-     * @return LabExperimentStatus
-     */
-    private LabExperimentStatus ConvertType(uq.ilabs.servicebroker.LabExperimentStatus proxyLabExperimentStatus) {
-        LabExperimentStatus labExperimentStatus = null;
-
-        if (proxyLabExperimentStatus != null) {
-            labExperimentStatus = new LabExperimentStatus();
-            labExperimentStatus.setMinTimetoLive(proxyLabExperimentStatus.getMinTimetoLive());
-            labExperimentStatus.setExperimentStatus(this.ConvertType(proxyLabExperimentStatus.getStatusReport()));
-        }
-
-        return labExperimentStatus;
-    }
-
-    /**
-     *
-     * @param proxyLabStatus
-     * @return LabStatus
-     */
-    private LabStatus ConvertType(uq.ilabs.servicebroker.LabStatus proxyLabStatus) {
-        LabStatus labStatus = null;
-
-        if (proxyLabStatus != null) {
-            labStatus = new LabStatus();
-            labStatus.setOnline(proxyLabStatus.isOnline());
-            labStatus.setLabStatusMessage(proxyLabStatus.getLabStatusMessage());
-        }
-
-        return labStatus;
-    }
-
-    /**
-     *
-     * @param proxyResultReport
-     * @return ResultReport
-     */
-    private ResultReport ConvertType(uq.ilabs.servicebroker.ResultReport proxyResultReport) {
-        ResultReport resultReport = null;
-
-        if (proxyResultReport != null) {
-            resultReport = new ResultReport();
-            resultReport.setErrorMessage(proxyResultReport.getErrorMessage());
-            resultReport.setXmlExperimentResults(proxyResultReport.getExperimentResults());
-            resultReport.setStatusCode(StatusCodes.ToStatusCode(proxyResultReport.getStatusCode()));
-            resultReport.setXmlBlobExtension(proxyResultReport.getXmlBlobExtension());
-            resultReport.setXmlResultExtension(proxyResultReport.getXmlResultExtension());
-            resultReport.setWarningMessages(this.ConvertType(proxyResultReport.getWarningMessages()));
-        }
-
-        return resultReport;
-    }
-
-    /**
-     *
-     * @param proxyValidationReport
-     * @return ValidationReport
-     */
-    private ValidationReport ConvertType(uq.ilabs.servicebroker.ValidationReport proxyValidationReport) {
-        ValidationReport validationReport = null;
-
-        if (proxyValidationReport != null) {
-            validationReport = new ValidationReport();
-            validationReport.setAccepted(proxyValidationReport.isAccepted());
-            validationReport.setErrorMessage(proxyValidationReport.getErrorMessage());
-            validationReport.setEstRuntime(proxyValidationReport.getEstRuntime());
-            validationReport.setWarningMessages(ConvertType(proxyValidationReport.getWarningMessages()));
-        }
-
-        return validationReport;
-    }
-
-    /**
-     *
-     * @param proxyWaitEstimate
-     * @return WaitEstimate
-     */
-    private WaitEstimate ConvertType(uq.ilabs.servicebroker.WaitEstimate proxyWaitEstimate) {
-        WaitEstimate waitEstimate = null;
-
-        if (proxyWaitEstimate != null) {
-            waitEstimate = new WaitEstimate();
-            waitEstimate.setEffectiveQueueLength(proxyWaitEstimate.getEffectiveQueueLength());
-            waitEstimate.setEstWait(proxyWaitEstimate.getEstWait());
-        }
-
-        return waitEstimate;
-    }
-    //</editor-fold>
 }

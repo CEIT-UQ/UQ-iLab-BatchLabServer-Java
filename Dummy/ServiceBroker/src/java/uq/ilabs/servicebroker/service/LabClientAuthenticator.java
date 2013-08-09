@@ -4,7 +4,6 @@
  */
 package uq.ilabs.servicebroker.service;
 
-import edu.mit.ilab.ObjectFactory;
 import edu.mit.ilab.SbAuthHeader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,7 +12,6 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.servlet.ServletContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
 import javax.xml.ws.handler.MessageContext;
@@ -28,16 +26,7 @@ import uq.ilabs.servicebroker.ServiceBrokerBean;
  */
 public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
 
-    //<editor-fold defaultstate="collapsed" desc="Constants">
-    /*
-     * String constants
-     */
-    private static final String STR_CouponId = "couponID";
-    private static final String STR_CouponPasskey = "couponPassKey";
-    //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private static ObjectFactory objectFactory;
-    private static String qnameSbAuthHeaderLocalPart;
     @EJB
     private ServiceBrokerBean serviceBrokerBean;
     //</editor-fold>
@@ -53,18 +42,6 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
          * Process the header info for an inbound message if authentication is required
          */
         if ((Boolean) messageContext.get(SOAPMessageContext.MESSAGE_OUTBOUND_PROPERTY) == false) {
-            /*
-             * Check if an instance of ObjectFactory has been created
-             */
-            if (objectFactory == null) {
-                /*
-                 * Create instance of ObjectFactory and get the authentication header names
-                 */
-                objectFactory = new ObjectFactory();
-                JAXBElement<SbAuthHeader> jaxbElement = objectFactory.createSbAuthHeader(new SbAuthHeader());
-                qnameSbAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
-            }
-
             /*
              * Check if ServiceBrokerBean has been initialised
              */
@@ -143,13 +120,14 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
                  * message context. The scope has to be changed from HANDLER to APPLICATION so
                  * that the web service can see the message context map
                  */
-                if (localName.equalsIgnoreCase(qnameSbAuthHeaderLocalPart) == true) {
+                String qnameLocalPart = QnameFactory.getSbAuthHeaderLocalPart();
+                if (localName.equalsIgnoreCase(qnameLocalPart) == true) {
                     /*
                      * SbAuthHeader
                      */
                     SbAuthHeader sbAuthHeader = ProcessSoapElementSbAuthHeader(soapElement);
-                    messageContext.put(qnameSbAuthHeaderLocalPart, sbAuthHeader);
-                    messageContext.setScope(qnameSbAuthHeaderLocalPart, MessageContext.Scope.APPLICATION);
+                    messageContext.put(qnameLocalPart, sbAuthHeader);
+                    messageContext.setScope(qnameLocalPart, MessageContext.Scope.APPLICATION);
                 }
             }
         }
@@ -161,7 +139,7 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
      * @return SbAuthHeader
      */
     private SbAuthHeader ProcessSoapElementSbAuthHeader(SOAPElement soapElement) {
-        SbAuthHeader sbAuthHeader = objectFactory.createSbAuthHeader();
+        SbAuthHeader sbAuthHeader = QnameFactory.getObjectFactory().createSbAuthHeader();
         Iterator iterator = soapElement.getChildElements();
         while (iterator.hasNext()) {
             /*
@@ -179,9 +157,9 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
                 /*
                  * Check if localName matches a specified string
                  */
-                if (localName.equalsIgnoreCase(STR_CouponId) == true) {
+                if (localName.equalsIgnoreCase(uq.ilabs.library.lab.types.SbAuthHeader.STR_CouponId) == true) {
                     sbAuthHeader.setCouponID(Long.parseLong(element.getValue()));
-                } else if (localName.equalsIgnoreCase(STR_CouponPasskey) == true) {
+                } else if (localName.equalsIgnoreCase(uq.ilabs.library.lab.types.SbAuthHeader.STR_CouponPasskey) == true) {
                     sbAuthHeader.setCouponPassKey(element.getValue());
                 }
             }

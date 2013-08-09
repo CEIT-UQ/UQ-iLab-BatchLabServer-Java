@@ -8,14 +8,18 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
-import javax.xml.bind.JAXBElement;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
-import javax.xml.ws.ProtocolException;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.soap.SOAPFaultException;
+import uq.ilabs.library.lab.types.ClientSubmissionReport;
+import uq.ilabs.library.lab.types.LabExperimentStatus;
+import uq.ilabs.library.lab.types.LabStatus;
+import uq.ilabs.library.lab.types.ResultReport;
 import uq.ilabs.library.lab.types.SbAuthHeader;
+import uq.ilabs.library.lab.types.ValidationReport;
+import uq.ilabs.library.lab.types.WaitEstimate;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.servicebroker.ConvertTypes;
 import uq.ilabs.servicebroker.ServiceBrokerBean;
@@ -40,7 +44,6 @@ public class ServiceBrokerService {
     private WebServiceContext wsContext;
     @EJB
     private ServiceBrokerBean serviceBrokerBean;
-    private static String qnameSbAuthHeaderLocalPart;
     //</editor-fold>
 
     /**
@@ -53,10 +56,9 @@ public class ServiceBrokerService {
 
         try {
             SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            success = this.serviceBrokerBean.cancel(sbAuthHeader, experimentID);
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            success = this.serviceBrokerBean.getServiceBrokerHandler().cancel(sbAuthHeader, experimentID);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
         return success;
@@ -69,17 +71,18 @@ public class ServiceBrokerService {
      * @return edu.mit.ilab.WaitEstimate
      */
     public edu.mit.ilab.WaitEstimate getEffectiveQueueLength(java.lang.String labServerID, int priorityHint) {
-        edu.mit.ilab.WaitEstimate waitEstimate = null;
+        edu.mit.ilab.WaitEstimate proxyWaitEstimate = null;
+
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
 
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            waitEstimate = ConvertTypes.Convert(this.serviceBrokerBean.getEffectiveQueueLength(sbAuthHeader, labServerID, priorityHint));
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            WaitEstimate waitEstimate = this.serviceBrokerBean.getServiceBrokerHandler().getEffectiveQueueLength(sbAuthHeader, labServerID, priorityHint);
+            proxyWaitEstimate = ConvertTypes.Convert(waitEstimate);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
-        return waitEstimate;
+        return proxyWaitEstimate;
     }
 
     /**
@@ -88,17 +91,18 @@ public class ServiceBrokerService {
      * @return edu.mit.ilab.LabExperimentStatus
      */
     public edu.mit.ilab.LabExperimentStatus getExperimentStatus(int experimentID) {
-        edu.mit.ilab.LabExperimentStatus labExperimentStatus = null;
+        edu.mit.ilab.LabExperimentStatus proxyLabExperimentStatus = null;
+
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
 
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            labExperimentStatus = ConvertTypes.Convert(this.serviceBrokerBean.getExperimentStatus(sbAuthHeader, experimentID));
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            LabExperimentStatus labExperimentStatus = this.serviceBrokerBean.getServiceBrokerHandler().getExperimentStatus(sbAuthHeader, experimentID);
+            proxyLabExperimentStatus = ConvertTypes.Convert(labExperimentStatus);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
-        return labExperimentStatus;
+        return proxyLabExperimentStatus;
     }
 
     /**
@@ -109,12 +113,12 @@ public class ServiceBrokerService {
     public java.lang.String getLabConfiguration(java.lang.String labServerID) {
         String labConfiguration = null;
 
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
+
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            labConfiguration = this.serviceBrokerBean.getLabConfiguration(sbAuthHeader, labServerID);
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            labConfiguration = this.serviceBrokerBean.getServiceBrokerHandler().getLabConfiguration(sbAuthHeader, labServerID);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
         return labConfiguration;
@@ -128,12 +132,12 @@ public class ServiceBrokerService {
     public java.lang.String getLabInfo(java.lang.String labServerID) {
         String labInfo = null;
 
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
+
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            labInfo = this.serviceBrokerBean.getLabInfo(sbAuthHeader, labServerID);
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            labInfo = this.serviceBrokerBean.getServiceBrokerHandler().getLabInfo(sbAuthHeader, labServerID);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
         return labInfo;
@@ -145,17 +149,18 @@ public class ServiceBrokerService {
      * @return edu.mit.ilab.LabStatus
      */
     public edu.mit.ilab.LabStatus getLabStatus(java.lang.String labServerID) {
-        edu.mit.ilab.LabStatus labStatus = null;
+        edu.mit.ilab.LabStatus proxyLabStatus = null;
+
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
 
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            labStatus = ConvertTypes.Convert(this.serviceBrokerBean.getLabStatus(sbAuthHeader, labServerID));
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            LabStatus labStatus = this.serviceBrokerBean.getServiceBrokerHandler().getLabStatus(sbAuthHeader, labServerID);
+            proxyLabStatus = ConvertTypes.Convert(labStatus);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
-        return labStatus;
+        return proxyLabStatus;
     }
 
     /**
@@ -164,17 +169,18 @@ public class ServiceBrokerService {
      * @return edu.mit.ilab.ResultReport
      */
     public edu.mit.ilab.ResultReport retrieveResult(int experimentID) {
-        edu.mit.ilab.ResultReport resultReport = null;
+        edu.mit.ilab.ResultReport proxyResultReport = null;
+
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
 
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            resultReport = ConvertTypes.Convert(this.serviceBrokerBean.retrieveResult(sbAuthHeader, experimentID));
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            ResultReport resultReport = this.serviceBrokerBean.getServiceBrokerHandler().retrieveResult(sbAuthHeader, experimentID);
+            proxyResultReport = ConvertTypes.Convert(resultReport);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
-        return resultReport;
+        return proxyResultReport;
     }
 
     /**
@@ -186,17 +192,18 @@ public class ServiceBrokerService {
      * @return edu.mit.ilab.ClientSubmissionReport
      */
     public edu.mit.ilab.ClientSubmissionReport submit(java.lang.String labServerID, java.lang.String experimentSpecification, int priorityHint, boolean emailNotification) {
-        edu.mit.ilab.ClientSubmissionReport clientSubmissionReport = null;
+        edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
+
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
 
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            clientSubmissionReport = ConvertTypes.Convert(this.serviceBrokerBean.submit(sbAuthHeader, labServerID, experimentSpecification, priorityHint, emailNotification));
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            ClientSubmissionReport clientSubmissionReport = this.serviceBrokerBean.getServiceBrokerHandler().submit(sbAuthHeader, labServerID, experimentSpecification, priorityHint, emailNotification);
+            proxyClientSubmissionReport = ConvertTypes.Convert(clientSubmissionReport);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
-        return clientSubmissionReport;
+        return proxyClientSubmissionReport;
     }
 
     /**
@@ -206,17 +213,18 @@ public class ServiceBrokerService {
      * @return edu.mit.ilab.ValidationReport
      */
     public edu.mit.ilab.ValidationReport validate(java.lang.String labServerID, java.lang.String experimentSpecification) {
-        edu.mit.ilab.ValidationReport validationReport = null;
+        edu.mit.ilab.ValidationReport proxyValidationReport = null;
+
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
 
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            validationReport = ConvertTypes.Convert(this.serviceBrokerBean.validate(sbAuthHeader, labServerID, experimentSpecification));
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            ValidationReport validationReport = this.serviceBrokerBean.getServiceBrokerHandler().validate(sbAuthHeader, labServerID, experimentSpecification);
+            proxyValidationReport = ConvertTypes.Convert(validationReport);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
 
-        return validationReport;
+        return proxyValidationReport;
     }
 
     /**
@@ -224,12 +232,12 @@ public class ServiceBrokerService {
      * @param experimentID
      */
     public void notify(int experimentID) {
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
+
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
-            this.serviceBrokerBean.notify(sbAuthHeader, experimentID);
-        } catch (ProtocolException ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.serviceBrokerBean.getServiceBrokerHandler().notify(sbAuthHeader, experimentID);
         } catch (Exception ex) {
+            this.ThrowSOAPFault(ex.getMessage());
         }
     }
 
@@ -244,12 +252,7 @@ public class ServiceBrokerService {
         /*
          * Get the authentication header from the message context
          */
-        if (qnameSbAuthHeaderLocalPart == null) {
-            edu.mit.ilab.ObjectFactory objectFactory = new edu.mit.ilab.ObjectFactory();
-            JAXBElement<edu.mit.ilab.SbAuthHeader> jaxbElement = objectFactory.createSbAuthHeader(new edu.mit.ilab.SbAuthHeader());
-            qnameSbAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
-        }
-        Object object = wsContext.getMessageContext().get(qnameSbAuthHeaderLocalPart);
+        Object object = wsContext.getMessageContext().get(QnameFactory.getSbAuthHeaderLocalPart());
 
         /*
          * Check that it is an SbAuthHeader

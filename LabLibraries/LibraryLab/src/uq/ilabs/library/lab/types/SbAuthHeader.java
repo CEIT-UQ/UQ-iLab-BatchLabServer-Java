@@ -15,8 +15,8 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "sbAuthHeader", propOrder = {
-    "couponID",
-    "couponPassKey"
+    "couponId",
+    "couponPasskey"
 })
 public class SbAuthHeader {
 
