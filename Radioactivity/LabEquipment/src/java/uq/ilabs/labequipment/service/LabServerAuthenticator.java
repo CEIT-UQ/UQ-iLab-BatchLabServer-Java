@@ -4,49 +4,25 @@
  */
 package uq.ilabs.labequipment.service;
 
-import au.edu.uq.ilab.AuthHeader;
-import au.edu.uq.ilab.ObjectFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import javax.xml.ws.soap.SOAPFaultException;
+import uq.ilabs.library.lab.types.AuthHeader;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labequipment.engine.ConfigProperties;
-import uq.ilabs.library.labequipment.engine.LabConsts;
 
 /**
  *
  * @author uqlpayne
  */
 public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
-
-    //<editor-fold defaultstate="collapsed" desc="Constants">
-    private static final String STR_ClassName = LabServerAuthenticator.class.getName();
-    /*
-     * String constants
-     */
-    private static final String STR_Identifier = "identifier";
-    private static final String STR_Passkey = "passKey";
-    /*
-     * String constants for logfile messages
-     */
-    private static final String STRLOG_LoggingLevel_arg = "LoggingLevel: %s";
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Variables">
-    private static ObjectFactory objectFactory;
-    private static String qnameAuthHeaderLocalPart;
-    //</editor-fold>
 
     @Override
     public boolean handleMessage(SOAPMessageContext messageContext) {
@@ -61,24 +37,11 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
         if ((Boolean) messageContext.get(SOAPMessageContext.MESSAGE_OUTBOUND_PROPERTY) == false) {
             try {
                 /*
-                 * Check if initialisation parameters have been read from the web.xml file
-                 */
-                if (LabEquipmentService.isInitialised() == false) {
-                    GetInitParameters((ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT));
-
-                    /*
-                     * Get the authentication header names
-                     */
-                    objectFactory = new ObjectFactory();
-                    JAXBElement<AuthHeader> jaxbElement = objectFactory.createAuthHeader(new AuthHeader());
-                    qnameAuthHeaderLocalPart = jaxbElement.getName().getLocalPart();
-                }
-
-                /*
                  * Write the SOAP message to system output
                  */
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 messageContext.getMessage().writeTo(outputStream);
+//                System.out.println(LabServerAuthenticator.class.getSimpleName());
 //                System.out.println(outputStream.toString());
 
                 /*
@@ -154,13 +117,14 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
                  * message context. The scope has to be changed from HANDLER to APPLICATION so
                  * that the web service can see the message context map
                  */
-                if (localName.equalsIgnoreCase(qnameAuthHeaderLocalPart) == true) {
+                if (localName.equalsIgnoreCase(QnameFactory.getAuthHeaderLocalPart()) == true) {
                     /*
                      * AuthHeader
                      */
                     AuthHeader authHeader = ProcessSoapElementAuthHeader(soapElement);
-                    messageContext.put(qnameAuthHeaderLocalPart, authHeader);
-                    messageContext.setScope(qnameAuthHeaderLocalPart, MessageContext.Scope.APPLICATION);
+                    String authHeaderName = uq.ilabs.library.lab.types.AuthHeader.class.getSimpleName();
+                    messageContext.put(authHeaderName, authHeader);
+                    messageContext.setScope(authHeaderName, MessageContext.Scope.APPLICATION);
                 }
             }
         }
@@ -172,7 +136,7 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
      * @return AuthHeader
      */
     private AuthHeader ProcessSoapElementAuthHeader(SOAPElement soapElement) {
-        AuthHeader authHeader = objectFactory.createAuthHeader();
+        AuthHeader authHeader = new AuthHeader();
         Iterator iterator = soapElement.getChildElements();
         while (iterator.hasNext()) {
             /*
@@ -190,68 +154,14 @@ public class LabServerAuthenticator implements SOAPHandler<SOAPMessageContext> {
                 /*
                  * Check if localName matches a specified string
                  */
-                if (localName.equalsIgnoreCase(STR_Identifier) == true) {
+                if (localName.equalsIgnoreCase(AuthHeader.STR_Identifier) == true) {
                     authHeader.setIdentifier(element.getValue());
-                } else if (localName.equalsIgnoreCase(STR_Passkey) == true) {
-                    authHeader.setPassKey(element.getValue());
+                } else if (localName.equalsIgnoreCase(AuthHeader.STR_Passkey) == true) {
+                    authHeader.setPasskey(element.getValue());
                 }
             }
         }
 
         return authHeader;
-    }
-
-    /**
-     *
-     * @param servletContext
-     */
-    private void GetInitParameters(ServletContext servletContext) {
-        final String methodName = "GetInitParameters";
-
-        try {
-            /*
-             * Get the path for the logfiles and logging level
-             */
-            String logFilesPath = servletContext.getInitParameter(LabConsts.STRPRM_LogFilesPath);
-            logFilesPath = servletContext.getRealPath(logFilesPath);
-            String logLevel = servletContext.getInitParameter(LabConsts.STRPRM_LogLevel);
-
-            /*
-             * Create an instance of the logger and set the logging level
-             */
-            Logger logger = Logfile.CreateLogger(logFilesPath);
-            Level level = Level.INFO;
-            try {
-                level = Level.parse(logLevel);
-            } catch (Exception ex) {
-            }
-            logger.setLevel(level);
-
-            Logfile.WriteCalled(STR_ClassName, methodName,
-                    String.format(STRLOG_LoggingLevel_arg, logger.getLevel().toString()));
-
-            /*
-             * Get configuration properties from the file
-             */
-            String xmlConfigPropertiesPath = servletContext.getInitParameter(LabConsts.STRPRM_XmlConfigPropertiesPath);
-            ConfigProperties configProperties = new ConfigProperties(servletContext.getRealPath(xmlConfigPropertiesPath));
-
-            /*
-             * Get the path to the XML EquipmentConfig file
-             */
-            String xmlEquipmentConfigPath = servletContext.getInitParameter(LabConsts.STRPRM_XmlEquipmentConfigPath);
-            configProperties.setXmlEquipmentConfigPath(servletContext.getRealPath(xmlEquipmentConfigPath));
-
-            /*
-             * Save to the LabEquipment service
-             */
-            LabEquipmentService.setConfigProperties(configProperties);
-
-            LabEquipmentService.setInitialised(true);
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.toString());
-        }
-
-        Logfile.WriteCompleted(STR_ClassName, methodName);
     }
 }

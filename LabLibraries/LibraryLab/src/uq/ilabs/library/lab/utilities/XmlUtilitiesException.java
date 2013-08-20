@@ -2,7 +2,7 @@ package uq.ilabs.library.lab.utilities;
 
 /**
  *
- * @author payne
+ * @author uqlpayne
  */
 public class XmlUtilitiesException extends Exception {
 

@@ -9,7 +9,7 @@ import uq.ilabs.library.lab.types.StatusCodes;
 import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.utilities.Delay;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labequipment.LabEquipmentAPI;
+import uq.ilabs.library.labserver.LabEquipmentAPI;
 import uq.ilabs.library.labserver.engine.LabConfiguration;
 import uq.ilabs.library.labserver.engine.LabExperimentResult;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;

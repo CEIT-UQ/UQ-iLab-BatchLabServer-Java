@@ -77,7 +77,8 @@ DROP TABLE IF EXISTS LabEquipment;
 CREATE TABLE LabEquipment
 (
     Id serial NOT NULL,
-    ServiceUrl varchar(256),
+    ServiceType varchar(8) NOT NULL,
+    ServiceUrl varchar(256) NOT NULL,
     Passkey varchar(40),
     Enabled boolean DEFAULT false,
     DateCreated timestamp DEFAULT current_timestamp,

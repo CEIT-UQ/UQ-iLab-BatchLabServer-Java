@@ -7,18 +7,17 @@ package uq.ilabs.labserver.client;
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import uq.ilabs.labserver.service.LabServerService;
+import javax.inject.Named;
+import uq.ilabs.labserver.LabServerAppBean;
 import uq.ilabs.library.lab.types.LabStatus;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labserver.LabServerAPI;
+import uq.ilabs.library.labserver.LabServerSoapAPI;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
-import uq.ilabs.library.labserver.database.LabServerDB;
-import uq.ilabs.library.labserver.database.ServiceBrokersDB;
 import uq.ilabs.library.labserver.database.types.LabServerInfo;
 import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
 import uq.ilabs.library.labserver.engine.LabManagement;
@@ -27,7 +26,7 @@ import uq.ilabs.library.labserver.engine.LabManagement;
  *
  * @author uqlpayne
  */
-@ManagedBean
+@Named(value = "selfRegistrationBean")
 @SessionScoped
 public class SelfRegistrationBean implements Serializable {
 
@@ -59,8 +58,10 @@ public class SelfRegistrationBean implements Serializable {
     private static final String STRERR_LabServerUnaccessible = "LabServer is unaccessible!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
+    @EJB
+    private LabServerAppBean labServerAppBean;
     private LabServerSession labServerSession;
-    private LabServerDB labServerDB;
+    private LabManagement labManagement;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String hitLabServerName;
@@ -151,11 +152,7 @@ public class SelfRegistrationBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         this.labServerSession = (LabServerSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabServer);
-
-        try {
-            this.labServerDB = new LabServerDB(this.labServerSession.getDbConnection());
-        } catch (Exception ex) {
-        }
+        this.labManagement = this.labServerSession.getLabManagement();
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -213,14 +210,14 @@ public class SelfRegistrationBean implements Serializable {
                 /*
                  * Save the information
                  */
-                if (this.labServerDB.Add(labServerInfo) < 0) {
+                if (this.labManagement.getLabServerDB().Add(labServerInfo) < 0) {
                     throw new Exception(String.format(STRERR_SaveFailed_arg, labServerInfo.getName()));
                 }
 
                 /*
                  * Recache LabServerInfo
                  */
-                this.labServerSession.setLabServerInfo(labServerInfo);
+                this.labManagement.setLabServerInfo(labServerInfo);
 
                 /*
                  * Information saved successfully
@@ -251,7 +248,7 @@ public class SelfRegistrationBean implements Serializable {
             /*
              * Get LabServerInfo
              */
-            LabServerInfo labServerInfo = labServerDB.Retrieve();
+            LabServerInfo labServerInfo = this.labManagement.getLabServerDB().Retrieve();
             if (labServerInfo == null) {
                 throw new Exception(String.format(STRERR_RetrieveFailed_arg, ""));
             }
@@ -271,20 +268,19 @@ public class SelfRegistrationBean implements Serializable {
                 /*
                  * Update the information
                  */
-                if (this.labServerDB.Update(labServerInfo) == false) {
+                if (this.labManagement.getLabServerDB().Update(labServerInfo) == false) {
                     throw new Exception(String.format(STRERR_UpdateFailed_arg, labServerInfo.getName()));
                 }
 
                 /*
                  * Recache LabServerInfo in the session
                  */
-                this.labServerSession.setLabServerInfo(labServerInfo);
+                this.labManagement.setLabServerInfo(labServerInfo);
 
                 /*
                  * Check to see if the LabServer service is running
                  */
                 boolean restartRequired = false;
-                LabManagement labManagement = LabServerService.getLabManagement();
                 if (labManagement != null) {
                     /*
                      * Check what has changed that requires a LabServer restart
@@ -337,10 +333,10 @@ public class SelfRegistrationBean implements Serializable {
             /*
              * Get the LabServer Guid
              */
-            if (this.labServerSession.getLabServerInfo() == null) {
+            if (this.labManagement.getLabServerInfo() == null) {
                 throw new NullPointerException(STRERR_LabServerNotRegistered);
             }
-            String labServerGuid = this.labServerSession.getLabServerInfo().getGuid();
+            String labServerGuid = this.labManagement.getLabServerInfo().getGuid();
             if (labServerGuid == null) {
                 throw new NullPointerException(STRERR_LabServerNotRegistered);
             }
@@ -348,8 +344,7 @@ public class SelfRegistrationBean implements Serializable {
             /*
              * Get ServiceBroker information for localhost
              */
-            ServiceBrokersDB serviceBrokersDB = new ServiceBrokersDB(this.labServerSession.getDbConnection());
-            ServiceBrokerInfo serviceBrokerInfo = serviceBrokersDB.RetrieveByName(Consts.STR_SbNameLocalHost);
+            ServiceBrokerInfo serviceBrokerInfo = this.labManagement.getServiceBrokersDB().RetrieveByName(Consts.STR_SbNameLocalHost);
             if (serviceBrokerInfo == null) {
                 throw new Exception(String.format(STRERR_RetrieveFailed_arg, Consts.STR_SbNameLocalHost));
             }
@@ -357,17 +352,22 @@ public class SelfRegistrationBean implements Serializable {
             /*
              * Get a proxy to the LabServer service
              */
-            LabServerAPI labServerAPI = new LabServerAPI(this.hitServiceUrl);
+            LabServerSoapAPI labServerAPI = new LabServerSoapAPI(this.hitServiceUrl);
             labServerAPI.setIdentifier(serviceBrokerInfo.getGuid());
             labServerAPI.setPasskey(serviceBrokerInfo.getOutPasskey());
 
             /*
-             * Get the status of the LabServer
+             * Get the status of the LabServer through the web service in case the service hasn't started yet.
              */
             LabStatus labStatus = labServerAPI.GetLabStatus();
             if (labStatus == null) {
                 throw new NullPointerException(STRERR_LabServerUnaccessible);
             }
+
+            /*
+             * Now get the verbose status through the experiment manager
+             */
+            labStatus = this.labServerAppBean.getExperimentManager().GetLabStatus(true);
 
             ShowMessageInfo(String.format(STR_LabServerStatus_arg2,
                     labStatus.isOnline() ? STR_Online : STR_Offline, labStatus.getLabStatusMessage()));
@@ -502,7 +502,7 @@ public class SelfRegistrationBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         try {
-            LabServerInfo labServerInfo = this.labServerDB.Retrieve();
+            LabServerInfo labServerInfo = this.labManagement.getLabServerDB().Retrieve();
             if (labServerInfo != null) {
                 this.hitLabServerName = labServerInfo.getName();
                 this.hitLabServerGuid = labServerInfo.getGuid();

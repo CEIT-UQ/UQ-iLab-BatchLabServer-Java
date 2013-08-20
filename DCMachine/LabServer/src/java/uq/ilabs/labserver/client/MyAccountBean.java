@@ -6,10 +6,10 @@ package uq.ilabs.labserver.client;
 
 import java.io.Serializable;
 import java.util.logging.Level;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.Password;
 import uq.ilabs.library.labserver.client.Consts;
@@ -21,7 +21,7 @@ import uq.ilabs.library.labserver.database.types.UserInfo;
  *
  * @author uqlpayne
  */
-@ManagedBean
+@Named(value = "myAccountBean")
 @SessionScoped
 public class MyAccountBean implements Serializable {
 
@@ -126,7 +126,7 @@ public class MyAccountBean implements Serializable {
 
         this.labServerSession = (LabServerSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabServer);
         try {
-            this.usersDB = new UsersDB(this.labServerSession.getDbConnection());
+            this.usersDB = new UsersDB(this.labServerSession.getLabManagement().getDbConnection());
         } catch (Exception ex) {
         }
 

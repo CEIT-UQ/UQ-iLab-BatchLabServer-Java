@@ -6,6 +6,7 @@ package uq.ilabs.library.labserver.client;
 
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.labserver.database.types.LabServerInfo;
+import uq.ilabs.library.labserver.engine.LabManagement;
 
 /**
  *
@@ -18,9 +19,8 @@ public class LabServerSession {
     private String navmenuPhotoUrl;
     private String labCameraUrl;
     private String labInfoUrl;
-    private LabServerInfo labServerInfo;
+    private LabManagement labManagement;
     private UserSession userSession;
-    private DBConnection dbConnection;
 
     public String getTitle() {
         return title;
@@ -62,12 +62,12 @@ public class LabServerSession {
         this.labInfoUrl = labInfoUrl;
     }
 
-    public LabServerInfo getLabServerInfo() {
-        return labServerInfo;
+    public LabManagement getLabManagement() {
+        return labManagement;
     }
 
-    public void setLabServerInfo(LabServerInfo labServerInfo) {
-        this.labServerInfo = labServerInfo;
+    public void setLabManagement(LabManagement labManagement) {
+        this.labManagement = labManagement;
     }
 
     public UserSession getUserSession() {
@@ -76,13 +76,5 @@ public class LabServerSession {
 
     public void setUserSession(UserSession userSession) {
         this.userSession = userSession;
-    }
-
-    public DBConnection getDbConnection() {
-        return dbConnection;
-    }
-
-    public void setDbConnection(DBConnection dbConnection) {
-        this.dbConnection = dbConnection;
     }
 }

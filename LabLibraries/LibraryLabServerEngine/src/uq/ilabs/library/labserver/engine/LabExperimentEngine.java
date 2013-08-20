@@ -20,7 +20,7 @@ import uq.ilabs.library.labserver.database.types.ExperimentResultInfo;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
 import uq.ilabs.library.labserver.engine.types.LabExecutionInfo;
 import uq.ilabs.library.labserver.engine.types.LabExperimentInfo;
-import uq.ilabs.library.servicebroker.ServiceBrokerAPI;
+import uq.ilabs.library.servicebroker.ServiceBrokerSoapAPI;
 
 /**
  *
@@ -889,8 +889,8 @@ public class LabExperimentEngine implements Runnable {
              */
             ServiceBrokerInfo serviceBrokerInfo = this.labManagement.getServiceBrokersDB().RetrieveByName(sbName);
             if (serviceBrokerInfo != null) {
-                ServiceBrokerAPI serviceBrokerAPI = new ServiceBrokerAPI(serviceBrokerInfo.getServiceUrl());
-                if ((success = serviceBrokerAPI.Notify(experimentId)) == true) {
+                ServiceBrokerSoapAPI serviceBrokerSoapAPI = new ServiceBrokerSoapAPI(serviceBrokerInfo.getServiceUrl());
+                if ((success = serviceBrokerSoapAPI.Notify(experimentId)) == true) {
                     success = this.labManagement.getExperimentResultsDB().UpdateNotified(experimentId, sbName);
                 }
             }

@@ -7,22 +7,22 @@ package uq.ilabs.labserver.client;
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import uq.ilabs.labserver.service.LabServerService;
+import javax.inject.Named;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
 import uq.ilabs.library.labserver.database.ServiceBrokersDB;
 import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
+import uq.ilabs.library.labserver.engine.LabConsts;
 
 /**
  *
  * @author uqlpayne
  */
-@ManagedBean
+@Named(value = "serviceBrokersBean")
 @SessionScoped
 public class ServiceBrokersBean implements Serializable {
 
@@ -148,11 +148,7 @@ public class ServiceBrokersBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         this.labServerSession = (LabServerSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabServer);
-
-        try {
-            this.serviceBrokersDB = new ServiceBrokersDB(this.labServerSession.getDbConnection());
-        } catch (Exception ex) {
-        }
+        this.serviceBrokersDB = this.labServerSession.getLabManagement().getServiceBrokersDB();
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -243,7 +239,7 @@ public class ServiceBrokersBean implements Serializable {
                 /*
                  * Recache ServiceBrokers
                  */
-                LabServerService.setMapServiceBrokerInfo(null);
+                this.labServerSession.getLabManagement().setMapServiceBrokerInfo(null);
 
                 /*
                  * Information saved successfully
@@ -295,7 +291,7 @@ public class ServiceBrokersBean implements Serializable {
                 /*
                  * Recache ServiceBrokers
                  */
-                LabServerService.setMapServiceBrokerInfo(null);
+                this.labServerSession.getLabManagement().setMapServiceBrokerInfo(null);
 
                 /*
                  * Information updated successfully
@@ -345,7 +341,7 @@ public class ServiceBrokersBean implements Serializable {
             /*
              * Recache ServiceBrokers
              */
-            LabServerService.setMapServiceBrokerInfo(null);
+            this.labServerSession.getLabManagement().setMapServiceBrokerInfo(null);
 
             /*
              * Information deleted successfully
@@ -411,10 +407,10 @@ public class ServiceBrokersBean implements Serializable {
             if (stringArray != null) {
                 serviceBrokerList = new String[stringArray.length + 1];
                 System.arraycopy(stringArray, 0, serviceBrokerList, 1, stringArray.length);
+                serviceBrokerList[0] = LabConsts.STR_MakeSelection;
             } else {
-                serviceBrokerList = new String[1];
+                serviceBrokerList = new String[]{""};
             }
-            serviceBrokerList[0] = "";
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
         }

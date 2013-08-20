@@ -7,6 +7,8 @@
     <entry key="DBDriver">org.postgresql.Driver</entry>
     <!-- DBUrl: Database url which includes the database name -->
     <entry key="DBUrl">jdbc:postgresql://localhost:5432/SyncMachine_LabServer</entry>
+    <!-- DBPoolSize: Database connection pool size -->
+    <entry key="DBPoolSize">1</entry>
     <!-- DBUser: Database user name, privileges need to be granted for this user to use the database -->
     <entry key="DBUser"></entry>
     <!-- DBPassword: Database user's password -->

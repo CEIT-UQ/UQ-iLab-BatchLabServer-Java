@@ -6,7 +6,7 @@ package uq.ilabs.library.labserver.engine.types;
 
 import java.util.logging.Level;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labequipment.LabEquipmentAPI;
+import uq.ilabs.library.labserver.LabEquipmentAPI;
 import uq.ilabs.library.labserver.database.types.LabEquipmentInfo;
 
 /**
@@ -79,7 +79,7 @@ public class LabEquipmentServiceInfo {
                 /*
                  * Get a proxy to the LabEquipment service
                  */
-                this.labEquipmentAPI = new LabEquipmentAPI(labEquipmentInfo.getServiceUrl());
+                this.labEquipmentAPI = new LabEquipmentAPI(labEquipmentInfo.getServiceType(), labEquipmentInfo.getServiceUrl());
                 if (this.labEquipmentAPI == null) {
                     throw new NullPointerException(LabEquipmentAPI.class.getSimpleName());
                 }

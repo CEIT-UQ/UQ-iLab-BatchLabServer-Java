@@ -57,6 +57,28 @@ public class ConvertTypes {
 
     /**
      *
+     * @param submissionReport
+     * @return edu.mit.ilab.ClientSubmissionReport
+     */
+    public static edu.mit.ilab.ClientSubmissionReport Convert(SubmissionReport submissionReport) {
+        edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
+
+        if (submissionReport != null) {
+            /*
+             * Convert to the return type
+             */
+            proxyClientSubmissionReport = new edu.mit.ilab.ClientSubmissionReport();
+            proxyClientSubmissionReport.setExperimentID((int) submissionReport.getExperimentId());
+            proxyClientSubmissionReport.setMinTimeToLive(submissionReport.getMinTimeToLive());
+            proxyClientSubmissionReport.setVReport(Convert(submissionReport.getValidationReport()));
+            proxyClientSubmissionReport.setWait(Convert(submissionReport.getWaitEstimate()));
+        }
+
+        return proxyClientSubmissionReport;
+    }
+
+    /**
+     *
      * @param experimentStatus
      * @return edu.mit.ilab.ExperimentStatus
      */
@@ -127,28 +149,6 @@ public class ConvertTypes {
         }
 
         return proxyResultReport;
-    }
-
-    /**
-     *
-     * @param submissionReport
-     * @return edu.mit.ilab.ClientSubmissionReport
-     */
-    public static edu.mit.ilab.ClientSubmissionReport Convert(SubmissionReport submissionReport) {
-        edu.mit.ilab.ClientSubmissionReport proxyClientSubmissionReport = null;
-
-        if (submissionReport != null) {
-            /*
-             * Convert to the return type
-             */
-            proxyClientSubmissionReport = new edu.mit.ilab.ClientSubmissionReport();
-            proxyClientSubmissionReport.setExperimentID((int) submissionReport.getExperimentId());
-            proxyClientSubmissionReport.setMinTimeToLive(submissionReport.getMinTimeToLive());
-            proxyClientSubmissionReport.setVReport(Convert(submissionReport.getValidationReport()));
-            proxyClientSubmissionReport.setWait(Convert(submissionReport.getWaitEstimate()));
-        }
-
-        return proxyClientSubmissionReport;
     }
 
     /**

@@ -65,7 +65,7 @@
                             <td class="information">
                                 <h:inputText styleClass="hinputtext" value="#{statusBean.hitExperimentId}" style="width: 60px" />
                                 &nbsp;
-                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{statusBean.hsomSelectedExperimentId}" onchange="form.submit()"
+                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{statusBean.hsomSelectedExperimentId}" onchange="form.submit();"
                                                  rendered="#{statusBean.hsomExperimentIdsRendered}" style="width: 66px">
                                     <f:selectItems value="#{statusBean.experimentIds}" />
                                 </h:selectOneMenu>

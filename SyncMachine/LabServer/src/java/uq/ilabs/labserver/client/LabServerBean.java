@@ -6,12 +6,10 @@ package uq.ilabs.labserver.client;
 
 import java.io.Serializable;
 import java.util.logging.Level;
-import javax.annotation.PreDestroy;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import uq.ilabs.labserver.service.LabServerService;
+import javax.inject.Named;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
@@ -22,17 +20,13 @@ import uq.ilabs.library.labserver.database.types.LabServerInfo;
  *
  * @author uqlpayne
  */
-@ManagedBean
+@Named(value = "labServerBean")
 @SessionScoped
 public class LabServerBean implements Serializable {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
     private static final String STR_ClassName = LabServerBean.class.getName();
     private static final Level logLevel = Level.FINE;
-    /*
-     * String constants for logfile messages
-     */
-    private static final String STRLOG_ClosingLogger_arg = "%s: Closing logger.";
     /*
      * String constants
      */
@@ -68,7 +62,7 @@ public class LabServerBean implements Serializable {
         String contactEmail = "";
 
         if (this.labServerSession != null) {
-            LabServerInfo labServerInfo = this.labServerSession.getLabServerInfo();
+            LabServerInfo labServerInfo = this.labServerSession.getLabManagement().getLabServerInfo();
             if (labServerInfo != null && labServerInfo.getContactEmail() != null) {
                 contactEmail = labServerInfo.getContactEmail();
             }
@@ -115,7 +109,7 @@ public class LabServerBean implements Serializable {
     //</editor-fold>
 
     /**
-     *
+     * Creates a new instance of LabServerBean
      */
     public LabServerBean() {
         final String methodName = "LabServerBean";
@@ -133,22 +127,5 @@ public class LabServerBean implements Serializable {
         if (this.labServerSession == null) {
             throw new ViewExpiredException();
         }
-    }
-
-    @PreDestroy
-    private void preDestroy() {
-        final String methodName = "preDestroy";
-        Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
-
-        /*
-         * Check if the LabServer service is running. If not, close the logger here
-         * otherwise let the service close the logger when it is finished.
-         */
-        if (LabServerService.isInitialised() == false) {
-            Logfile.Write(String.format(STRLOG_ClosingLogger_arg, STR_ClassName));
-            Logfile.CloseLogger();
-        }
-
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 }

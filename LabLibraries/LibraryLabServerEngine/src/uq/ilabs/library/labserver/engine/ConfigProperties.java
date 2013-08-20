@@ -26,6 +26,7 @@ public class ConfigProperties {
      */
     private static final String STRCFG_DBDriver = "DBDriver";
     private static final String STRCFG_DBUrl = "DBUrl";
+    private static final String STRCFG_DBPoolSize = "DBPoolSize";
     private static final String STRCFG_DBUser = "DBUser";
     private static final String STRCFG_DBPassword = "DBPassword";
     /*
@@ -122,21 +123,32 @@ public class ConfigProperties {
             if (dbUrl.trim().isEmpty()) {
                 throw new IllegalArgumentException(STRCFG_DBUrl);
             }
+
+            /*
+             * Get database connection pool size - default is 1
+             */
+            int dbPoolSize;
+            try {
+                dbPoolSize = Integer.parseInt(configProperties.getProperty(STRCFG_DBPoolSize));
+            } catch (NumberFormatException ex) {
+                dbPoolSize = 1;
+            }
+
+            /*
+             * Get database user and password
+             */
             String dbUser = configProperties.getProperty(STRCFG_DBUser);
-            dbUser = (dbUser.trim().isEmpty() == false) ? dbUser.trim() : null;
+            dbUser = (dbUser != null) ? dbUser.trim() : null;
             String dbPassword = configProperties.getProperty(STRCFG_DBPassword);
-            dbPassword = (dbPassword.trim().isEmpty() == false) ? dbPassword.trim() : null;
+            dbPassword = (dbPassword != null) ? dbPassword.trim() : null;
 
             /*
              * Create an instance of the database connection
              */
-            this.dbConnection = new DBConnection(dbDriver, dbUrl);
+            this.dbConnection = new DBConnection(dbDriver, dbUrl, dbPoolSize, dbUser, dbPassword);
             if (this.dbConnection == null) {
                 throw new NullPointerException(DBConnection.class.getSimpleName());
             }
-            this.dbConnection.setUser(dbUser);
-            this.dbConnection.setPassword(dbPassword);
-
         } catch (NullPointerException | IllegalArgumentException | IOException ex) {
             Logfile.WriteError(ex.toString());
             throw ex;

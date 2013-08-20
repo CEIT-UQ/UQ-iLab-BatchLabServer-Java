@@ -8,11 +8,14 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
+import javax.servlet.ServletContext;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
 import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.soap.SOAPFaultException;
+import uq.ilabs.library.lab.exceptions.UnauthorizedException;
 import uq.ilabs.library.lab.types.ClientSubmissionReport;
 import uq.ilabs.library.lab.types.LabExperimentStatus;
 import uq.ilabs.library.lab.types.LabStatus;
@@ -22,7 +25,7 @@ import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.types.WaitEstimate;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.servicebroker.ConvertTypes;
-import uq.ilabs.servicebroker.ServiceBrokerBean;
+import uq.ilabs.servicebroker.ServiceBrokerAppBean;
 
 /**
  *
@@ -43,7 +46,7 @@ public class ServiceBrokerService {
     @Resource
     private WebServiceContext wsContext;
     @EJB
-    private ServiceBrokerBean serviceBrokerBean;
+    private ServiceBrokerAppBean serviceBrokerBean;
     //</editor-fold>
 
     /**
@@ -54,11 +57,14 @@ public class ServiceBrokerService {
     public boolean cancel(int experimentID) {
         boolean success = false;
 
+        SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
+
         try {
-            SbAuthHeader sbAuthHeader = this.GetSbAuthHeader();
             success = this.serviceBrokerBean.getServiceBrokerHandler().cancel(sbAuthHeader, experimentID);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return success;
@@ -78,8 +84,10 @@ public class ServiceBrokerService {
         try {
             WaitEstimate waitEstimate = this.serviceBrokerBean.getServiceBrokerHandler().getEffectiveQueueLength(sbAuthHeader, labServerID, priorityHint);
             proxyWaitEstimate = ConvertTypes.Convert(waitEstimate);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return proxyWaitEstimate;
@@ -98,8 +106,10 @@ public class ServiceBrokerService {
         try {
             LabExperimentStatus labExperimentStatus = this.serviceBrokerBean.getServiceBrokerHandler().getExperimentStatus(sbAuthHeader, experimentID);
             proxyLabExperimentStatus = ConvertTypes.Convert(labExperimentStatus);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return proxyLabExperimentStatus;
@@ -117,8 +127,10 @@ public class ServiceBrokerService {
 
         try {
             labConfiguration = this.serviceBrokerBean.getServiceBrokerHandler().getLabConfiguration(sbAuthHeader, labServerID);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return labConfiguration;
@@ -136,8 +148,10 @@ public class ServiceBrokerService {
 
         try {
             labInfo = this.serviceBrokerBean.getServiceBrokerHandler().getLabInfo(sbAuthHeader, labServerID);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return labInfo;
@@ -156,8 +170,10 @@ public class ServiceBrokerService {
         try {
             LabStatus labStatus = this.serviceBrokerBean.getServiceBrokerHandler().getLabStatus(sbAuthHeader, labServerID);
             proxyLabStatus = ConvertTypes.Convert(labStatus);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return proxyLabStatus;
@@ -176,8 +192,10 @@ public class ServiceBrokerService {
         try {
             ResultReport resultReport = this.serviceBrokerBean.getServiceBrokerHandler().retrieveResult(sbAuthHeader, experimentID);
             proxyResultReport = ConvertTypes.Convert(resultReport);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return proxyResultReport;
@@ -199,8 +217,10 @@ public class ServiceBrokerService {
         try {
             ClientSubmissionReport clientSubmissionReport = this.serviceBrokerBean.getServiceBrokerHandler().submit(sbAuthHeader, labServerID, experimentSpecification, priorityHint, emailNotification);
             proxyClientSubmissionReport = ConvertTypes.Convert(clientSubmissionReport);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return proxyClientSubmissionReport;
@@ -220,8 +240,10 @@ public class ServiceBrokerService {
         try {
             ValidationReport validationReport = this.serviceBrokerBean.getServiceBrokerHandler().validate(sbAuthHeader, labServerID, experimentSpecification);
             proxyValidationReport = ConvertTypes.Convert(validationReport);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
 
         return proxyValidationReport;
@@ -236,8 +258,10 @@ public class ServiceBrokerService {
 
         try {
             this.serviceBrokerBean.getServiceBrokerHandler().notify(sbAuthHeader, experimentID);
+        } catch (UnauthorizedException ex) {
+            this.ThrowUnauthorizedException(ex);
         } catch (Exception ex) {
-            this.ThrowSOAPFault(ex.getMessage());
+            this.ThrowException(ex);
         }
     }
 
@@ -247,24 +271,49 @@ public class ServiceBrokerService {
      * @return SbAuthHeader
      */
     private SbAuthHeader GetSbAuthHeader() {
+        final String methodName = "GetSbAuthHeader";
+
         SbAuthHeader sbAuthHeader = null;
 
-        /*
-         * Get the authentication header from the message context
-         */
-        Object object = wsContext.getMessageContext().get(QnameFactory.getSbAuthHeaderLocalPart());
+        try {
+            /*
+             * Start the service if not done already
+             */
+            this.serviceBrokerBean.StartService((ServletContext) this.wsContext.getMessageContext().get(MessageContext.SERVLET_CONTEXT));
 
-        /*
-         * Check that it is an SbAuthHeader
-         */
-        if (object != null && object instanceof edu.mit.ilab.SbAuthHeader) {
-            edu.mit.ilab.SbAuthHeader proxySbAuthHeader = (edu.mit.ilab.SbAuthHeader) object;
-            sbAuthHeader = new SbAuthHeader();
-            sbAuthHeader.setCouponId(proxySbAuthHeader.getCouponID());
-            sbAuthHeader.setCouponPasskey(proxySbAuthHeader.getCouponPassKey());
+            /*
+             * Get the authentication header from the message context
+             */
+            Object object = this.wsContext.getMessageContext().get(SbAuthHeader.class.getSimpleName());
+
+            /*
+             * Check that it is an SbAuthHeader
+             */
+            if (object != null && object instanceof SbAuthHeader) {
+                sbAuthHeader = (SbAuthHeader) object;
+            }
+        } catch (Exception ex) {
+            Logfile.WriteException(STR_ClassName, methodName, ex);
         }
 
+
         return sbAuthHeader;
+    }
+
+    /**
+     *
+     * @param ex
+     */
+    private void ThrowUnauthorizedException(Exception ex) {
+        this.ThrowSOAPFault(ex.getMessage());
+    }
+
+    /**
+     *
+     * @param ex
+     */
+    private void ThrowException(Exception ex) {
+        this.ThrowSOAPFault(ex.getMessage());
     }
 
     /**

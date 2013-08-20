@@ -52,7 +52,7 @@ public class ExperimentQueueDB {
     private static final String STRSQLCMD_UpdateStatusUnitId = "{ ? = call Queue_UpdateStatusUnitId(?,?,?) }";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private Connection sqlConnection;
+    private DBConnection dbConnection;
     //</editor-fold>
 
     /**
@@ -64,31 +64,25 @@ public class ExperimentQueueDB {
         final String methodName = "ExperimentQueueDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        try {
-            /*
-             * Check that parameters are valid
-             */
-            if (dbConnection == null) {
-                throw new NullPointerException(DBConnection.class.getSimpleName());
-            }
-
-            /*
-             * Initialise local variables
-             */
-            this.sqlConnection = dbConnection.getConnection();
-
-        } catch (NullPointerException | SQLException ex) {
-            Logfile.WriteError(ex.toString());
-            throw ex;
+        /*
+         * Check that parameters are valid
+         */
+        if (dbConnection == null) {
+            throw new NullPointerException(DBConnection.class.getSimpleName());
         }
+
+        /*
+         * Initialise locals
+         */
+        this.dbConnection = dbConnection;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
 
     /**
      *
-     * @param labExperimentInfo
-     * @return
+     * @param experimentQueueInfo
+     * @return QueuedExperimentInfo
      */
     public synchronized QueuedExperimentInfo Enqueue(ExperimentQueueInfo experimentQueueInfo) {
         final String methodName = "Enqueue";
@@ -127,7 +121,7 @@ public class ExperimentQueueDB {
      * running and set the unit Id. If there are no experiments waiting on the queue, null is returned.
      *
      * @param unitId The unit ID of the experiment engine that is running this experiment.
-     * @return Experiment information.
+     * @return ExperimentQueueInfo
      */
     public synchronized ExperimentQueueInfo Dequeue(int unitId) {
         final String methodName = "Dequeue";
@@ -162,7 +156,7 @@ public class ExperimentQueueDB {
      *
      * @param experimentId
      * @param sbName
-     * @return
+     * @return boolean
      */
     public boolean Cancel(int experimentId, String sbName) {
         final String methodName = "Cancel";
@@ -199,10 +193,9 @@ public class ExperimentQueueDB {
      * queue, 'experimentId' is set to zero and 'sbName' is set to null. In either case, the queue length and estimated
      * queue wait are returned.
      *
-     * @param experimentId Experiment number
-     * @param sbName ServiceBroker's name
-     * @return Queued experiment information
-     * @throws Exception
+     * @param experimentId
+     * @param sbName
+     * @return QueuedExperimentInfo
      */
     public QueuedExperimentInfo GetQueuedExperimentInfo(int experimentId, String sbName) {
         final String methodName = "GetQueuedExperimentInfo";
@@ -264,7 +257,7 @@ public class ExperimentQueueDB {
     /**
      * Get the length of the queue and estimated queue wait time.
      *
-     * @return
+     * @return WaitEstimate
      */
     public WaitEstimate GetWaitEstimate() {
         final String methodName = "GetWaitEstimate";
@@ -302,13 +295,14 @@ public class ExperimentQueueDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Delete);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Delete);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, id);
 
@@ -325,6 +319,7 @@ public class ExperimentQueueDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -376,9 +371,9 @@ public class ExperimentQueueDB {
 
     /**
      *
-     * @param queueId
+     * @param id
      * @param statusCode
-     * @return
+     * @return boolean
      */
     public boolean UpdateStatus(int id, StatusCodes statusCode) {
         final String methodName = "UpdateStatus";
@@ -387,13 +382,14 @@ public class ExperimentQueueDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateStatus);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_UpdateStatus);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, id);
                 sqlStatement.setString(3, statusCode.toString());
@@ -411,6 +407,7 @@ public class ExperimentQueueDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -424,10 +421,10 @@ public class ExperimentQueueDB {
 
     /**
      *
-     * @param queueId
+     * @param id
      * @param statusCode
      * @param unitId
-     * @return
+     * @return boolean
      */
     public boolean UpdateStatusUnitId(int id, StatusCodes statusCode, int unitId) {
         final String methodName = "UpdateStatus";
@@ -436,13 +433,14 @@ public class ExperimentQueueDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateStatusUnitId);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_UpdateStatusUnitId);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, id);
                 sqlStatement.setString(3, statusCode.toString());
@@ -461,6 +459,7 @@ public class ExperimentQueueDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -473,6 +472,11 @@ public class ExperimentQueueDB {
     }
 
     //================================================================================================================//
+    /**
+     *
+     * @param experimentQueueInfo
+     * @return int
+     */
     private int Add(ExperimentQueueInfo experimentQueueInfo) {
         final String methodName = "Add";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
@@ -489,13 +493,14 @@ public class ExperimentQueueDB {
                 throw new NullPointerException(ExperimentQueueInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Add);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, experimentQueueInfo.getExperimentId());
                 sqlStatement.setString(3, experimentQueueInfo.getSbName());
@@ -518,6 +523,7 @@ public class ExperimentQueueDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -531,6 +537,9 @@ public class ExperimentQueueDB {
 
     /**
      *
+     * @param columnName
+     * @param intval
+     * @param strval
      * @return int
      */
     private int GetCountBy(String columnName, int intval, String strval) {
@@ -540,13 +549,14 @@ public class ExperimentQueueDB {
         int count = -1;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_GetCountBy);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_GetCountBy);
                 sqlStatement.registerOutParameter(1, Types.BIGINT);
                 sqlStatement.setString(2, columnName);
                 sqlStatement.setInt(3, intval);
@@ -565,6 +575,7 @@ public class ExperimentQueueDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -581,7 +592,7 @@ public class ExperimentQueueDB {
      * @param columnName
      * @param intval
      * @param strval
-     * @return
+     * @return ArrayList of ExperimentQueueInfo
      */
     private ArrayList<ExperimentQueueInfo> RetrieveBy(String columnName, int intval, String strval) {
         final String methodName = "RetrieveBy";
@@ -590,13 +601,14 @@ public class ExperimentQueueDB {
         ArrayList<ExperimentQueueInfo> arrayList = new ArrayList<>();
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
                 sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
@@ -635,6 +647,7 @@ public class ExperimentQueueDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

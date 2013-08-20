@@ -8,26 +8,28 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.logging.Level;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.ViewExpiredException;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import uq.ilabs.labserver.service.LabServerService;
+import javax.inject.Named;
+import uq.ilabs.labserver.LabServerAppBean;
 import uq.ilabs.library.lab.types.LabEquipmentStatus;
+import uq.ilabs.library.lab.types.ServiceTypes;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labequipment.LabEquipmentAPI;
+import uq.ilabs.library.labserver.LabEquipmentAPI;
 import uq.ilabs.library.labserver.client.Consts;
 import uq.ilabs.library.labserver.client.LabServerSession;
 import uq.ilabs.library.labserver.database.LabEquipmentDB;
 import uq.ilabs.library.labserver.database.types.LabEquipmentInfo;
-import uq.ilabs.library.labserver.engine.LabManagement;
+import uq.ilabs.library.labserver.database.types.LabServerInfo;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
 
 /**
  *
  * @author uqlpayne
  */
-@ManagedBean
+@Named(value = "labEquipmentBean")
 @SessionScoped
 public class LabEquipmentBean implements Serializable {
 
@@ -48,6 +50,10 @@ public class LabEquipmentBean implements Serializable {
     /*
      * String constants for exception messages
      */
+    private static final String STRERR_ServiceType = "Service Type";
+    private static final String STRERR_ServiceUrl = "Service Url";
+    private static final String STRERR_Passkey = "Passkey";
+    private static final String STRERR_NotSpecified_arg = "%s: Not specified!";
     private static final String STRERR_RetrieveFailed_arg = STR_LabEquipmentUnit_arg + "could not be retrieved.";
     private static final String STRERR_SaveFailed_arg = STR_LabEquipmentUnit_arg + "could not be saved.";
     private static final String STRERR_UpdateFailed_arg = STR_LabEquipmentUnit_arg + "could not be updated.";
@@ -56,6 +62,8 @@ public class LabEquipmentBean implements Serializable {
     private static final String STRERR_LabEquipmentUnaccessible = "LabEquipment is unaccessible!";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
+    @EJB
+    private LabServerAppBean labServerAppBean;
     private LabServerSession labServerSession;
     private LabEquipmentDB labEquipmentDB;
     private int[] labEquipmentIds;
@@ -63,10 +71,12 @@ public class LabEquipmentBean implements Serializable {
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String hsomLabEquipmentUnit;
     private String hitLabEquipmentUnit;
+    private String hsorServiceType;
     private String hitServiceUrl;
     private String hitPasskey;
     private boolean hcbEnabled;
     private String[] labEquipmentUnits;
+    private String[] serviceTypes;
     private boolean registered;
     private String holMessage;
     private String holMessageClass;
@@ -85,6 +95,14 @@ public class LabEquipmentBean implements Serializable {
 
     public void setHitLabEquipmentUnit(String hitLabEquipmentUnit) {
         this.hitLabEquipmentUnit = hitLabEquipmentUnit;
+    }
+
+    public String getHsorServiceType() {
+        return hsorServiceType;
+    }
+
+    public void setHsorServiceType(String hsorServiceType) {
+        this.hsorServiceType = hsorServiceType;
     }
 
     public String getHitServiceUrl() {
@@ -115,6 +133,10 @@ public class LabEquipmentBean implements Serializable {
         return labEquipmentUnits;
     }
 
+    public String[] getServiceTypes() {
+        return serviceTypes;
+    }
+
     public boolean isRegistered() {
         return registered;
     }
@@ -136,11 +158,7 @@ public class LabEquipmentBean implements Serializable {
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
         this.labServerSession = (LabServerSession) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(Consts.STRSSN_LabServer);
-
-        try {
-            this.labEquipmentDB = new LabEquipmentDB(this.labServerSession.getDbConnection());
-        } catch (Exception ex) {
-        }
+        this.labEquipmentDB = this.labServerSession.getLabManagement().getLabEquipmentDB();
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -164,6 +182,7 @@ public class LabEquipmentBean implements Serializable {
              * Not a postback, initialise page controls
              */
             this.CreateLabEquipmentList();
+            this.CreateServiceTypeList();
 
             /*
              * Clear the page
@@ -234,7 +253,7 @@ public class LabEquipmentBean implements Serializable {
                  */
                 this.registered = true;
                 String message = String.format(STR_SaveSuccessful_arg, unit);
-                if (LabServerService.getConfigProperties() != null) {
+                if (this.labServerAppBean.isServiceStarted() == true) {
                     message += STR_RestartRequired;
                 }
                 ShowMessageInfo(message);
@@ -272,6 +291,7 @@ public class LabEquipmentBean implements Serializable {
             /*
              * Save these before parsing to check if they have changed and a LabServer restart is required
              */
+            ServiceTypes serviceType = labEquipmentInfo.getServiceType();
             String serviceUrl = labEquipmentInfo.getServiceUrl();
             String passkey = labEquipmentInfo.getPasskey();
 
@@ -291,11 +311,16 @@ public class LabEquipmentBean implements Serializable {
                  * Check to see if the LabServer service is running
                  */
                 boolean restartRequired = false;
-                LabManagement labManagement = LabServerService.getLabManagement();
-                if (labManagement != null) {
+                if (this.labServerAppBean.isServiceStarted() == true) {
                     /*
                      * Check what has changed that requires a LabServer restart
                      */
+                    if (serviceType != labEquipmentInfo.getServiceType()) {
+                        /*
+                         * Service type has changed
+                         */
+                        restartRequired = true;
+                    }
                     if ((serviceUrl != null && serviceUrl.equalsIgnoreCase(labEquipmentInfo.getServiceUrl()) == false)
                             || (labEquipmentInfo.getServiceUrl() != null && labEquipmentInfo.getServiceUrl().equalsIgnoreCase(serviceUrl) == false)) {
                         /*
@@ -315,7 +340,7 @@ public class LabEquipmentBean implements Serializable {
                      * If a restart is not required then update the LabEquipmentServiceInfo
                      */
                     if (restartRequired == false) {
-                        LabEquipmentServiceInfo labEquipmentServiceInfo = labManagement.GetLabEquipmentServiceInfo(labEquipmentInfo.getId());
+                        LabEquipmentServiceInfo labEquipmentServiceInfo = this.labServerAppBean.getLabManagement().GetLabEquipmentServiceInfo(labEquipmentInfo.getId());
                         labEquipmentServiceInfo.getLabEquipmentInfo().setEnabled(labEquipmentInfo.isEnabled());
                     }
                 }
@@ -374,7 +399,7 @@ public class LabEquipmentBean implements Serializable {
              * Information deleted successfully
              */
             String message = String.format(STR_DeleteSuccessful_arg, unit);
-            if (LabServerService.getConfigProperties() != null) {
+            if (this.labServerAppBean.isServiceStarted() == true) {
                 message += STR_RestartRequired;
             }
             ShowMessageInfo(message);
@@ -402,10 +427,11 @@ public class LabEquipmentBean implements Serializable {
             /*
              * Get the LabServer Guid
              */
-            if (this.labServerSession.getLabServerInfo() == null) {
+            LabServerInfo labServerInfo = this.labServerAppBean.getLabManagement().getLabServerInfo();
+            if (labServerInfo == null) {
                 throw new NullPointerException(STRERR_LabServerNotRegistered);
             }
-            String labServerGuid = this.labServerSession.getLabServerInfo().getGuid();
+            String labServerGuid = labServerInfo.getGuid();
             if (labServerGuid == null) {
                 throw new NullPointerException(STRERR_LabServerNotRegistered);
             }
@@ -413,7 +439,7 @@ public class LabEquipmentBean implements Serializable {
             /*
              * Get a proxy to the LabEquipment service
              */
-            LabEquipmentAPI labEquipmentAPI = new LabEquipmentAPI(this.hitServiceUrl);
+            LabEquipmentAPI labEquipmentAPI = new LabEquipmentAPI(ServiceTypes.ToType(this.hsorServiceType), this.hitServiceUrl);
             labEquipmentAPI.setIdentifier(labServerGuid);
             labEquipmentAPI.setPasskey(this.hitPasskey);
 
@@ -451,6 +477,7 @@ public class LabEquipmentBean implements Serializable {
          * Clear information
          */
         this.hsomLabEquipmentUnit = null;
+        this.hsorServiceType = null;
         this.hitLabEquipmentUnit = null;
         this.hitServiceUrl = null;
         this.hitPasskey = null;
@@ -498,6 +525,19 @@ public class LabEquipmentBean implements Serializable {
     /**
      *
      */
+    private void CreateServiceTypeList() {
+        ArrayList<String> arrayList = new ArrayList<>();
+        for (ServiceTypes serviceType : ServiceTypes.values()) {
+            if (serviceType.getValue() >= 0) {
+                arrayList.add(serviceType.toString());
+            }
+        }
+        this.serviceTypes = (String[]) arrayList.toArray(new String[0]);
+    }
+
+    /**
+     *
+     */
     private void PopulateLabEquipmentInfo() {
         final String methodName = "PopulateLabEquipmentInfo";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
@@ -513,6 +553,7 @@ public class LabEquipmentBean implements Serializable {
              * Update information
              */
             this.hitLabEquipmentUnit = Integer.toString(unit);
+            this.hsorServiceType = labEquipmentInfo.getServiceType().toString();
             this.hitServiceUrl = labEquipmentInfo.getServiceUrl();
             this.hitPasskey = labEquipmentInfo.getPasskey();
             this.hcbEnabled = labEquipmentInfo.isEnabled();
@@ -556,10 +597,33 @@ public class LabEquipmentBean implements Serializable {
                 this.hitLabEquipmentUnit = Integer.toString(labEquipmentInfo.getId());
             }
 
+            /*
+             * Check that ServiceType has been specified
+             */
+            ServiceTypes serviceType = ServiceTypes.ToType(this.hsorServiceType);
+            if (serviceType == ServiceTypes.Unknown) {
+                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_ServiceType));
+            }
+            labEquipmentInfo.setServiceType(serviceType);
+
+            /*
+             * Check that ServiceUrl has been entered
+             */
             this.hitServiceUrl = this.hitServiceUrl.trim();
-            labEquipmentInfo.setServiceUrl(this.hitServiceUrl.isEmpty() ? null : this.hitServiceUrl);
+            if (this.hitServiceUrl.isEmpty() == true) {
+                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_ServiceUrl));
+            }
+            labEquipmentInfo.setServiceUrl(this.hitServiceUrl);
+
+            /*
+             * Check that Passkey has been entered
+             */
             this.hitPasskey = this.hitPasskey.trim();
-            labEquipmentInfo.setPasskey(this.hitPasskey.isEmpty() ? null : this.hitPasskey);
+            if (this.hitPasskey.isEmpty() == true) {
+                throw new Exception(String.format(STRERR_NotSpecified_arg, STRERR_Passkey));
+            }
+            labEquipmentInfo.setPasskey(this.hitPasskey);
+
             labEquipmentInfo.setEnabled(this.hcbEnabled);
 
         } catch (Exception ex) {

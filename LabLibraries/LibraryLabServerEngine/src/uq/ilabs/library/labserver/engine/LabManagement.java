@@ -5,6 +5,8 @@
 package uq.ilabs.library.labserver.engine;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.database.DBConnection;
 import uq.ilabs.library.lab.utilities.Logfile;
@@ -16,6 +18,7 @@ import uq.ilabs.library.labserver.database.LabServerDB;
 import uq.ilabs.library.labserver.database.ServiceBrokersDB;
 import uq.ilabs.library.labserver.database.types.LabEquipmentInfo;
 import uq.ilabs.library.labserver.database.types.LabServerInfo;
+import uq.ilabs.library.labserver.database.types.ServiceBrokerInfo;
 import uq.ilabs.library.labserver.engine.types.LabEquipmentServiceInfo;
 
 /**
@@ -39,28 +42,35 @@ public class LabManagement {
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private ConfigProperties configProperties;
     private LabConfiguration labConfiguration;
-    private LabServerInfo labServerInfo;
-    private ServiceBrokersDB serviceBrokersDB;
     private ExperimentQueueDB experimentQueueDB;
     private ExperimentResultsDB experimentResultsDB;
     private ExperimentStatisticsDB experimentStatisticsDB;
+    private LabServerDB labServerDB;
+    private ServiceBrokersDB serviceBrokersDB;
+    private LabEquipmentDB labEquipmentDB;
     private WaitNotify signalSubmitted;
     private ArrayList<LabEquipmentServiceInfo> labEquipmentServiceInfoList;
+    private LabServerInfo labServerInfo;
+    private HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo;
 
     public ConfigProperties getConfigProperties() {
         return configProperties;
     }
 
+    public DBConnection getDbConnection() {
+        return (configProperties != null) ? configProperties.getDbConnection() : null;
+    }
+
+    public boolean isAuthenticating() {
+        return (configProperties != null) ? configProperties.isAuthenticating() : null;
+    }
+
+    public boolean isLogAuthentication() {
+        return (configProperties != null) ? configProperties.isLogAuthentication() : null;
+    }
+
     public LabConfiguration getLabConfiguration() {
         return labConfiguration;
-    }
-
-    public LabServerInfo getLabServerInfo() {
-        return labServerInfo;
-    }
-
-    public ServiceBrokersDB getServiceBrokersDB() {
-        return serviceBrokersDB;
     }
 
     public ExperimentQueueDB getExperimentQueueDB() {
@@ -75,6 +85,18 @@ public class LabManagement {
         return experimentStatisticsDB;
     }
 
+    public LabServerDB getLabServerDB() {
+        return labServerDB;
+    }
+
+    public ServiceBrokersDB getServiceBrokersDB() {
+        return serviceBrokersDB;
+    }
+
+    public LabEquipmentDB getLabEquipmentDB() {
+        return labEquipmentDB;
+    }
+
     public WaitNotify getSignalSubmitted() {
         return signalSubmitted;
     }
@@ -85,6 +107,22 @@ public class LabManagement {
 
     public ArrayList<LabEquipmentServiceInfo> getLabEquipmentServiceInfoList() {
         return labEquipmentServiceInfoList;
+    }
+
+    public LabServerInfo getLabServerInfo() {
+        return labServerInfo;
+    }
+
+    public void setLabServerInfo(LabServerInfo labServerInfo) {
+        this.labServerInfo = labServerInfo;
+    }
+
+    public HashMap<String, ServiceBrokerInfo> getMapServiceBrokerInfo() {
+        return this.GetServiceBrokerInfoMap();
+    }
+
+    public void setMapServiceBrokerInfo(HashMap<String, ServiceBrokerInfo> mapServiceBrokerInfo) {
+        this.mapServiceBrokerInfo = mapServiceBrokerInfo;
     }
     //</editor-fold>
 
@@ -114,38 +152,9 @@ public class LabManagement {
             this.labConfiguration = labConfiguration;
 
             /*
-             * Create an instance of LabServerDB
+             * Create database API class instances
              */
             DBConnection dbConnection = this.configProperties.getDbConnection();
-            LabServerDB labServerDB = new LabServerDB(dbConnection);
-
-            /*
-             * Get the LabServer information
-             */
-            String[] names = labServerDB.GetListOfNames();
-            if (names == null || names.length == 0) {
-                throw new RuntimeException(STRERR_LabServerNotRegistered);
-            }
-            this.labServerInfo = labServerDB.RetrieveByName(names[0]);
-            if (this.labServerInfo == null || this.labServerInfo.getGuid()== null) {
-                throw new RuntimeException(STRERR_LabServerNotRegistered);
-            }
-
-            this.configProperties.setAuthenticating(this.labServerInfo.isAuthenticate());
-
-            Logfile.Write(logLevel, String.format(STRLOG_LabServerGuid_arg, this.labServerInfo.getGuid()));
-
-            /*
-             * Create an instance of ServiceBrokersDB for authentication and name access
-             */
-            this.serviceBrokersDB = new ServiceBrokersDB(dbConnection);
-            if (this.serviceBrokersDB == null) {
-                throw new NullPointerException(ServiceBrokersDB.class.getSimpleName());
-            }
-
-            /*
-             * Initialise local variables
-             */
             this.experimentQueueDB = new ExperimentQueueDB(dbConnection);
             if (this.experimentQueueDB == null) {
                 throw new NullPointerException(ExperimentQueueDB.class.getSimpleName());
@@ -160,7 +169,38 @@ public class LabManagement {
             if (this.experimentStatisticsDB == null) {
                 throw new NullPointerException(ExperimentStatisticsDB.class.getSimpleName());
             }
+            this.labServerDB = new LabServerDB(dbConnection);
+            if (this.labServerDB == null) {
+                throw new NullPointerException(LabServerDB.class.getSimpleName());
+            }
+            this.serviceBrokersDB = new ServiceBrokersDB(dbConnection);
+            if (this.serviceBrokersDB == null) {
+                throw new NullPointerException(ServiceBrokersDB.class.getSimpleName());
+            }
+            this.labEquipmentDB = new LabEquipmentDB(dbConnection);
+            if (this.labEquipmentDB == null) {
+                throw new NullPointerException(LabEquipmentDB.class.getSimpleName());
+            }
 
+            /*
+             * Get the LabServer information
+             */
+            String[] names = this.labServerDB.GetListOfNames();
+            if (names == null || names.length == 0) {
+                throw new RuntimeException(STRERR_LabServerNotRegistered);
+            }
+            this.labServerInfo = this.labServerDB.RetrieveByName(names[0]);
+            if (this.labServerInfo == null || this.labServerInfo.getGuid() == null) {
+                throw new RuntimeException(STRERR_LabServerNotRegistered);
+            }
+
+            this.configProperties.setAuthenticating(this.labServerInfo.isAuthenticate());
+
+            Logfile.Write(logLevel, String.format(STRLOG_LabServerGuid_arg, this.labServerInfo.getGuid()));
+
+            /*
+             * Initialise local variables
+             */
             this.signalSubmitted = new WaitNotify();
             if (this.signalSubmitted == null) {
                 throw new NullPointerException(WaitNotify.class.getSimpleName());
@@ -169,8 +209,7 @@ public class LabManagement {
             /*
              * Get the LabEquipment service information
              */
-            LabEquipmentDB labEquipmentDB = new LabEquipmentDB(dbConnection);
-            ArrayList<LabEquipmentInfo> labEquipmentInfoList = labEquipmentDB.RetrieveAll();
+            ArrayList<LabEquipmentInfo> labEquipmentInfoList = this.labEquipmentDB.RetrieveAll();
 
             /*
              * Get the LabEquipmentServiceInfo for each of the LabEquipment units
@@ -208,5 +247,29 @@ public class LabManagement {
             }
         }
         return labEquipmentServiceInfo;
+    }
+
+    /**
+     *
+     * @return HashMap of [String, ServiceBrokerInfo>]
+     */
+    public synchronized HashMap<String, ServiceBrokerInfo> GetServiceBrokerInfoMap() {
+        /*
+         * Check if the ServiceBrokerInfo map exists yet
+         */
+        if (this.mapServiceBrokerInfo == null) {
+            /*
+             * Create and populate ServiceBrokerInfo map
+             */
+            this.mapServiceBrokerInfo = new HashMap<>();
+            ArrayList serviceBrokerInfoList = this.getServiceBrokersDB().RetrieveAll();
+            Iterator iterator = serviceBrokerInfoList.iterator();
+            while (iterator.hasNext()) {
+                ServiceBrokerInfo serviceBrokerInfo = (ServiceBrokerInfo) iterator.next();
+                this.mapServiceBrokerInfo.put(serviceBrokerInfo.getGuid(), serviceBrokerInfo);
+            }
+        }
+
+        return mapServiceBrokerInfo;
     }
 }

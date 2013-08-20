@@ -40,6 +40,6 @@ public class ApplicationConfig extends Application {
      * populate given list with all resources defined in the project.
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(uq.ilabs.servicebroker.rest.ServiceBrokerRestResource.class);
+        resources.add(uq.ilabs.servicebroker.rest.ServiceBrokerResource.class);
     }
 }

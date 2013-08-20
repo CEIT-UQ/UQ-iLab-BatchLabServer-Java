@@ -49,7 +49,7 @@ public class ServiceBrokersDB {
     private static final String STRSQLCMD_Update = "{ ? = call ServiceBrokers_Update(?,?,?,?,?,?,?) }";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private Connection sqlConnection;
+    private DBConnection dbConnection;
     //</editor-fold>
 
     /**
@@ -61,23 +61,17 @@ public class ServiceBrokersDB {
         final String methodName = "ServiceBrokersDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        try {
-            /*
-             * Check that parameters are valid
-             */
-            if (dbConnection == null) {
-                throw new NullPointerException(DBConnection.class.getSimpleName());
-            }
-
-            /*
-             * Initialise locals
-             */
-            this.sqlConnection = dbConnection.getConnection();
-
-        } catch (NullPointerException | SQLException ex) {
-            Logfile.WriteError(ex.toString());
-            throw ex;
+        /*
+         * Check that parameters are valid
+         */
+        if (dbConnection == null) {
+            throw new NullPointerException(DBConnection.class.getSimpleName());
         }
+
+        /*
+         * Initialise locals
+         */
+        this.dbConnection = dbConnection;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -101,13 +95,14 @@ public class ServiceBrokersDB {
                 throw new NullPointerException(ServiceBrokerInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Add);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setString(2, serviceBrokerInfo.getName());
                 sqlStatement.setString(3, serviceBrokerInfo.getGuid());
@@ -129,6 +124,7 @@ public class ServiceBrokersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -152,13 +148,14 @@ public class ServiceBrokersDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Delete);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Delete);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, id);
 
@@ -175,6 +172,7 @@ public class ServiceBrokersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -251,13 +249,14 @@ public class ServiceBrokersDB {
                 throw new NullPointerException(ServiceBrokerInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Update);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Update);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, serviceBrokerInfo.getId());
                 sqlStatement.setString(3, serviceBrokerInfo.getName());
@@ -280,6 +279,7 @@ public class ServiceBrokersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -306,6 +306,7 @@ public class ServiceBrokersDB {
 
         try {
             ArrayList<String> arrayList = new ArrayList<>();
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
@@ -331,6 +332,7 @@ public class ServiceBrokersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
 
             /*
@@ -354,7 +356,7 @@ public class ServiceBrokersDB {
      * @param columnName
      * @param intval
      * @param strval
-     * @return
+     * @return ArrayList of ServiceBrokerInfo
      */
     private ArrayList<ServiceBrokerInfo> RetrieveBy(String columnName, int intval, String strval) {
         final String methodName = "RetrieveBy";
@@ -363,13 +365,14 @@ public class ServiceBrokersDB {
         ArrayList<ServiceBrokerInfo> arrayList = new ArrayList<>();
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
                 sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
@@ -415,6 +418,7 @@ public class ServiceBrokersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

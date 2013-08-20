@@ -11,7 +11,7 @@
     <context-param>
         <!-- Logging level to use and can be any of: ALL, FINEST, FINER, FINE, INFO, CONFIG, WARNING, SEVERE, OFF -->
         <param-name>LogLevel</param-name>
-        <param-value>CONFIG</param-value>
+        <param-value>INFO</param-value>
     </context-param>
     <context-param>
         <param-name>XmlConfigPropertiesPath</param-name>

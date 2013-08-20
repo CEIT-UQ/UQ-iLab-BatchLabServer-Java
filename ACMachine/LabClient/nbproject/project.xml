@@ -15,7 +15,11 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${reference.LibraryServiceBrokerProxy.jar}</file>
+                    <file>${reference.LibraryServiceBrokerRestProxy.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${reference.LibraryServiceBrokerSoapProxy.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
@@ -47,7 +51,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>LibraryServiceBrokerProxy</foreign-project>
+                <foreign-project>ACMachine_LibraryLabClient</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -55,7 +59,15 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>ACMachine_LibraryLabClient</foreign-project>
+                <foreign-project>LibraryServiceBrokerRestProxy</foreign-project>
+                <artifact-type>jar</artifact-type>
+                <script>build.xml</script>
+                <target>jar</target>
+                <clean-target>clean</clean-target>
+                <id>jar</id>
+            </reference>
+            <reference>
+                <foreign-project>LibraryServiceBrokerSoapProxy</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>

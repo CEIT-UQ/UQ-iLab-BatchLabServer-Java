@@ -92,6 +92,13 @@
     width: 100%;
 }
 
+#setup td.description
+{
+    text-align: left;
+    vertical-align: middle;
+    padding: 5px 5px 5px 0px;
+}
+
 #feedback
 {
     font-size: 80%;

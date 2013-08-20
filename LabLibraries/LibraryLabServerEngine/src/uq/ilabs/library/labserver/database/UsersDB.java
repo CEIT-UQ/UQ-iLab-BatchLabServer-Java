@@ -50,7 +50,7 @@ public class UsersDB {
     private static final String STRSQLCMD_Update = "{ ? = call Users_Update(?,?,?,?,?,?,?) }";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private Connection sqlConnection;
+    private DBConnection dbConnection;
     //</editor-fold>
 
     /**
@@ -62,23 +62,17 @@ public class UsersDB {
         final String methodName = "UsersDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        try {
-            /*
-             * Check that parameters are valid
-             */
-            if (dbConnection == null) {
-                throw new NullPointerException(DBConnection.class.getSimpleName());
-            }
-
-            /*
-             * Initialise locals
-             */
-            this.sqlConnection = dbConnection.getConnection();
-
-        } catch (NullPointerException | SQLException ex) {
-            Logfile.WriteError(ex.toString());
-            throw ex;
+        /*
+         * Check that parameters are valid
+         */
+        if (dbConnection == null) {
+            throw new NullPointerException(DBConnection.class.getSimpleName());
         }
+
+        /*
+         * Initialise locals
+         */
+        this.dbConnection = dbConnection;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -86,7 +80,7 @@ public class UsersDB {
     /**
      *
      * @param userInfo
-     * @return
+     * @return int
      * @throws Exception
      */
     public int Add(UserInfo userInfo) throws Exception {
@@ -103,13 +97,14 @@ public class UsersDB {
                 throw new NullPointerException(UserInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Add);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setString(2, userInfo.getUsername());
                 sqlStatement.setString(3, userInfo.getFirstName());
@@ -131,6 +126,7 @@ public class UsersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -156,13 +152,14 @@ public class UsersDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Delete);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Delete);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, userId);
 
@@ -179,6 +176,7 @@ public class UsersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -193,7 +191,8 @@ public class UsersDB {
 
     /**
      *
-     * @return @throws Exception
+     * @return String[]
+     * @throws Exception
      */
     public String[] GetListOfUsernames() throws Exception {
         return this.GetList(STRCOL_Username, null);
@@ -201,8 +200,8 @@ public class UsersDB {
 
     /**
      *
-     * @param id
-     * @return
+     * @param userId
+     * @return UserInfo
      * @throws Exception
      */
     public UserInfo RetrieveById(int userId) throws Exception {
@@ -213,7 +212,7 @@ public class UsersDB {
     /**
      *
      * @param username
-     * @return
+     * @return UserInfo
      * @throws Exception
      */
     public UserInfo RetrieveByUsername(String username) throws Exception {
@@ -224,7 +223,7 @@ public class UsersDB {
     /**
      *
      * @param userInfo
-     * @return
+     * @return boolean
      * @throws Exception
      */
     public boolean Update(UserInfo userInfo) throws Exception {
@@ -241,13 +240,14 @@ public class UsersDB {
                 throw new NullPointerException(UserInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Update);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Update);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, userInfo.getUserId());
                 sqlStatement.setString(3, userInfo.getFirstName());
@@ -270,6 +270,7 @@ public class UsersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -298,6 +299,7 @@ public class UsersDB {
 
         try {
             ArrayList<String> arrayList = new ArrayList<>();
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
@@ -326,6 +328,7 @@ public class UsersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
 
             /*
@@ -350,7 +353,7 @@ public class UsersDB {
      * @param columnName
      * @param intval
      * @param strval
-     * @return
+     * @return ArrayList of UserInfo
      * @throws Exception
      */
     private ArrayList<UserInfo> RetrieveBy(String columnName, int intval, String strval) throws Exception {
@@ -360,13 +363,14 @@ public class UsersDB {
         ArrayList<UserInfo> arrayList = new ArrayList<>();
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
                 sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
@@ -413,6 +417,7 @@ public class UsersDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

@@ -5,9 +5,9 @@
 package uq.ilabs.labserver.client;
 
 import java.util.logging.Level;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.Password;
 import uq.ilabs.library.labserver.client.Consts;
@@ -20,7 +20,7 @@ import uq.ilabs.library.labserver.database.types.UserInfo;
  *
  * @author uqlpayne
  */
-@ManagedBean
+@Named(value = "loginBean")
 @RequestScoped
 public class LoginBean {
 
@@ -110,7 +110,7 @@ public class LoginBean {
             /*
              * Check if username exists
              */
-            UsersDB usersDB = new UsersDB(this.labServerSession.getDbConnection());
+            UsersDB usersDB = new UsersDB(this.labServerSession.getLabManagement().getDbConnection());
             UserInfo userInfo = usersDB.RetrieveByUsername(this.hitUsername);
             if (userInfo == null) {
                 throw new RuntimeException(STRERR_UnknownUsername);

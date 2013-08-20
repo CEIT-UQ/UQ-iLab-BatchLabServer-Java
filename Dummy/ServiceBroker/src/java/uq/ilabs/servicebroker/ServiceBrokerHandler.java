@@ -6,8 +6,8 @@ package uq.ilabs.servicebroker;
 
 import java.util.HashMap;
 import java.util.logging.Level;
-import javax.xml.ws.ProtocolException;
 import uq.ilabs.library.lab.database.DBConnection;
+import uq.ilabs.library.lab.exceptions.UnauthorizedException;
 import uq.ilabs.library.lab.types.ClientSubmissionReport;
 import uq.ilabs.library.lab.types.LabExperimentStatus;
 import uq.ilabs.library.lab.types.LabStatus;
@@ -17,7 +17,6 @@ import uq.ilabs.library.lab.types.SubmissionReport;
 import uq.ilabs.library.lab.types.ValidationReport;
 import uq.ilabs.library.lab.types.WaitEstimate;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.library.labserver.LabServerAPI;
 import uq.ilabs.servicebroker.database.ExperimentsDB;
 import uq.ilabs.servicebroker.database.types.ExperimentInfo;
 import uq.ilabs.servicebroker.engine.ConfigProperties;
@@ -30,7 +29,7 @@ import uq.ilabs.servicebroker.engine.types.LabServerInfo;
 public class ServiceBrokerHandler {
 
     //<editor-fold defaultstate="collapsed" desc="Constants">
-    private static final String STR_ClassName = ServiceBrokerBean.class.getName();
+    private static final String STR_ClassName = ServiceBrokerAppBean.class.getName();
     private static final Level logLevel = Level.FINE;
     /*
      * String constants for logfile messages
@@ -43,7 +42,7 @@ public class ServiceBrokerHandler {
     /*
      * String constants for exception messages
      */
-    private static final String STRERR_AccessDenied_arg = "LabServer Access Denied: %s";
+    private static final String STRERR_AccessDenied_arg = "ServiceBroker Access Denied: %s";
     private static final String STRERR_SbAuthHeaderNull = "SbAuthHeader is null";
     private static final String STRERR_CouponIdInvalid_arg = "CouponId %d is invalid";
     private static final String STRERR_CouponPasskeyNull = "CouponPasskey is null";
@@ -104,9 +103,9 @@ public class ServiceBrokerHandler {
 
         boolean success = false;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Get the LabServer for the specified experiment
              */
@@ -140,14 +139,14 @@ public class ServiceBrokerHandler {
 
         WaitEstimate waitEstimate = null;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Pass to LabServer for processing
              */
             LabServerAPI labServerAPI = this.GetLabServerAPI(labServerGuid);
-            waitEstimate = labServerAPI.GetEffectiveQueueLength(ServiceBrokerBean.STR_UserGroup, priorityHint);
+            waitEstimate = labServerAPI.GetEffectiveQueueLength(ServiceBrokerAppBean.STR_UserGroup, priorityHint);
 
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
@@ -172,9 +171,9 @@ public class ServiceBrokerHandler {
 
         LabExperimentStatus labExperimentStatus = null;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Get the LabServer for the specified experiment
              */
@@ -207,14 +206,14 @@ public class ServiceBrokerHandler {
 
         String labConfiguration = null;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Pass to LabServer for processing
              */
             LabServerAPI labServerAPI = this.GetLabServerAPI(labServerGuid);
-            labConfiguration = labServerAPI.GetLabConfiguration(ServiceBrokerBean.STR_UserGroup);
+            labConfiguration = labServerAPI.GetLabConfiguration(ServiceBrokerAppBean.STR_UserGroup);
 
         } catch (Exception ex) {
             Logfile.WriteError(ex.getMessage());
@@ -237,9 +236,9 @@ public class ServiceBrokerHandler {
 
         String labInfo = null;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Pass to LabServer for processing
              */
@@ -261,25 +260,26 @@ public class ServiceBrokerHandler {
      * @param labServerGuid
      * @return LabStatus
      */
-    public LabStatus getLabStatus(SbAuthHeader sbAuthHeader, String labServerGuid) {
+    public LabStatus getLabStatus(SbAuthHeader sbAuthHeader, String labServerGuid) throws Exception {
         final String methodName = "getLabStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName,
                 String.format(STRLOG_LabServerGuid_arg, labServerGuid));
 
-        LabStatus labStatus = null;
+        LabStatus labStatus;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
-            /*
-             * Pass to LabServer for processing
-             */
-            LabServerAPI labServerAPI = this.GetLabServerAPI(labServerGuid);
-            labStatus = labServerAPI.GetLabStatus();
+//        try {
+        /*
+         * Pass to LabServer for processing
+         */
+        LabServerAPI labServerAPI = this.GetLabServerAPI(labServerGuid);
+        labStatus = labServerAPI.GetLabStatus();
 
-        } catch (Exception ex) {
-            Logfile.WriteError(ex.getMessage());
-        }
+//        } catch (Exception ex) {
+//            Logfile.WriteError(ex.getMessage());
+//            throw ex;
+//        }
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
 
@@ -299,9 +299,9 @@ public class ServiceBrokerHandler {
 
         ResultReport resultReport = null;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Get the LabServer for the specified experiment
              */
@@ -337,9 +337,9 @@ public class ServiceBrokerHandler {
 
         ClientSubmissionReport clientSubmissionReport = null;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Get the next experiment Id from the experiment database
              */
@@ -349,7 +349,7 @@ public class ServiceBrokerHandler {
              * Pass to LabServer for processing
              */
             LabServerAPI labServerAPI = this.GetLabServerAPI(labServerGuid);
-            SubmissionReport submissionReport = labServerAPI.Submit(experimentId, experimentSpecification, ServiceBrokerBean.STR_UserGroup, priorityHint);
+            SubmissionReport submissionReport = labServerAPI.Submit(experimentId, experimentSpecification, ServiceBrokerAppBean.STR_UserGroup, priorityHint);
             clientSubmissionReport = new ClientSubmissionReport(submissionReport);
 
             /*
@@ -384,9 +384,9 @@ public class ServiceBrokerHandler {
 
         ValidationReport validationReport = null;
 
-        try {
-            this.Authenticate(sbAuthHeader);
+        this.Authenticate(sbAuthHeader);
 
+        try {
             /*
              * Pass to LabServer for processing
              */
@@ -450,24 +450,24 @@ public class ServiceBrokerHandler {
                  * Check that AuthHeader is specified
                  */
                 if (sbAuthHeader == null) {
-                    throw new RuntimeException(STRERR_SbAuthHeaderNull);
+                    throw new NullPointerException(STRERR_SbAuthHeaderNull);
                 }
 
                 /*
                  * Verify the Coupon Id
                  */
                 if (sbAuthHeader.getCouponId() != this.configProperties.getCouponId()) {
-                    throw new RuntimeException(String.format(STRERR_CouponIdInvalid_arg, sbAuthHeader.getCouponId()));
+                    throw new IllegalArgumentException(String.format(STRERR_CouponIdInvalid_arg, sbAuthHeader.getCouponId()));
                 }
 
                 /*
                  * Verify the Coupon Passkey
                  */
                 if (sbAuthHeader.getCouponPasskey() == null) {
-                    throw new RuntimeException(STRERR_CouponPasskeyNull);
+                    throw new NullPointerException(STRERR_CouponPasskeyNull);
                 }
                 if (sbAuthHeader.getCouponPasskey().equalsIgnoreCase(this.configProperties.getCouponPasskey()) == false) {
-                    throw new RuntimeException(String.format(STRERR_CouponPasskeyInvalid_arg, sbAuthHeader.getCouponPasskey()));
+                    throw new IllegalArgumentException(String.format(STRERR_CouponPasskeyInvalid_arg, sbAuthHeader.getCouponPasskey()));
                 }
 
                 /*
@@ -475,10 +475,10 @@ public class ServiceBrokerHandler {
                  */
                 success = true;
 
-            } catch (Exception ex) {
+            } catch (NullPointerException | IllegalArgumentException ex) {
                 String message = String.format(STRERR_AccessDenied_arg, ex.getMessage());
                 Logfile.WriteError(message);
-                throw new ProtocolException(message);
+                throw new UnauthorizedException(message);
             }
         } else {
             success = true;
@@ -511,7 +511,7 @@ public class ServiceBrokerHandler {
             /*
              * Create an instance of LabServerAPI for this LabServer
              */
-            labServerAPI = new LabServerAPI(labServerInfo.getServiceUrl());
+            labServerAPI = new LabServerAPI(labServerInfo.getServiceType(), labServerInfo.getServiceUrl());
             labServerAPI.setIdentifier(this.configProperties.getServiceBrokerGuid());
             labServerAPI.setPasskey(labServerInfo.getOutgoingPasskey());
 

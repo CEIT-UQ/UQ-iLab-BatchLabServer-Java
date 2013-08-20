@@ -1,7 +1,7 @@
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Queue_Add]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Queue_Add]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Queue_Add]'
     DROP PROCEDURE [dbo].[Queue_Add];
@@ -32,7 +32,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Queue_Delete]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Queue_Delete]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Queue_Delete]'
     DROP PROCEDURE [dbo].[Queue_Delete];
@@ -44,14 +44,14 @@ CREATE PROCEDURE [dbo].[Queue_Delete]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
     DELETE FROM [dbo].[Queue]
     WHERE Id = @Id
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -60,7 +60,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Queue_GetCountBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Queue_GetCountBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Queue_GetCountBy]'
     DROP PROCEDURE [dbo].[Queue_GetCountBy];
@@ -74,7 +74,7 @@ CREATE PROCEDURE [dbo].[Queue_GetCountBy]
 AS
 BEGIN
 	DECLARE @Count bigint
-	
+
 	IF @ColumnName IS NULL
 		SET @Count = (
 			SELECT COUNT(*) FROM [dbo].[Queue]
@@ -84,7 +84,7 @@ BEGIN
 			SELECT COUNT(*) FROM [dbo].[Queue]
 			WHERE StatusCode = @StrValue
 		)
-		
+
 	SELECT @Count
 	RETURN @Count
 END
@@ -93,7 +93,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Queue_RetrieveBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Queue_RetrieveBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Queue_RetrieveBy]'
     DROP PROCEDURE [dbo].[Queue_RetrieveBy];
@@ -126,7 +126,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Queue_UpdateStatus]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Queue_UpdateStatus]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Queue_UpdateStatus]'
     DROP PROCEDURE [dbo].[Queue_UpdateStatus];
@@ -139,7 +139,7 @@ CREATE PROCEDURE [dbo].[Queue_UpdateStatus]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[Queue]
 	SET StatusCode = @StatusCode
 	WHERE Id = @Id
@@ -147,7 +147,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -156,7 +156,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Queue_UpdateStatusUnitId]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Queue_UpdateStatusUnitId]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Queue_UpdateStatusUnitId]'
     DROP PROCEDURE [dbo].[Queue_UpdateStatusUnitId];
@@ -170,7 +170,7 @@ CREATE PROCEDURE [dbo].[Queue_UpdateStatusUnitId]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[Queue]
 	SET StatusCode = @StatusCode, UnitId = @UnitId
 	WHERE Id = @Id
@@ -178,7 +178,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -188,7 +188,7 @@ GO
  ********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Results_Add]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Results_Add]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Results_Add]'
     DROP PROCEDURE [dbo].[Results_Add];
@@ -222,7 +222,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Results_Delete]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Results_Delete]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Results_Delete]'
     DROP PROCEDURE [dbo].[Results_Delete];
@@ -234,14 +234,14 @@ CREATE PROCEDURE [dbo].[Results_Delete]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
     DELETE FROM [dbo].[Results]
     WHERE Id = @Id
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -250,7 +250,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Results_RetrieveBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Results_RetrieveBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Results_RetrieveBy]'
     DROP PROCEDURE [dbo].[Results_RetrieveBy];
@@ -283,7 +283,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Results_UpdateNotified]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Results_UpdateNotified]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Results_UpdateNotified]'
     DROP PROCEDURE [dbo].[Results_UpdateNotified];
@@ -296,7 +296,7 @@ CREATE PROCEDURE [dbo].[Results_UpdateNotified]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[Results]
 	SET Notified = 1
 	WHERE ExperimentId = @ExperimentId AND SbName = @SbName
@@ -304,7 +304,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = 1
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -314,7 +314,7 @@ GO
  ********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Statistics_Add]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Statistics_Add]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Statistics_Add]'
     DROP PROCEDURE [dbo].[Statistics_Add];
@@ -336,7 +336,7 @@ BEGIN
 	)
 	VALUES (
 		@ExperimentId, @SbName, @UserGroup, @PriorityHint, @EstimatedExecTime, @QueueLength, @EstimatedWaitTime, CURRENT_TIMESTAMP
- 
+
 	)
 	SELECT CAST(@@IDENTITY AS int)
 	RETURN @@IDENTITY
@@ -346,7 +346,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Statistics_Delete]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Statistics_Delete]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Statistics_Delete]'
     DROP PROCEDURE [dbo].[Statistics_Delete];
@@ -358,14 +358,14 @@ CREATE PROCEDURE [dbo].[Statistics_Delete]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
     DELETE FROM [dbo].[Statistics]
     WHERE Id = @Id
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -374,7 +374,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Statistics_RetrieveBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Statistics_RetrieveBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Statistics_RetrieveBy]'
     DROP PROCEDURE [dbo].[Statistics_RetrieveBy];
@@ -407,7 +407,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Statistics_UpdateCancelled]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Statistics_UpdateCancelled]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Statistics_UpdateCancelled]'
     DROP PROCEDURE [dbo].[Statistics_UpdateCancelled];
@@ -420,7 +420,7 @@ CREATE PROCEDURE [dbo].[Statistics_UpdateCancelled]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[Statistics]
 	SET Cancelled = 1, TimeCompleted = CURRENT_TIMESTAMP
 	WHERE ExperimentId = @ExperimentId AND SbName = @SbName
@@ -428,7 +428,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = 1
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -437,7 +437,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Statistics_UpdateCompleted]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Statistics_UpdateCompleted]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Statistics_UpdateCompleted]'
     DROP PROCEDURE [dbo].[Statistics_UpdateCompleted];
@@ -450,7 +450,7 @@ CREATE PROCEDURE [dbo].[Statistics_UpdateCompleted]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[Statistics]
 	SET TimeCompleted = CURRENT_TIMESTAMP
 	WHERE ExperimentId = @ExperimentId AND SbName = @SbName
@@ -458,7 +458,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = 1
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -467,7 +467,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Statistics_UpdateStarted]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Statistics_UpdateStarted]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Statistics_UpdateStarted]'
     DROP PROCEDURE [dbo].[Statistics_UpdateStarted];
@@ -481,7 +481,7 @@ CREATE PROCEDURE [dbo].[Statistics_UpdateStarted]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[Statistics]
 	SET UnitId = @UnitId, TimeStarted = CURRENT_TIMESTAMP
 	WHERE ExperimentId = @ExperimentId AND SbName = @SbName
@@ -489,7 +489,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = 1
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -498,7 +498,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabEquipment_Add]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabEquipment_Add]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabEquipment_Add]'
     DROP PROCEDURE [dbo].[LabEquipment_Add];
@@ -506,16 +506,17 @@ END
 PRINT N'Creating procedure [dbo].[LabEquipment_Add]'
 GO
 CREATE PROCEDURE [dbo].[LabEquipment_Add]
+    @ServiceType varchar(8),
     @ServiceUrl varchar(256),
     @Passkey varchar(40) = NULL,
     @Enabled bit
 AS
 BEGIN
 	INSERT INTO [dbo].[LabEquipment] (
-		ServiceUrl, Passkey, Enabled
+		ServiceType, ServiceUrl, Passkey, Enabled
 	)
 	VALUES (
-		@ServiceUrl, @Passkey, @Enabled
+		@ServiceType, @ServiceUrl, @Passkey, @Enabled
 	)
 	SELECT CAST(@@IDENTITY AS int)
 	RETURN @@IDENTITY
@@ -525,7 +526,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabEquipment_Delete]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabEquipment_Delete]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabEquipment_Delete]'
     DROP PROCEDURE [dbo].[LabEquipment_Delete];
@@ -537,14 +538,14 @@ CREATE PROCEDURE [dbo].[LabEquipment_Delete]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
     DELETE FROM [dbo].[LabEquipment]
     WHERE Id = @Id
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -553,7 +554,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabEquipment_RetrieveBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabEquipment_RetrieveBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabEquipment_RetrieveBy]'
     DROP PROCEDURE [dbo].[LabEquipment_RetrieveBy];
@@ -582,7 +583,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabEquipment_Update]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabEquipment_Update]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabEquipment_Update]'
     DROP PROCEDURE [dbo].[LabEquipment_Update];
@@ -591,21 +592,22 @@ PRINT N'Creating procedure [dbo].[LabEquipment_Update]'
 GO
 CREATE PROCEDURE [dbo].[LabEquipment_Update]
     @Id integer,
+    @ServiceType varchar(8),
     @ServiceUrl varchar(256),
     @Passkey varchar(40) = NULL,
     @Enabled bit
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[LabEquipment]
-	SET ServiceUrl = @ServiceUrl, Passkey = @Passkey, Enabled = @Enabled, DateModified = CURRENT_TIMESTAMP
+	SET ServiceType = @ServiceType, ServiceUrl = @ServiceUrl, Passkey = @Passkey, Enabled = @Enabled, DateModified = CURRENT_TIMESTAMP
 	WHERE Id = @Id
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -615,7 +617,7 @@ GO
  ********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabServer_Add]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabServer_Add]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabServer_Add]'
     DROP PROCEDURE [dbo].[LabServer_Add];
@@ -642,11 +644,11 @@ BEGIN
 	RETURN @@IDENTITY
 END
 GO
-	
+
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabServer_Delete]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabServer_Delete]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabServer_Delete]'
     DROP PROCEDURE [dbo].[LabServer_Delete];
@@ -658,14 +660,14 @@ CREATE PROCEDURE [dbo].[LabServer_Delete]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	DELETE FROM [dbo].[LabServer]
 	WHERE Id = @Id
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -674,7 +676,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabServer_GetList]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabServer_GetList]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabServer_GetList]'
     DROP PROCEDURE [dbo].[LabServer_GetList];
@@ -700,7 +702,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabServer_RetrieveBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabServer_RetrieveBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabServer_RetrieveBy]'
     DROP PROCEDURE [dbo].[LabServer_RetrieveBy];
@@ -729,7 +731,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabServer_Update]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabServer_Update]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[LabServer_Update]'
     DROP PROCEDURE [dbo].[LabServer_Update];
@@ -748,7 +750,7 @@ CREATE PROCEDURE [dbo].[LabServer_Update]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[LabServer]
 	SET Name = @Name, Guid = @Guid, ServiceUrl = @ServiceUrl, ContactEmail = @ContactEmail, CompletedEmail = @CompletedEmail,
 		FailedEmail = @FailedEmail, Authenticate = @Authenticate, DateModified = CURRENT_TIMESTAMP
@@ -757,7 +759,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -767,7 +769,7 @@ GO
  ********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[ServiceBrokers_Add]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[ServiceBrokers_Add]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[ServiceBrokers_Add]'
     DROP PROCEDURE [dbo].[ServiceBrokers_Add];
@@ -797,7 +799,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[ServiceBrokers_Delete]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[ServiceBrokers_Delete]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[ServiceBrokers_Delete]'
     DROP PROCEDURE [dbo].[ServiceBrokers_Delete];
@@ -809,14 +811,14 @@ CREATE PROCEDURE [dbo].[ServiceBrokers_Delete]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	DELETE FROM [dbo].[ServiceBrokers]
 	WHERE Id = @Id
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -825,7 +827,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[ServiceBrokers_GetList]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[ServiceBrokers_GetList]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[ServiceBrokers_GetList]'
     DROP PROCEDURE [dbo].[ServiceBrokers_GetList];
@@ -847,7 +849,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[ServiceBrokers_RetrieveBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[ServiceBrokers_RetrieveBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[ServiceBrokers_RetrieveBy]'
     DROP PROCEDURE [dbo].[ServiceBrokers_RetrieveBy];
@@ -879,7 +881,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[ServiceBrokers_Update]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[ServiceBrokers_Update]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[ServiceBrokers_Update]'
     DROP PROCEDURE [dbo].[ServiceBrokers_Update];
@@ -897,7 +899,7 @@ CREATE PROCEDURE [dbo].[ServiceBrokers_Update]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[ServiceBrokers]
 	SET Name = @Name, Guid = @Guid, OutPasskey = @OutPasskey, InPasskey = @InPasskey, ServiceUrl = @ServiceUrl,
 		Permitted = @Permitted, DateModified = CURRENT_TIMESTAMP
@@ -906,7 +908,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @Id
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -916,7 +918,7 @@ GO
  ********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Users_Add]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Users_Add]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Users_Add]'
     DROP PROCEDURE [dbo].[Users_Add];
@@ -942,11 +944,11 @@ BEGIN
 	RETURN @@IDENTITY
 END
 GO
-	
+
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Users_Delete]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Users_Delete]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Users_Delete]'
     DROP PROCEDURE [dbo].[Users_Delete];
@@ -958,14 +960,14 @@ CREATE PROCEDURE [dbo].[Users_Delete]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	DELETE FROM [dbo].[Users]
 	WHERE UserId = @UserId
 	IF @@ERROR <> 0 OR @@ROWCOUNT = 0
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @UserId
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END
@@ -974,7 +976,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Users_GetList]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Users_GetList]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Users_GetList]'
     DROP PROCEDURE [dbo].[Users_GetList];
@@ -1000,7 +1002,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Users_RetrieveBy]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Users_RetrieveBy]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Users_RetrieveBy]'
     DROP PROCEDURE [dbo].[Users_RetrieveBy];
@@ -1029,7 +1031,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Users_Update]', 'P' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Users_Update]', 'P' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping procedure [dbo].[Users_Update]'
     DROP PROCEDURE [dbo].[Users_Update];
@@ -1047,7 +1049,7 @@ CREATE PROCEDURE [dbo].[Users_Update]
 AS
 BEGIN
 	DECLARE @Retval integer
-	
+
 	UPDATE [dbo].[Users]
 	SET FirstName = @FirstName, LastName = @LastName, ContactEmail = @ContactEmail, UserGroup = @UserGroup,
 		Password = @Password, AccountLocked = @AccountLocked, DateModified = CURRENT_TIMESTAMP
@@ -1056,7 +1058,7 @@ BEGIN
 		SET @Retval = 0
 	ELSE
 		SET @Retval = @UserId
-		
+
 	SELECT @Retval
 	RETURN @Retval
 END

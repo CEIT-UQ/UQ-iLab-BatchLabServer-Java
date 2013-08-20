@@ -433,9 +433,17 @@ public class LabExperimentManager implements Runnable {
 
     /**
      *
-     * @return
+     * @return LabStatus
      */
     public LabStatus GetLabStatus() {
+        return this.GetLabStatus(false);
+    }
+
+    /**
+     *
+     * @return LabStatus
+     */
+    public LabStatus GetLabStatus(boolean verbose) {
         final String methodName = "GetLabStatus";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
@@ -460,8 +468,8 @@ public class LabExperimentManager implements Runnable {
                  */
                 LabStatus engineLabStatus = labExperimentEngine.GetLabStatus();
                 labStatus.setOnline(labStatus.isOnline() || engineLabStatus.isOnline());
+                String message;
                 if (engineLabStatus.isOnline() == true) {
-                    String message = labStatus.getLabStatusMessage();
 
                     /*
                      * Check if the engine is currently running an experiment
@@ -471,12 +479,14 @@ public class LabExperimentManager implements Runnable {
                         /*
                          * It is, so include the experiment Id in the lab status message
                          */
-                        message += String.format(STRLOG_UnitIdExperimentIdLabStatusMessage_arg2, unitId, experimentId, engineLabStatus.getLabStatusMessage());
+                        message = String.format(STRLOG_UnitIdExperimentIdLabStatusMessage_arg2, unitId, experimentId, engineLabStatus.getLabStatusMessage());
                     } else {
-                        message += String.format(STRLOG_UnitIdLabStatusMessage_arg2, unitId, engineLabStatus.getLabStatusMessage());
+                        message = String.format(STRLOG_UnitIdLabStatusMessage_arg2, unitId, engineLabStatus.getLabStatusMessage());
                     }
-                    labStatus.setLabStatusMessage(message);
+                } else {
+                    message = (verbose == true) ? String.format(STRLOG_UnitIdLabStatusMessage_arg2, unitId, engineLabStatus.getLabStatusMessage()) : "";
                 }
+                labStatus.setLabStatusMessage(labStatus.getLabStatusMessage() + message);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

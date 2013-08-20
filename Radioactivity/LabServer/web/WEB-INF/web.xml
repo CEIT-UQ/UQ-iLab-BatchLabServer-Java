@@ -19,7 +19,7 @@
     </context-param>
     <context-param>
         <param-name>XmlLabConfigurationPath</param-name>
-        <param-value>/WEB-INF/LabConfiguration2.xml</param-value>
+        <param-value>/WEB-INF/LabConfiguration.xml</param-value>
     </context-param>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
@@ -28,15 +28,15 @@
     </servlet>
     <servlet>
         <servlet-name>LabServerServlet</servlet-name>
-        <servlet-class>uq.ilabs.labserver.client.LabServerServlet</servlet-class>
+        <servlet-class>uq.ilabs.labserver.LabServerServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
-        <servlet-class>uq.ilabs.labserver.client.LogoutServlet</servlet-class>
+        <servlet-class>uq.ilabs.labserver.LogoutServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>ViewExpiredServlet</servlet-name>
-        <servlet-class>uq.ilabs.labserver.client.ViewExpiredServlet</servlet-class>
+        <servlet-class>uq.ilabs.labserver.ViewExpiredServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>

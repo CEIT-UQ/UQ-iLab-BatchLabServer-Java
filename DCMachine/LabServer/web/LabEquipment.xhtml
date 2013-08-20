@@ -50,6 +50,16 @@
                                     </tr>
                                     <tr>
                                         <td class="label">
+                                            Service Type<small><sup>1</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:selectOneRadio value="#{labEquipmentBean.hsorServiceType}">
+                                                <f:selectItems value="#{labEquipmentBean.serviceTypes}" />
+                                            </h:selectOneRadio>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
                                             Service Url<small><sup>1</sup></small>:
                                         </td>
                                         <td class="information">
@@ -86,7 +96,7 @@
                                                 <h:commandButton styleClass="hcommandButton" value="Update" action="#{labEquipmentBean.actionUpdate()}"/>
                                                 &nbsp;
                                                 <h:commandButton styleClass="hcommandButton" value="Delete" action="#{labEquipmentBean.actionDelete()}"
-                                                                 onclick="javascript:return confirm('Delete LabEquipment Unit... Are you really sure?')"/>
+                                                                 onclick="javascript:return confirm('Delete LabEquipment Unit... Are you really sure?');"/>
                                                 &nbsp;
                                                 <h:commandButton styleClass="hcommandButton" value="Test" action="#{labEquipmentBean.actionTest()}"/>
                                             </h:panelGroup>

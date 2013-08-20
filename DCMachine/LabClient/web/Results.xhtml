@@ -22,7 +22,9 @@
                 <h:form>
                     <table border="0" cellspacing="0" cellpadding="0">
                         <tr>
-                            <th colspan="2">Experiment Results</th>
+                            <th colspan="2">
+                                Experiment Results
+                            </th>
                         </tr>
                         <tr>
                             <td class="label">
@@ -31,7 +33,7 @@
                             <td class="information">
                                 <h:inputText styleClass="hinputtext" value="#{resultsBean.hitExperimentId}" style="width: 60px;" />
                                 &nbsp;
-                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{resultsBean.hsomSelectedExperimentId}" onchange="form.submit()"
+                                <h:selectOneMenu styleClass="hselectOneMenu" value="#{resultsBean.hsomSelectedExperimentId}" onchange="form.submit();"
                                                  rendered="#{resultsBean.hsomExperimentIdsRendered}" style="width: 66px">
                                     <f:selectItems value="#{resultsBean.experimentIds}" />
                                 </h:selectOneMenu>

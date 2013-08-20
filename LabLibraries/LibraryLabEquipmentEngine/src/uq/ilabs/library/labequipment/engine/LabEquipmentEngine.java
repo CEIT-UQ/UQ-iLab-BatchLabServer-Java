@@ -552,8 +552,8 @@ public class LabEquipmentEngine implements Runnable {
                 throw new RuntimeException(String.format(STRERR_InvalidSetupId_arg, setupId));
         }
 
-        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName,
-                driverGeneric.getDriverName());
+        String message = (driverGeneric != null) ? driverGeneric.getDriverName() : null;
+        Logfile.WriteCompleted(logLevel, STR_ClassName, methodName, message);
 
         return driverGeneric;
     }
@@ -861,6 +861,7 @@ public class LabEquipmentEngine implements Runnable {
                          * Powerdown the equipment
                          */
                         this.statusMessage = STR_PoweringDown;
+                        Logfile.Write(Level.INFO, STR_PoweringDown);
                         this.PowerdownEquipment();
 
                         this.poweroffTimeRemaining = this.poweroffDelay;
@@ -902,6 +903,7 @@ public class LabEquipmentEngine implements Runnable {
                                  * Powerdown has completed
                                  */
                                 this.statusMessage = STR_PoweredDown;
+                                Logfile.Write(Level.INFO, STR_PoweredDown);
                                 this.runState = States.PowerOff;
                             }
                         }

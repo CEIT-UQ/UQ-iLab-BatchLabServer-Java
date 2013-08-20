@@ -61,7 +61,7 @@ td.buttons
     width: 72px;
     height: 24px;
 }
-.hinputtext
+.hinputText, .hinputTextReadOnly
 {
     font-size: 100%;
     height: 16px;

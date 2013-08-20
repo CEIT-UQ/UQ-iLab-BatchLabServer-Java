@@ -3,6 +3,9 @@
     <type>org.netbeans.modules.web.project</type>
     <configuration>
         <buildExtensions xmlns="http://www.netbeans.org/ns/ant-build-extender/1">
+            <extension file="rest-build.xml" id="rest.4">
+                <dependency dependsOn="generate-rest-config" target="-pre-pre-compile"/>
+            </extension>
             <extension file="jaxws-build.xml" id="jaxws">
                 <dependency dependsOn="wsimport-service-generate" target="-pre-pre-compile"/>
             </extension>
@@ -24,23 +27,27 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${reference.LibraryLabEquipmentProxy.jar}</file>
+                    <file>${reference.LibraryLabEquipmentRestProxy.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${reference.LibraryLabServerProxy.jar}</file>
+                    <file>${reference.LibraryLabEquipmentSoapProxy.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${reference.LibraryServiceBrokerProxy.jar}</file>
+                    <file>${reference.LibraryServiceBrokerSoapProxy.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.postgresql-9.2-1002.jdbc4.jar}</file>
+                    <file>${reference.LibraryLabServerSoapProxy.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.javamail-1.4.5.jar}</file>
+                    <file>${file.reference.postgresql-9.2-1003.jdbc4.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.javax.mail.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
             </web-module-libraries>
@@ -68,7 +75,15 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>LibraryLabEquipmentProxy</foreign-project>
+                <foreign-project>LibraryLabEquipmentRestProxy</foreign-project>
+                <artifact-type>jar</artifact-type>
+                <script>build.xml</script>
+                <target>jar</target>
+                <clean-target>clean</clean-target>
+                <id>jar</id>
+            </reference>
+            <reference>
+                <foreign-project>LibraryLabEquipmentSoapProxy</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -84,7 +99,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>LibraryLabServerProxy</foreign-project>
+                <foreign-project>LibraryLabServerSoapProxy</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -92,7 +107,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>LibraryServiceBrokerProxy</foreign-project>
+                <foreign-project>LibraryServiceBrokerSoapProxy</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>

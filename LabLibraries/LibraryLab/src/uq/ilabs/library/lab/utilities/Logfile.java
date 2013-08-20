@@ -30,6 +30,7 @@ public class Logfile {
     private static final String STRLOG_CalledMarker = " >> ";
     private static final String STRLOG_Completed = "(): Completed";
     private static final String STRLOG_CompletedMarker = " << ";
+    private static final String STRLOG_Exception = "(): ";
     /*
      * Local variables
      */
@@ -114,7 +115,32 @@ public class Logfile {
     }
 
     public static void WriteException(String sourceClass, String sourceMethod, Throwable thrown) {
-        logger.throwing(sourceClass, sourceMethod, thrown);
+        String logMessage = null;
+
+        /*
+         * If the source method exists then add it to the log
+         */
+        if (sourceMethod != null && sourceMethod.length() > 0) {
+            logMessage = sourceMethod + STRLOG_Exception;
+        }
+
+        /*
+         * If the source class exists then prepend it to the log
+         */
+        if (sourceClass != null && sourceClass.length() > 0 && logMessage != null) {
+            logMessage = sourceClass + "." + logMessage;
+        }
+
+        /*
+         * Check that the class name and/or method name have been specified
+         */
+        if (logMessage != null) {
+            /*
+             * If the message exists then add it to the log
+             */
+            logMessage += thrown.toString();
+            log(Level.SEVERE, "", null, logMessage);
+        }
     }
 
     public static String WriteCalled(String sourceClass, String sourceMethod) {

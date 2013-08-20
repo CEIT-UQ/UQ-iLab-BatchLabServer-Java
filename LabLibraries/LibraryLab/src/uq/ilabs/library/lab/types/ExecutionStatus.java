@@ -4,10 +4,31 @@
  */
 package uq.ilabs.library.lab.types;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.transform.stream.StreamSource;
+
 /**
  *
  * @author uqlpayne
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "ExecutionStatus", propOrder = {
+    "executionId",
+    "executeStatus",
+    "resultStatus",
+    "timeRemaining",
+    "errorMessage"
+})
 public class ExecutionStatus {
 
     public enum Status {
@@ -66,23 +87,28 @@ public class ExecutionStatus {
     /**
      * The identification of the currently executing driver
      */
-    private int executionId;
+    @XmlElement(name = "ExecutionId")
+    protected int executionId;
     /**
      * Status of the currently executing driver
      */
-    private Status executeStatus;
+    @XmlElement(name = "ExecuteStatus")
+    protected int executeStatus;
     /**
      * Result status of the most recent driver execution
      */
-    private Status resultStatus;
+    @XmlElement(name = "ResultStatus")
+    protected int resultStatus;
     /**
      * Time remaining (in seconds) for the currently executing driver
      */
-    private int timeRemaining;
+    @XmlElement(name = "TimeRemaining")
+    protected int timeRemaining;
     /**
      * Information about driver execution that did not complete successfully
      */
-    private String errorMessage;
+    @XmlElement(name = "ErrorMessage")
+    protected String errorMessage;
 
     public String getErrorMessage() {
         return errorMessage;
@@ -101,19 +127,19 @@ public class ExecutionStatus {
     }
 
     public Status getExecuteStatus() {
-        return executeStatus;
+        return Status.ToStatus(executeStatus);
     }
 
     public void setExecuteStatus(Status executeStatus) {
-        this.executeStatus = executeStatus;
+        this.executeStatus = executeStatus.getValue();
     }
 
     public Status getResultStatus() {
-        return resultStatus;
+        return Status.ToStatus(resultStatus);
     }
 
     public void setResultStatus(Status resultStatus) {
-        this.resultStatus = resultStatus;
+        this.resultStatus = resultStatus.getValue();
     }
 
     public int getTimeRemaining() {
@@ -128,9 +154,50 @@ public class ExecutionStatus {
      * Default constructor
      */
     public ExecutionStatus() {
-        this.executeStatus = Status.None;
-        this.resultStatus = Status.None;
+        this.executeStatus = Status.None.getValue();
+        this.resultStatus = Status.None.getValue();
         this.timeRemaining = -1;
         this.errorMessage = null;
+    }
+
+    /**
+     *
+     * @return String
+     */
+    public String ToXmlString() {
+        String xmlString = null;
+
+        try {
+            Marshaller marshaller = JAXBContext.newInstance(this.getClass()).createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+            JAXBElement<ExecutionStatus> jaxbElement = (new ObjectFactory()).createExecutionStatus(this);
+            StringWriter stringWriter = new StringWriter();
+            marshaller.marshal(jaxbElement, stringWriter);
+            xmlString = stringWriter.toString();
+        } catch (JAXBException ex) {
+            System.out.println(ex.toString());
+        }
+
+        return xmlString;
+    }
+
+    /**
+     *
+     * @param xmlString
+     * @return LabExperimentStatus
+     */
+    public static ExecutionStatus XmlParse(String xmlString) {
+        ExecutionStatus executionStatus = null;
+
+        try {
+            Unmarshaller unmarshaller = JAXBContext.newInstance(ExecutionStatus.class).createUnmarshaller();
+            StreamSource streamSource = new StreamSource(new StringReader(xmlString));
+            JAXBElement<ExecutionStatus> jaxbElement = (JAXBElement<ExecutionStatus>) unmarshaller.unmarshal(streamSource, ExecutionStatus.class);
+            executionStatus = jaxbElement.getValue();
+        } catch (JAXBException ex) {
+            System.out.println(ex.toString());
+        }
+
+        return executionStatus;
     }
 }

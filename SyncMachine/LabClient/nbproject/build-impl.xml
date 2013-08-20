@@ -834,7 +834,10 @@ exists or setup the property manually. For example like this:
         <ant antfile="${project.LibraryLabClientEngine}/build.xml" inheritall="false" target="jar">
             <property name="deploy.on.save" value="false"/>
         </ant>
-        <ant antfile="${project.LibraryServiceBrokerProxy}/build.xml" inheritall="false" target="jar">
+        <ant antfile="${project.LibraryServiceBrokerRestProxy}/build.xml" inheritall="false" target="jar">
+            <property name="deploy.on.save" value="false"/>
+        </ant>
+        <ant antfile="${project.LibraryServiceBrokerSoapProxy}/build.xml" inheritall="false" target="jar">
             <property name="deploy.on.save" value="false"/>
         </ant>
         <ant antfile="${project.SyncMachine_LibraryLabClient}/build.xml" inheritall="false" target="jar">
@@ -848,7 +851,10 @@ exists or setup the property manually. For example like this:
         <ant antfile="${project.LibraryLabClientEngine}/build.xml" inheritall="false" target="jar">
             <property name="deploy.on.save" value="false"/>
         </ant>
-        <ant antfile="${project.LibraryServiceBrokerProxy}/build.xml" inheritall="false" target="jar">
+        <ant antfile="${project.LibraryServiceBrokerRestProxy}/build.xml" inheritall="false" target="jar">
+            <property name="deploy.on.save" value="false"/>
+        </ant>
+        <ant antfile="${project.LibraryServiceBrokerSoapProxy}/build.xml" inheritall="false" target="jar">
             <property name="deploy.on.save" value="false"/>
         </ant>
         <ant antfile="${project.SyncMachine_LibraryLabClient}/build.xml" inheritall="false" target="jar">
@@ -1000,7 +1006,8 @@ exists or setup the property manually. For example like this:
     <target depends="init" if="dist.ear.dir" name="library-inclusion-in-manifest">
         <copyfiles files="${reference.LibraryLab.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
         <copyfiles files="${reference.LibraryLabClientEngine.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
-        <copyfiles files="${reference.LibraryServiceBrokerProxy.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
+        <copyfiles files="${reference.LibraryServiceBrokerRestProxy.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
+        <copyfiles files="${reference.LibraryServiceBrokerSoapProxy.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
         <copyfiles files="${reference.SyncMachine_LibraryLabClient.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update"/>
@@ -1008,7 +1015,8 @@ exists or setup the property manually. For example like this:
     <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir">
         <copyfiles files="${reference.LibraryLab.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copyfiles files="${reference.LibraryLabClientEngine.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copyfiles files="${reference.LibraryServiceBrokerProxy.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copyfiles files="${reference.LibraryServiceBrokerRestProxy.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copyfiles files="${reference.LibraryServiceBrokerSoapProxy.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copyfiles files="${reference.SyncMachine_LibraryLabClient.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init" if="dist.ear.dir" name="-clean-webinf-lib">
@@ -1402,7 +1410,8 @@ exists or setup the property manually. For example like this:
     <target depends="init" name="deps-clean" unless="no.deps">
         <ant antfile="${project.LibraryLab}/build.xml" inheritall="false" target="clean"/>
         <ant antfile="${project.LibraryLabClientEngine}/build.xml" inheritall="false" target="clean"/>
-        <ant antfile="${project.LibraryServiceBrokerProxy}/build.xml" inheritall="false" target="clean"/>
+        <ant antfile="${project.LibraryServiceBrokerRestProxy}/build.xml" inheritall="false" target="clean"/>
+        <ant antfile="${project.LibraryServiceBrokerSoapProxy}/build.xml" inheritall="false" target="clean"/>
         <ant antfile="${project.SyncMachine_LibraryLabClient}/build.xml" inheritall="false" target="clean"/>
     </target>
     <target depends="init" name="do-clean">

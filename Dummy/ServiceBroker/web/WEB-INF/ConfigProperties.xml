@@ -10,6 +10,8 @@
     <entry key="DBDriver">org.postgresql.Driver</entry>
     <!-- DBUrl: Database url which includes the database name -->
     <entry key="DBUrl">jdbc:postgresql://localhost:5432/Dummy_ServiceBroker</entry>
+    <!-- DBPoolSize: Database connection pool size. Default is 1 if not specified -->
+    <entry key="DBPoolSize">1</entry>
     <!-- DBUser: Database user name, privileges need to be granted for this user to use the database -->
     <entry key="DBUser">ServiceBroker</entry>
     <!-- DBPassword: Database user's password -->
@@ -24,9 +26,9 @@
     <!-- CouponPasskey: Coupon passkey to receive from the LabClient (development use only) -->
     <entry key="CouponPasskey">qwerty</entry>
 
-    <!-- LabServer?: Starting at zero, comma-seperated LabServer's guid, LabServer's web serviceURL, LabServer's passkey and ServiceBroker's incoming passkey (not used) -->
-    <entry key="LabServer0">8C0BA543419E4d4ab340d449acd3e057, http://localhost:8083/LabServerWebService.asmx, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
-    <entry key="LabServer1">2CD01113C51C4ca997B059531CD9469D, http://localhost:8080/TemplateLabServer/LabServerWebService, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
-    <entry key="LabServer2">FF464E3507564f28A64F156282BB912E, http://localhost:8080/RadioactivityLabServer/LabServerWebService, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
+    <!-- LabServer?: Starting at zero, comma-seperated LabServer's guid, Service type, LabServer's web serviceURL, LabServer's passkey and ServiceBroker's incoming passkey (not used) -->
+    <entry key="LabServer0">8C0BA543419E4d4ab340d449acd3e057, SOAP, http://localhost:8083/LabServerWebService.asmx, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
+    <entry key="LabServer1">2CD01113C51C4ca997B059531CD9469D, REST, http://localhost:8080/TemplateLabServer/LabServerRest, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
+    <entry key="LabServer2">FF464E3507564f28A64F156282BB912E, SOAP, http://localhost:8080/RadioactivityLabServer/LabServerWebService, fd3cf16cc855484fb06801379f475837, Ls2sbPasskey</entry>
 
 </properties>

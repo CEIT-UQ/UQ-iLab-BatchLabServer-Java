@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="./LabServer.xhtml">
+
+            <ui:define name="stylesheet">
+                <style>
+                    .hinputText, .hinputTextReadOnly, .hinputTextarea { width: 500px; }
+                </style>
+            </ui:define>
+
+            <ui:define name="title">
+                Self Registration
+            </ui:define>
+
+            <ui:define name="content">
+                #{selfRegistrationBean.pageLoad()}
+                <h4>
+                    LabServer Information:
+                </h4>
+                <h:form>
+                    <table  border="1">
+                        <tr>
+                            <td class="infotable">
+                                <table width="100%">
+                                    <tr>
+                                        <td class="label">
+                                            Name<small><sup>1</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText styleClass="hinputText" value="#{selfRegistrationBean.hitLabServerName}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Guid<small><sup>1</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText styleClass="hinputText" style="width: 403px;" value="#{selfRegistrationBean.hitLabServerGuid}" />
+                                            &nbsp;
+                                            <h:commandButton styleClass="hcommandButton" value="Create" action="#{selfRegistrationBean.actionCreateGuid()}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Service Url<small><sup>1</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText class="hinputText" value="#{selfRegistrationBean.hitServiceUrl}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Contact Email:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText class="hinputText" value="#{selfRegistrationBean.hitContactEmail}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Authenticate:
+                                        </td>
+                                        <td class="information">
+                                            <h:selectBooleanCheckbox value="#{selfRegistrationBean.hcbAuthenticate}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            &nbsp;
+                                        </td>
+                                        <td>
+                                            <h4>
+                                                Optional Information
+                                            </h4>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Completed Email<small><sup>2</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText class="hinputText" value="#{selfRegistrationBean.hitCompletedEmail}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            Failed Email<small><sup>2</sup></small>:
+                                        </td>
+                                        <td class="information">
+                                            <h:inputText class="hinputText" value="#{selfRegistrationBean.hitFailedEmail}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">
+                                            &nbsp;
+                                        </td>
+                                        <td class="buttons">
+                                            <h:panelGroup rendered="#{!selfRegistrationBean.registered}">
+                                                <h:commandButton styleClass="hcommandButton" value="Save" action="#{selfRegistrationBean.actionSave()}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{selfRegistrationBean.registered}">
+                                                <h:commandButton styleClass="hcommandButton" value="Update" action="#{selfRegistrationBean.actionUpdate()}"/>
+                                                &nbsp;
+                                                <h:commandButton styleClass="hcommandButton" value="Test" action="#{selfRegistrationBean.actionTest()}"/>
+                                            </h:panelGroup>
+                                            &nbsp;
+                                            <h:commandButton styleClass="hcommandButton" value="New" action="#{selfRegistrationBean.actionNew()}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </h:form>
+                <i>Notes:</i>
+                <ol style="list-style-type: decimal">
+                    <li>Changing this item requires a LabServer restart.</li>
+                    <li>Semicolon-separated list of email addresses.</li>
+                </ol>
+                <p>
+                    <br />
+                    <h:outputLabel styleClass="#{selfRegistrationBean.holMessageClass}" value="#{selfRegistrationBean.holMessage}" rendered="#{!empty(selfRegistrationBean.holMessage)}" />
+                </p>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

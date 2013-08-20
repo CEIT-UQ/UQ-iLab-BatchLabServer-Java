@@ -4,32 +4,32 @@
  */
 package uq.ilabs.servicebroker.service;
 
-import edu.mit.ilab.SbAuthHeader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import javax.ejb.EJB;
-import javax.servlet.ServletContext;
 import javax.xml.namespace.QName;
-import javax.xml.soap.*;
+import javax.xml.soap.Name;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPFault;
+import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
+import javax.xml.ws.soap.SOAPFaultException;
+import uq.ilabs.library.lab.types.SbAuthHeader;
 import uq.ilabs.library.lab.utilities.Logfile;
-import uq.ilabs.servicebroker.ServiceBrokerBean;
 
 /**
  *
  * @author uqlpayne
  */
 public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
-
-    //<editor-fold defaultstate="collapsed" desc="Variables">
-    @EJB
-    private ServiceBrokerBean serviceBrokerBean;
-    //</editor-fold>
 
     @Override
     public boolean handleMessage(SOAPMessageContext messageContext) {
@@ -42,19 +42,13 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
          * Process the header info for an inbound message if authentication is required
          */
         if ((Boolean) messageContext.get(SOAPMessageContext.MESSAGE_OUTBOUND_PROPERTY) == false) {
-            /*
-             * Check if ServiceBrokerBean has been initialised
-             */
-            if (this.serviceBrokerBean.isInitialised() == false) {
-                this.serviceBrokerBean.Initialise((ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT));
-            }
-
             try {
                 /*
                  * Write the SOAP message to system output
                  */
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 messageContext.getMessage().writeTo(outputStream);
+//                System.out.println(LabClientAuthenticator.class.getSimpleName());
 //                System.out.println(outputStream.toString());
 
                 /*
@@ -63,8 +57,18 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
                 ProcessSoapHeader(messageContext);
 
                 success = true;
+
             } catch (SOAPException | IOException ex) {
-                Logfile.WriteError(ex.toString());
+                /*
+                 * Create a SOAPFaultException to be thrown back to the caller
+                 */
+                try {
+                    SOAPFault fault = SOAPFactory.newInstance().createFault();
+                    fault.setFaultString(ex.getMessage());
+                    throw new SOAPFaultException(fault);
+                } catch (SOAPException e) {
+                    Logfile.WriteError(e.getMessage());
+                }
             }
         }
 
@@ -126,8 +130,9 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
                      * SbAuthHeader
                      */
                     SbAuthHeader sbAuthHeader = ProcessSoapElementSbAuthHeader(soapElement);
-                    messageContext.put(qnameLocalPart, sbAuthHeader);
-                    messageContext.setScope(qnameLocalPart, MessageContext.Scope.APPLICATION);
+                    String sbAuthHeaderName = SbAuthHeader.class.getSimpleName();
+                    messageContext.put(sbAuthHeaderName, sbAuthHeader);
+                    messageContext.setScope(sbAuthHeaderName, MessageContext.Scope.APPLICATION);
                 }
             }
         }
@@ -139,7 +144,7 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
      * @return SbAuthHeader
      */
     private SbAuthHeader ProcessSoapElementSbAuthHeader(SOAPElement soapElement) {
-        SbAuthHeader sbAuthHeader = QnameFactory.getObjectFactory().createSbAuthHeader();
+        SbAuthHeader sbAuthHeader = new SbAuthHeader();
         Iterator iterator = soapElement.getChildElements();
         while (iterator.hasNext()) {
             /*
@@ -157,10 +162,10 @@ public class LabClientAuthenticator implements SOAPHandler<SOAPMessageContext> {
                 /*
                  * Check if localName matches a specified string
                  */
-                if (localName.equalsIgnoreCase(uq.ilabs.library.lab.types.SbAuthHeader.STR_CouponId) == true) {
-                    sbAuthHeader.setCouponID(Long.parseLong(element.getValue()));
-                } else if (localName.equalsIgnoreCase(uq.ilabs.library.lab.types.SbAuthHeader.STR_CouponPasskey) == true) {
-                    sbAuthHeader.setCouponPassKey(element.getValue());
+                if (localName.equalsIgnoreCase(SbAuthHeader.STR_CouponId) == true) {
+                    sbAuthHeader.setCouponId(Long.parseLong(element.getValue()));
+                } else if (localName.equalsIgnoreCase(SbAuthHeader.STR_CouponPasskey) == true) {
+                    sbAuthHeader.setCouponPasskey(element.getValue());
                 }
             }
         }

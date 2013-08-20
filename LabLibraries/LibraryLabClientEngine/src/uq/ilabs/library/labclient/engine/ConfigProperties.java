@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
+import uq.ilabs.library.lab.types.ServiceTypes;
 import uq.ilabs.library.lab.utilities.Logfile;
 
 /**
@@ -24,6 +25,7 @@ public class ConfigProperties {
      * String constants for configuration properties
      */
     private static final String STRCFG_ServiceUrl = "ServiceUrl";
+    private static final String STRCFG_ServiceType = "ServiceType";
     private static final String STRCFG_LabServerId = "LabServerId";
     private static final String STRCFG_MultiSubmit = "MultiSubmit";
     private static final String STRCFG_FeedbackEmail = "FeedbackEmail";
@@ -38,6 +40,7 @@ public class ConfigProperties {
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Properties">
     private String serviceUrl;
+    private ServiceTypes serviceType;
     private String labServerId;
     private boolean multiSubmit;
     private String feedbackEmail;
@@ -48,6 +51,14 @@ public class ConfigProperties {
 
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
+    }
+
+    public ServiceTypes getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(ServiceTypes serviceType) {
+        this.serviceType = serviceType;
     }
 
     public String getLabServerId() {
@@ -102,6 +113,10 @@ public class ConfigProperties {
             /*
              * Get configuration information
              */
+            this.serviceType = ServiceTypes.ToType(configProperties.getProperty(STRCFG_ServiceType));
+            if (this.serviceType == ServiceTypes.Unknown) {
+                this.serviceType = ServiceTypes.Soap;
+            }
             this.serviceUrl = configProperties.getProperty(STRCFG_ServiceUrl);
             this.labServerId = configProperties.getProperty(STRCFG_LabServerId);
             this.feedbackEmail = configProperties.getProperty(STRCFG_FeedbackEmail);

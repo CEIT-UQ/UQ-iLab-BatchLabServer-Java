@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--<!DOCTYPE labConfiguration SYSTEM "LabConfiguration.dtd">-->
+<labConfiguration title="TimeOfDay" version="4.0">
+    <navmenuPhoto>
+        <image>http://localhost:8080/TimeOfDayLabServer/resources/img/sundial.jpg</image>
+    </navmenuPhoto>
+    <labCamera>
+        <url />
+    </labCamera>
+    <labInfo>
+        <text />
+        <url />
+    </labInfo>
+    <configuration>
+        <setup id="LocalClock">
+            <name>Local Time</name>
+            <description>
+                <p>
+                    Obtain the date and time from the LabServer's computer clock.
+                </p>
+            </description>
+        </setup>
+        <setup id="NTPServer">
+            <name>Network Time</name>
+            <description>
+                <p>
+                    Obtain the date and time from a Network Time Prototocol (NTP) server on the internet.
+                </p>
+            </description>
+        </setup>
+        <timeServers>
+            <url>localhost</url>
+            <url>cuscus.cc.uq.edu.au</url>
+            <url>ntp0.broad.mit.edu</url>
+            <url>url.does.not.exist</url>
+        </timeServers>
+        <timeFormats default="12-Hour">
+            <timeFormat>12-Hour</timeFormat>
+            <timeFormat>24-Hour</timeFormat>
+        </timeFormats>
+    </configuration>
+    <validation />
+    <experimentSpecification>
+        <setupName />
+        <setupId />
+        <formatName />
+        <serverUrl />
+    </experimentSpecification>
+    <experimentResult>
+        <timestamp />
+        <title />
+        <version />
+        <experimentId />
+        <sbName />
+        <unitId />
+        <setupName />
+        <setupId />
+        <formatName />
+        <serverUrl />
+        <timeofday />
+        <dayofweek />
+        <day />
+        <month />
+        <year />
+        <hours />
+        <minutes />
+        <seconds />
+    </experimentResult>
+</labConfiguration>

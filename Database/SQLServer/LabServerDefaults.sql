@@ -1,5 +1,5 @@
 /*
- * [dbo].[ServiceBrokers_Add] Name, ServiceGuid, OutPasskey, InPasskey, ServiceUrl, Permitted
+ * [dbo].[ServiceBrokers_Add] Name, Guid, OutPasskey, InPasskey, ServiceUrl, Permitted
  */
 DECLARE @RC_ServiceBrokers int
 DECLARE @Name varchar(32)

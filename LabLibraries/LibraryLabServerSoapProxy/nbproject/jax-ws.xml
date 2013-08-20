@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
+  <services/>
+  <clients>
+    <client name="ILabServerWebService.asmx">
+      <wsdl-url>file:/D:/NetBeans/BatchLabServer/Wsdl/ILabServerWebService.asmx.wsdl</wsdl-url>
+      <local-wsdl-file>ILabServerWebService.asmx.wsdl</local-wsdl-file>
+      <package-name forceReplace="true">uq.ilabs.labserver</package-name>
+      <catalog-file>catalog.xml</catalog-file>
+      <binding>
+        <file-name>ILabServerWebService.asmx_handler.xml</file-name>
+      </binding>
+      <handler-binding-file>ILabServerWebService.asmx_handler.xml</handler-binding-file>
+      <wsimport-options>
+        <wsimport-option>
+          <wsimport-option-name>extension</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>verbose</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>wsdlLocation</wsimport-option-name>
+          <wsimport-option-value>file:/D:/NetBeans/BatchLabServer/Wsdl/ILabServerWebService.asmx.wsdl</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>xnocompile</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>xendorsed</wsimport-option-name>
+          <wsimport-option-value>true</wsimport-option-value>
+        </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>package</wsimport-option-name>
+          <wsimport-option-value>edu.mit.ilab.labserver.proxy</wsimport-option-value>
+        </wsimport-option>
+      </wsimport-options>
+    </client>
+  </clients>
+</jax-ws>

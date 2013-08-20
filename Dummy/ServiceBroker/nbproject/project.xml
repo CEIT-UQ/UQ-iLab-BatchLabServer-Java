@@ -23,7 +23,11 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${reference.LibraryLabServerProxy.jar}</file>
+                    <file>${reference.LibraryLabServerRestProxy.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${reference.LibraryLabServerSoapProxy.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
@@ -47,7 +51,15 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>LibraryLabServerProxy</foreign-project>
+                <foreign-project>LibraryLabServerRestProxy</foreign-project>
+                <artifact-type>jar</artifact-type>
+                <script>build.xml</script>
+                <target>jar</target>
+                <clean-target>clean</clean-target>
+                <id>jar</id>
+            </reference>
+            <reference>
+                <foreign-project>LibraryLabServerSoapProxy</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>

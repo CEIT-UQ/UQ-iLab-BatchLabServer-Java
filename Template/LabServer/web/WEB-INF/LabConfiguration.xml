@@ -8,8 +8,8 @@
         <url />
     </labCamera>
     <labInfo>
-        <text>LabInfo for Template LabServer</text>
-        <url>http://localhost:8080/TemplateLabServer/LabInfo.html</url>
+        <text />
+        <url />
     </labInfo>
     <configuration>
         <setup id="Equipment">

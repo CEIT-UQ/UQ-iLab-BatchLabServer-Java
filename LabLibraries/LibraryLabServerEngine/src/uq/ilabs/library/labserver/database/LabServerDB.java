@@ -55,7 +55,7 @@ public class LabServerDB {
     private static final String STRSQLCMD_Update = "{ ? = call LabServer_Update(?,?,?,?,?,?,?,?) }";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private Connection sqlConnection;
+    private DBConnection dbConnection;
     //</editor-fold>
 
     /**
@@ -67,23 +67,17 @@ public class LabServerDB {
         final String methodName = "LabServerDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        try {
-            /*
-             * Check that parameters are valid
-             */
-            if (dbConnection == null) {
-                throw new NullPointerException(DBConnection.class.getSimpleName());
-            }
-
-            /*
-             * Initialise locals
-             */
-            this.sqlConnection = dbConnection.getConnection();
-
-        } catch (NullPointerException | SQLException ex) {
-            Logfile.WriteError(ex.toString());
-            throw ex;
+        /*
+         * Check that parameters are valid
+         */
+        if (dbConnection == null) {
+            throw new NullPointerException(DBConnection.class.getSimpleName());
         }
+
+        /*
+         * Initialise locals
+         */
+        this.dbConnection = dbConnection;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -108,13 +102,14 @@ public class LabServerDB {
                 throw new NullPointerException(LabServerInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Add);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setString(2, labServerInfo.getName());
                 sqlStatement.setString(3, labServerInfo.getGuid());
@@ -137,6 +132,7 @@ public class LabServerDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -163,13 +159,14 @@ public class LabServerDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Delete);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Delete);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, id);
 
@@ -186,6 +183,7 @@ public class LabServerDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -209,7 +207,8 @@ public class LabServerDB {
 
     /**
      *
-     * @return @throws Exception
+     * @return ArrayList of LabServerInfo
+     * @throws Exception
      */
     public ArrayList<LabServerInfo> RetrieveAll() throws Exception {
         return this.RetrieveBy(null, 0, null);
@@ -217,7 +216,8 @@ public class LabServerDB {
 
     /**
      *
-     * @return @throws Exception
+     * @return LabServerInfo
+     * @throws Exception
      */
     public LabServerInfo Retrieve() throws Exception {
         ArrayList<LabServerInfo> arrayList = this.RetrieveBy(null, 0, null);
@@ -227,7 +227,7 @@ public class LabServerDB {
     /**
      *
      * @param id
-     * @return
+     * @return LabServerInfo
      * @throws Exception
      */
     public LabServerInfo RetrieveById(int id) throws Exception {
@@ -266,13 +266,14 @@ public class LabServerDB {
                 throw new NullPointerException(LabServerInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Update);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Update);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, labServerInfo.getId());
                 sqlStatement.setString(3, labServerInfo.getName());
@@ -300,6 +301,7 @@ public class LabServerDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -328,6 +330,7 @@ public class LabServerDB {
 
         try {
             ArrayList<String> arrayList = new ArrayList<>();
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
@@ -353,6 +356,7 @@ public class LabServerDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
 
             /*
@@ -377,7 +381,7 @@ public class LabServerDB {
      * @param columnName
      * @param intval
      * @param strval
-     * @return LabServerInfo
+     * @return ArrayList of LabServerInfo
      * @throws Exception
      */
     private ArrayList<LabServerInfo> RetrieveBy(String columnName, int intval, String strval) throws Exception {
@@ -387,13 +391,14 @@ public class LabServerDB {
         ArrayList<LabServerInfo> arrayList = new ArrayList<>();
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
                 sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
@@ -440,6 +445,7 @@ public class LabServerDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

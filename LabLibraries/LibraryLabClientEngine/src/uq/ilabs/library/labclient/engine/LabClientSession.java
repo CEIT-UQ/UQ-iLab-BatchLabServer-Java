@@ -4,6 +4,7 @@
  */
 package uq.ilabs.library.labclient.engine;
 
+import uq.ilabs.library.labclient.ServiceBrokerAPI;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +18,6 @@ import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.lab.utilities.XmlUtilities;
 import uq.ilabs.library.lab.utilities.XmlUtilitiesException;
 import uq.ilabs.library.labclient.engine.types.SetupInfo;
-import uq.ilabs.library.servicebroker.ServiceBrokerAPI;
 
 /**
  *

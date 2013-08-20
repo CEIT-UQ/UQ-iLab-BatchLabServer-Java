@@ -20,7 +20,15 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>LibraryServiceBrokerProxy</foreign-project>
+                <foreign-project>LibraryServiceBrokerRestProxy</foreign-project>
+                <artifact-type>jar</artifact-type>
+                <script>build.xml</script>
+                <target>jar</target>
+                <clean-target>clean</clean-target>
+                <id>jar</id>
+            </reference>
+            <reference>
+                <foreign-project>LibraryServiceBrokerSoapProxy</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>

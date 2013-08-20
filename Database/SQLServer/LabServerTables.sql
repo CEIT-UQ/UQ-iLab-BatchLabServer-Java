@@ -97,6 +97,7 @@ GO
 CREATE TABLE [dbo].[LabEquipment]
 (
     Id int IDENTITY (1, 1) NOT NULL,
+    ServiceType varchar(8) NOT NULL,
     ServiceUrl varchar(256) NOT NULL,
     Passkey varchar(40),
     Enabled bit DEFAULT 0,
@@ -111,7 +112,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[LabServer]', 'U' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[LabServer]', 'U' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping table [dbo].[LabServer]'
     DROP TABLE [dbo].[LabServer];
@@ -139,7 +140,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[ServiceBrokers]', 'U' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[ServiceBrokers]', 'U' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping table [dbo].[ServiceBrokers]'
     DROP TABLE [dbo].[ServiceBrokers];
@@ -165,7 +166,7 @@ GO
 /********************************************************************************************************************
 */
 
-IF OBJECT_ID (N'[dbo].[Users]', 'U' ) IS NOT NULL 
+IF OBJECT_ID (N'[dbo].[Users]', 'U' ) IS NOT NULL
 BEGIN
 	PRINT N'Dropping table [dbo].[Users]'
     DROP TABLE [dbo].[Users];

@@ -5,12 +5,14 @@
 
     <!-- ServiceUrl: ServiceBroker's web service URL -->
     <entry key="ServiceUrl"></entry>
+    <!-- ServiceType: Type of service to call ServiceBroker. One of: REST, SOAP -->
+    <entry key="ServiceType">SOAP</entry>
 
     <!-- LabServerId: LabServer's Globally Unique Identifer maximum 40 characters -->
     <entry key="LabServerId"></entry>
 
     <!-- MultiSubmit: If true, allows the client to submit further experiments before previously submitted experiments have completed -->
-    <entry key="MultiSubmit">False</entry>
+    <entry key="MultiSubmit">false</entry>
 
     <!-- FeedbackEmail: Email address of administrator for feedback link on webpage, can be empty -->
     <entry key="FeedbackEmail"></entry>

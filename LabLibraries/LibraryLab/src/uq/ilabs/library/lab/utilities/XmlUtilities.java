@@ -11,7 +11,7 @@ import org.xml.sax.*;
 
 /**
  *
- * @author payne
+ * @author uqlpayne
  */
 public class XmlUtilities {
 

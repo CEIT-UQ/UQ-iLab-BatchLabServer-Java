@@ -480,11 +480,12 @@ $BODY$
 
 DROP FUNCTION IF EXISTS LabEquipment_Add
 (
-    varchar, varchar, boolean
+    varchar, varchar, varchar, boolean
 );
 
 CREATE FUNCTION LabEquipment_Add
 (
+    ServiceType varchar,
     ServiceUrl varchar,
     Passkey varchar,
     Enabled boolean
@@ -492,10 +493,10 @@ CREATE FUNCTION LabEquipment_Add
 RETURNS integer AS
 $BODY$
     INSERT INTO LabEquipment (
-        ServiceUrl, Passkey, Enabled
+        ServiceType, ServiceUrl, Passkey, Enabled
     )
     VALUES (
-        $1, $2, $3
+        $1, $2, $3, $4
     )
     RETURNING Id;
 $BODY$
@@ -538,6 +539,7 @@ CREATE FUNCTION LabEquipment_RetrieveBy
 RETURNS TABLE
 (
     Id integer,
+    ServiceType varchar,
     ServiceUrl varchar,
     Passkey varchar,
     Enabled boolean,
@@ -564,12 +566,13 @@ $BODY$
 
 DROP FUNCTION IF EXISTS LabEquipment_Update
 (
-    integer, varchar, varchar, boolean
+    integer, varchar, varchar, varchar, boolean
 );
 
 CREATE FUNCTION LabEquipment_Update
 (
     Id integer,
+    ServiceType varchar,
     ServiceUrl varchar,
     Passkey varchar,
     Enabled boolean
@@ -577,9 +580,9 @@ CREATE FUNCTION LabEquipment_Update
 RETURNS integer AS
 $BODY$
     UPDATE LabEquipment SET (
-        ServiceUrl, Passkey, Enabled, DateModified
+        ServiceType, ServiceUrl, Passkey, Enabled, DateModified
     ) = (
-        $2, $3, $4, current_timestamp
+        $2, $3, $4, $5, current_timestamp
     )
     WHERE Id = $1
     RETURNING Id;

@@ -5,6 +5,7 @@
 package uq.ilabs.library.labserver.database.types;
 
 import java.util.Calendar;
+import uq.ilabs.library.lab.types.ServiceTypes;
 
 /**
  *
@@ -16,6 +17,7 @@ public class LabEquipmentInfo {
     public static final int MAXLEN_Passkey = 40;
     //
     private int id;
+    private ServiceTypes serviceType;
     private String serviceUrl;
     private String passkey;
     private boolean enabled;
@@ -28,6 +30,14 @@ public class LabEquipmentInfo {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public ServiceTypes getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(ServiceTypes serviceType) {
+        this.serviceType = serviceType;
     }
 
     public String getServiceUrl() {

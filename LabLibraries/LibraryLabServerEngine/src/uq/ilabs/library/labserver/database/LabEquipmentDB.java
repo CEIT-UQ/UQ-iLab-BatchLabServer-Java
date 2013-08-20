@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.logging.Level;
 import uq.ilabs.library.lab.database.DBConnection;
+import uq.ilabs.library.lab.types.ServiceTypes;
 import uq.ilabs.library.lab.utilities.Logfile;
 import uq.ilabs.library.labserver.database.types.LabEquipmentInfo;
 
@@ -36,6 +37,7 @@ public class LabEquipmentDB {
      * Database column names
      */
     private static final String STRCOL_Id = "Id";
+    private static final String STRCOL_ServiceType = "ServiceType";
     private static final String STRCOL_ServiceUrl = "ServiceUrl";
     private static final String STRCOL_Passkey = "Passkey";
     private static final String STRCOL_Enabled = "Enabled";
@@ -44,13 +46,13 @@ public class LabEquipmentDB {
     /*
      * String constants for SQL processing
      */
-    private static final String STRSQLCMD_Add = "{ ? = call LabEquipment_Add(?,?,?) }";
+    private static final String STRSQLCMD_Add = "{ ? = call LabEquipment_Add(?,?,?,?) }";
     private static final String STRSQLCMD_Delete = "{ ? = call LabEquipment_Delete(?) }";
     private static final String STRSQLCMD_RetrieveBy = "{ call LabEquipment_RetrieveBy(?,?,?) }";
-    private static final String STRSQLCMD_Update = "{ ? = call LabEquipment_Update(?,?,?,?) }";
+    private static final String STRSQLCMD_Update = "{ ? = call LabEquipment_Update(?,?,?,?,?) }";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private Connection sqlConnection;
+    private DBConnection dbConnection;
     //</editor-fold>
 
     /**
@@ -62,23 +64,17 @@ public class LabEquipmentDB {
         final String methodName = "LabEquipmentDB";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        try {
-            /*
-             * Check that parameters are valid
-             */
-            if (dbConnection == null) {
-                throw new NullPointerException(DBConnection.class.getSimpleName());
-            }
-
-            /*
-             * Initialise locals
-             */
-            this.sqlConnection = dbConnection.getConnection();
-
-        } catch (NullPointerException | SQLException ex) {
-            Logfile.WriteError(ex.toString());
-            throw ex;
+        /*
+         * Check that parameters are valid
+         */
+        if (dbConnection == null) {
+            throw new NullPointerException(DBConnection.class.getSimpleName());
         }
+
+        /*
+         * Initialise locals
+         */
+        this.dbConnection = dbConnection;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -102,17 +98,19 @@ public class LabEquipmentDB {
                 throw new NullPointerException(LabEquipmentInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Add);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
-                sqlStatement.setString(2, labEquipmentInfo.getServiceUrl());
-                sqlStatement.setString(3, labEquipmentInfo.getPasskey());
-                sqlStatement.setBoolean(4, labEquipmentInfo.isEnabled());
+                sqlStatement.setString(2, labEquipmentInfo.getServiceType().toString());
+                sqlStatement.setString(3, labEquipmentInfo.getServiceUrl());
+                sqlStatement.setString(4, labEquipmentInfo.getPasskey());
+                sqlStatement.setBoolean(5, labEquipmentInfo.isEnabled());
 
                 /*
                  * Execute the stored procedure
@@ -127,6 +125,7 @@ public class LabEquipmentDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -150,13 +149,14 @@ public class LabEquipmentDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Delete);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Delete);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, id);
 
@@ -173,6 +173,7 @@ public class LabEquipmentDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -229,18 +230,20 @@ public class LabEquipmentDB {
                 throw new NullPointerException(LabEquipmentInfo.class.getSimpleName());
             }
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Update);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Update);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, labEquipmentInfo.getId());
-                sqlStatement.setString(3, labEquipmentInfo.getServiceUrl());
-                sqlStatement.setString(4, labEquipmentInfo.getPasskey());
-                sqlStatement.setBoolean(5, labEquipmentInfo.isEnabled());
+                sqlStatement.setString(3, labEquipmentInfo.getServiceType().toString());
+                sqlStatement.setString(4, labEquipmentInfo.getServiceUrl());
+                sqlStatement.setString(5, labEquipmentInfo.getPasskey());
+                sqlStatement.setBoolean(6, labEquipmentInfo.isEnabled());
 
                 /*
                  * Execute the stored procedure
@@ -255,6 +258,7 @@ public class LabEquipmentDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -272,7 +276,7 @@ public class LabEquipmentDB {
      * @param columnName
      * @param intval
      * @param strval
-     * @return
+     * @return ArrayList of LabEquipmentInfo
      */
     private ArrayList<LabEquipmentInfo> RetrieveBy(String columnName, int intval, String strval) {
         final String methodName = "RetrieveBy";
@@ -281,13 +285,14 @@ public class LabEquipmentDB {
         ArrayList<LabEquipmentInfo> arrayList = new ArrayList<>();
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
                 sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
@@ -300,6 +305,7 @@ public class LabEquipmentDB {
                     LabEquipmentInfo labEquipmentInfo = new LabEquipmentInfo();
 
                     labEquipmentInfo.setId(resultSet.getInt(STRCOL_Id));
+                    labEquipmentInfo.setServiceType(ServiceTypes.ToType(resultSet.getString(STRCOL_ServiceType)));
                     labEquipmentInfo.setServiceUrl(resultSet.getString(STRCOL_ServiceUrl));
                     labEquipmentInfo.setPasskey(resultSet.getString(STRCOL_Passkey));
                     labEquipmentInfo.setEnabled(resultSet.getBoolean(STRCOL_Enabled));
@@ -330,6 +336,7 @@ public class LabEquipmentDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());

@@ -108,7 +108,7 @@ public class ExperimentResultsDB {
             + "</" + STRXML_WarningMessages + ">";
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private Connection sqlConnection;
+    private DBConnection dbConnection;
     //</editor-fold>
 
     /**
@@ -120,23 +120,17 @@ public class ExperimentResultsDB {
         final String methodName = "ExperimentResults";
         Logfile.WriteCalled(logLevel, STR_ClassName, methodName);
 
-        try {
-            /*
-             * Check that all parameters are valid
-             */
-            if (dbConnection == null) {
-                throw new NullPointerException(DBConnection.class.getSimpleName());
-            }
-
-            /*
-             * Initialise local variables
-             */
-            this.sqlConnection = dbConnection.getConnection();
-
-        } catch (NullPointerException | SQLException ex) {
-            Logfile.WriteError(ex.toString());
-            throw ex;
+        /*
+         * Check that parameters are valid
+         */
+        if (dbConnection == null) {
+            throw new NullPointerException(DBConnection.class.getSimpleName());
         }
+
+        /*
+         * Initialise locals
+         */
+        this.dbConnection = dbConnection;
 
         Logfile.WriteCompleted(logLevel, STR_ClassName, methodName);
     }
@@ -144,7 +138,7 @@ public class ExperimentResultsDB {
     /**
      *
      * @param experimentResultInfo
-     * @return
+     * @return int
      */
     public int Add(ExperimentResultInfo experimentResultInfo) {
         final String methodName = "Add";
@@ -162,6 +156,7 @@ public class ExperimentResultsDB {
 
             Logfile.Write(String.format(STRLOG_ExperimentIdSbName_arg, experimentResultInfo.getExperimentId(), experimentResultInfo.getSbName()));
 
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
@@ -177,7 +172,7 @@ public class ExperimentResultsDB {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Add);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Add);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, experimentResultInfo.getExperimentId());
                 sqlStatement.setString(3, experimentResultInfo.getSbName());
@@ -203,6 +198,7 @@ public class ExperimentResultsDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (NullPointerException | SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -226,13 +222,14 @@ public class ExperimentResultsDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_Delete);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_Delete);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, id);
 
@@ -249,6 +246,7 @@ public class ExperimentResultsDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -346,13 +344,14 @@ public class ExperimentResultsDB {
         boolean success = false;
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_UpdateNotified);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_UpdateNotified);
                 sqlStatement.registerOutParameter(1, Types.INTEGER);
                 sqlStatement.setInt(2, experimentId);
                 sqlStatement.setString(3, sbName);
@@ -370,6 +369,7 @@ public class ExperimentResultsDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (Exception ex) {
             Logfile.WriteError(ex.toString());
@@ -384,7 +384,8 @@ public class ExperimentResultsDB {
 
     /**
      *
-     * @return @throws Exception
+     * @return String
+     * @throws Exception
      */
     public String RetrieveAllToXmlString() throws Exception {
         final String methodName = "RetrieveAllToXmlString";
@@ -409,8 +410,10 @@ public class ExperimentResultsDB {
     //================================================================================================================//
     /**
      *
+     * @param columnName
+     * @param intval
+     * @param strval
      * @return ArrayList of ExperimentResultInfo
-     * @throws Exception
      */
     private ArrayList<ExperimentResultInfo> RetrieveBy(String columnName, int intval, String strval) {
         final String methodName = "RetrieveBy";
@@ -419,13 +422,14 @@ public class ExperimentResultsDB {
         ArrayList<ExperimentResultInfo> arrayList = new ArrayList<>();
 
         try {
+            Connection sqlConnection = this.dbConnection.getConnection();
             CallableStatement sqlStatement = null;
 
             try {
                 /*
                  * Prepare the stored procedure call
                  */
-                sqlStatement = this.sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
+                sqlStatement = sqlConnection.prepareCall(STRSQLCMD_RetrieveBy);
                 sqlStatement.setString(1, columnName);
                 sqlStatement.setInt(2, intval);
                 sqlStatement.setString(3, strval);
@@ -466,6 +470,7 @@ public class ExperimentResultsDB {
                 } catch (SQLException ex) {
                     Logfile.WriteException(STR_ClassName, methodName, ex);
                 }
+                this.dbConnection.putConnection(sqlConnection);
             }
         } catch (SQLException ex) {
             Logfile.WriteError(ex.toString());
@@ -480,7 +485,7 @@ public class ExperimentResultsDB {
     /**
      *
      * @param experimentResultInfoList
-     * @return
+     * @return String
      */
     private String ToXmlString(ArrayList<ExperimentResultInfo> experimentResultInfoList) {
         final String methodName = "ToXmlString";
